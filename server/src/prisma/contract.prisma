@@ -1,0 +1,123 @@
+// use prisma-8
+
+enum Role {
+  USER
+  LABEL
+  ADMIN
+}
+
+model User {
+  id          Int      @id @default(autoincrement())
+  email       String   @unique
+  password    String
+  name        String?
+  role        Role     @default(USER)
+
+  // Только для role = LABEL
+  labelName   String?
+  description String?
+  website     String?
+  verified    Boolean  @default(false)
+  createdById Int?     // кто из админов создал лейбл (аудит)
+  createdBy   User?    @relation("AdminCreatedLabels", fields: [createdById], references: [id], onDelete: SetNull)
+  createdLabels User[] @relation("AdminCreatedLabels")
+
+  playlists   Playlist[]
+  history     ListeningHistory[]
+  ownedTracks Track[]  @relation("LabelTracks")
+
+  createdAt DateTime @default(now())
+  updatedAt temporal.updatedAt()
+}
+
+model Artist {
+  id             Int      @id @default(autoincrement())
+  name           String                    // отображаемое имя
+  nameNormalized String   @unique          // lowercase + trim, для уникальности
+  bio            String?
+  imageUrl       String?
+  country        String?
+
+  albums   Album[]
+  tracks   Track[]
+
+  createdAt DateTime @default(now())
+  updatedAt temporal.updatedAt()
+
+  @@index([name])
+}
+
+model Album {
+  id       Int     @id @default(autoincrement())
+  title    String
+  artistId Int
+  artist   Artist  @relation(fields: [artistId], references: [id], onDelete: Cascade)
+  year     Int?
+  coverUrl String?
+  tracks   Track[]
+
+  createdAt DateTime @default(now())
+
+  @@index([artistId])
+}
+
+model Track {
+  id        Int      @id @default(autoincrement())
+  title     String
+  duration  Int      // секунды
+  fileUrl   String
+  genre     String?
+
+  artistId  Int
+  artist    Artist   @relation(fields: [artistId], references: [id], onDelete: Cascade)
+
+  albumId   Int?
+  album     Album?   @relation(fields: [albumId], references: [id], onDelete: SetNull)
+
+  labelId   Int
+  label     User     @relation("LabelTracks", fields: [labelId], references: [id], onDelete: Restrict)
+
+  playlists PlaylistTrack[]
+  history   ListeningHistory[]
+
+  createdAt DateTime @default(now())
+  updatedAt temporal.updatedAt()
+
+  @@index([artistId])
+  @@index([labelId])
+  @@index([title])
+}
+
+model Playlist {
+  id        Int      @id @default(autoincrement())
+  name      String
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tracks    PlaylistTrack[]
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+model PlaylistTrack {
+  id         Int      @id @default(autoincrement())
+  playlistId Int
+  trackId    Int
+  playlist   Playlist @relation(fields: [playlistId], references: [id], onDelete: Cascade)
+  track      Track    @relation(fields: [trackId], references: [id], onDelete: Cascade)
+  order      Int      @default(0)
+
+  @@unique([playlistId, trackId])
+}
+
+model ListeningHistory {
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  trackId    Int
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  track      Track    @relation(fields: [trackId], references: [id], onDelete: Cascade)
+  listenedAt DateTime @default(now())
+
+  @@index([userId, listenedAt])
+}

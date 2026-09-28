@@ -1,0 +1,21 @@
+import 'temporal-polyfill/global'
+import 'dotenv/config';
+import express from 'express';
+import cors from 'cors';
+import authRoutes from './routes/auth';
+
+const app = express();
+const PORT = Number(process.env.PORT) || 5000;
+
+app.use(cors());
+app.use(express.json());
+
+app.get('/api/health', (_req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+app.use('/api/auth', authRoutes);
+
+app.listen(PORT, () => {
+  console.log(`Сервер работает на http://localhost:${PORT}`);
+});

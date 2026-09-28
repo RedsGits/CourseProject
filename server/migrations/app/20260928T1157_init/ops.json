@@ -1,0 +1,1345 @@
+[
+  {
+    "id": "schema.public",
+    "label": "Create schema \"public\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres"
+    },
+    "precheck": [],
+    "execute": [
+      {
+        "description": "Create schema \"public\"",
+        "sql": "CREATE SCHEMA IF NOT EXISTS \"public\"",
+        "params": []
+      }
+    ],
+    "postcheck": []
+  },
+  {
+    "id": "table.Album",
+    "label": "Create table \"Album\"",
+    "summary": "Creates table \"Album\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "Album"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"Album\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Album\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"Album\"",
+        "sql": "CREATE TABLE \"public\".\"Album\" (\n  \"artistId\" int4 NOT NULL,\n  \"coverUrl\" text,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"id\" SERIAL NOT NULL,\n  \"title\" text NOT NULL,\n  \"year\" int4,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"Album\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Album\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.Artist",
+    "label": "Create table \"Artist\"",
+    "summary": "Creates table \"Artist\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "Artist"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"Artist\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Artist\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"Artist\"",
+        "sql": "CREATE TABLE \"public\".\"Artist\" (\n  \"bio\" text,\n  \"country\" text,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"id\" SERIAL NOT NULL,\n  \"imageUrl\" text,\n  \"name\" text NOT NULL,\n  \"nameNormalized\" text NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"Artist\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Artist\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.ListeningHistory",
+    "label": "Create table \"ListeningHistory\"",
+    "summary": "Creates table \"ListeningHistory\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "ListeningHistory"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"ListeningHistory\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"ListeningHistory\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"ListeningHistory\"",
+        "sql": "CREATE TABLE \"public\".\"ListeningHistory\" (\n  \"id\" SERIAL NOT NULL,\n  \"listenedAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"trackId\" int4 NOT NULL,\n  \"userId\" int4 NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"ListeningHistory\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"ListeningHistory\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.Playlist",
+    "label": "Create table \"Playlist\"",
+    "summary": "Creates table \"Playlist\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "Playlist"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"Playlist\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Playlist\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"Playlist\"",
+        "sql": "CREATE TABLE \"public\".\"Playlist\" (\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"id\" SERIAL NOT NULL,\n  \"name\" text NOT NULL,\n  \"userId\" int4 NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"Playlist\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Playlist\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.PlaylistTrack",
+    "label": "Create table \"PlaylistTrack\"",
+    "summary": "Creates table \"PlaylistTrack\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "PlaylistTrack"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"PlaylistTrack\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"PlaylistTrack\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"PlaylistTrack\"",
+        "sql": "CREATE TABLE \"public\".\"PlaylistTrack\" (\n  \"id\" SERIAL NOT NULL,\n  \"order\" int4 DEFAULT 0 NOT NULL,\n  \"playlistId\" int4 NOT NULL,\n  \"trackId\" int4 NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"PlaylistTrack\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"PlaylistTrack\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.Track",
+    "label": "Create table \"Track\"",
+    "summary": "Creates table \"Track\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "Track"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"Track\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Track\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"Track\"",
+        "sql": "CREATE TABLE \"public\".\"Track\" (\n  \"albumId\" int4,\n  \"artistId\" int4 NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"duration\" int4 NOT NULL,\n  \"fileUrl\" text NOT NULL,\n  \"genre\" text,\n  \"id\" SERIAL NOT NULL,\n  \"labelId\" int4 NOT NULL,\n  \"title\" text NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"Track\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Track\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.User",
+    "label": "Create table \"User\"",
+    "summary": "Creates table \"User\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "User"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"User\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"User\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"User\"",
+        "sql": "CREATE TABLE \"public\".\"User\" (\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"createdById\" int4,\n  \"description\" text,\n  \"email\" text NOT NULL,\n  \"id\" SERIAL NOT NULL,\n  \"labelName\" text,\n  \"name\" text,\n  \"password\" text NOT NULL,\n  \"role\" text DEFAULT 'USER' NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  \"verified\" bool DEFAULT false NOT NULL,\n  \"website\" text,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"User_role_check_b07b4d24\" CHECK (\"role\" IN ('USER', 'LABEL', 'ADMIN'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"User\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"User\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.Artist.Artist_nameNormalized_key",
+    "label": "Add unique constraint on \"Artist\" (nameNormalized)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "Artist_nameNormalized_key",
+        "table": "Artist"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"Artist_nameNormalized_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Artist_nameNormalized_key",
+          "public",
+          "\"public\".\"Artist\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"Artist_nameNormalized_key\"",
+        "sql": "ALTER TABLE \"public\".\"Artist\" ADD CONSTRAINT \"Artist_nameNormalized_key\" UNIQUE (\"nameNormalized\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"Artist_nameNormalized_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Artist_nameNormalized_key",
+          "public",
+          "\"public\".\"Artist\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.PlaylistTrack.PlaylistTrack_playlistId_trackId_key",
+    "label": "Add unique constraint on \"PlaylistTrack\" (playlistId, trackId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "PlaylistTrack_playlistId_trackId_key",
+        "table": "PlaylistTrack"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"PlaylistTrack_playlistId_trackId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "PlaylistTrack_playlistId_trackId_key",
+          "public",
+          "\"public\".\"PlaylistTrack\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"PlaylistTrack_playlistId_trackId_key\"",
+        "sql": "ALTER TABLE \"public\".\"PlaylistTrack\" ADD CONSTRAINT \"PlaylistTrack_playlistId_trackId_key\" UNIQUE (\"playlistId\", \"trackId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"PlaylistTrack_playlistId_trackId_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "PlaylistTrack_playlistId_trackId_key",
+          "public",
+          "\"public\".\"PlaylistTrack\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.User.User_email_key",
+    "label": "Add unique constraint on \"User\" (email)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "User_email_key",
+        "table": "User"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"User_email_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "User_email_key",
+          "public",
+          "\"public\".\"User\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"User_email_key\"",
+        "sql": "ALTER TABLE \"public\".\"User\" ADD CONSTRAINT \"User_email_key\" UNIQUE (\"email\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"User_email_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "User_email_key",
+          "public",
+          "\"public\".\"User\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.Album.Album_artistId_idx_5a004db6",
+    "label": "Create index \"Album_artistId_idx_5a004db6\" on \"Album\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "Album_artistId_idx_5a004db6",
+        "table": "Album"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"Album_artistId_idx_5a004db6\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Album_artistId_idx_5a004db6\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"Album_artistId_idx_5a004db6\"",
+        "sql": "CREATE INDEX \"Album_artistId_idx_5a004db6\" ON \"public\".\"Album\" (\"artistId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"Album_artistId_idx_5a004db6\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Album_artistId_idx_5a004db6\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.Artist.Artist_name_idx_ce87e6ba",
+    "label": "Create index \"Artist_name_idx_ce87e6ba\" on \"Artist\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "Artist_name_idx_ce87e6ba",
+        "table": "Artist"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"Artist_name_idx_ce87e6ba\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Artist_name_idx_ce87e6ba\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"Artist_name_idx_ce87e6ba\"",
+        "sql": "CREATE INDEX \"Artist_name_idx_ce87e6ba\" ON \"public\".\"Artist\" (\"name\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"Artist_name_idx_ce87e6ba\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Artist_name_idx_ce87e6ba\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.ListeningHistory.ListeningHistory_trackId_idx_8b560769",
+    "label": "Create index \"ListeningHistory_trackId_idx_8b560769\" on \"ListeningHistory\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "ListeningHistory_trackId_idx_8b560769",
+        "table": "ListeningHistory"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"ListeningHistory_trackId_idx_8b560769\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"ListeningHistory_trackId_idx_8b560769\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"ListeningHistory_trackId_idx_8b560769\"",
+        "sql": "CREATE INDEX \"ListeningHistory_trackId_idx_8b560769\" ON \"public\".\"ListeningHistory\" (\"trackId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"ListeningHistory_trackId_idx_8b560769\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"ListeningHistory_trackId_idx_8b560769\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.ListeningHistory.ListeningHistory_userId_idx_a489d58a",
+    "label": "Create index \"ListeningHistory_userId_idx_a489d58a\" on \"ListeningHistory\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "ListeningHistory_userId_idx_a489d58a",
+        "table": "ListeningHistory"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"ListeningHistory_userId_idx_a489d58a\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"ListeningHistory_userId_idx_a489d58a\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"ListeningHistory_userId_idx_a489d58a\"",
+        "sql": "CREATE INDEX \"ListeningHistory_userId_idx_a489d58a\" ON \"public\".\"ListeningHistory\" (\"userId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"ListeningHistory_userId_idx_a489d58a\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"ListeningHistory_userId_idx_a489d58a\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.ListeningHistory.ListeningHistory_userId_listenedAt_idx_06c89a59",
+    "label": "Create index \"ListeningHistory_userId_listenedAt_idx_06c89a59\" on \"ListeningHistory\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "ListeningHistory_userId_listenedAt_idx_06c89a59",
+        "table": "ListeningHistory"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"ListeningHistory_userId_listenedAt_idx_06c89a59\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"ListeningHistory_userId_listenedAt_idx_06c89a59\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"ListeningHistory_userId_listenedAt_idx_06c89a59\"",
+        "sql": "CREATE INDEX \"ListeningHistory_userId_listenedAt_idx_06c89a59\" ON \"public\".\"ListeningHistory\" (\"userId\", \"listenedAt\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"ListeningHistory_userId_listenedAt_idx_06c89a59\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"ListeningHistory_userId_listenedAt_idx_06c89a59\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.Playlist.Playlist_userId_idx_a489d58a",
+    "label": "Create index \"Playlist_userId_idx_a489d58a\" on \"Playlist\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "Playlist_userId_idx_a489d58a",
+        "table": "Playlist"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"Playlist_userId_idx_a489d58a\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Playlist_userId_idx_a489d58a\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"Playlist_userId_idx_a489d58a\"",
+        "sql": "CREATE INDEX \"Playlist_userId_idx_a489d58a\" ON \"public\".\"Playlist\" (\"userId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"Playlist_userId_idx_a489d58a\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Playlist_userId_idx_a489d58a\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.PlaylistTrack.PlaylistTrack_playlistId_idx_470a517f",
+    "label": "Create index \"PlaylistTrack_playlistId_idx_470a517f\" on \"PlaylistTrack\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "PlaylistTrack_playlistId_idx_470a517f",
+        "table": "PlaylistTrack"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"PlaylistTrack_playlistId_idx_470a517f\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"PlaylistTrack_playlistId_idx_470a517f\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"PlaylistTrack_playlistId_idx_470a517f\"",
+        "sql": "CREATE INDEX \"PlaylistTrack_playlistId_idx_470a517f\" ON \"public\".\"PlaylistTrack\" (\"playlistId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"PlaylistTrack_playlistId_idx_470a517f\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"PlaylistTrack_playlistId_idx_470a517f\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.PlaylistTrack.PlaylistTrack_trackId_idx_8b560769",
+    "label": "Create index \"PlaylistTrack_trackId_idx_8b560769\" on \"PlaylistTrack\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "PlaylistTrack_trackId_idx_8b560769",
+        "table": "PlaylistTrack"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"PlaylistTrack_trackId_idx_8b560769\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"PlaylistTrack_trackId_idx_8b560769\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"PlaylistTrack_trackId_idx_8b560769\"",
+        "sql": "CREATE INDEX \"PlaylistTrack_trackId_idx_8b560769\" ON \"public\".\"PlaylistTrack\" (\"trackId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"PlaylistTrack_trackId_idx_8b560769\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"PlaylistTrack_trackId_idx_8b560769\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.Track.Track_albumId_idx_921f6966",
+    "label": "Create index \"Track_albumId_idx_921f6966\" on \"Track\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "Track_albumId_idx_921f6966",
+        "table": "Track"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"Track_albumId_idx_921f6966\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Track_albumId_idx_921f6966\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"Track_albumId_idx_921f6966\"",
+        "sql": "CREATE INDEX \"Track_albumId_idx_921f6966\" ON \"public\".\"Track\" (\"albumId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"Track_albumId_idx_921f6966\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Track_albumId_idx_921f6966\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.Track.Track_artistId_idx_5a004db6",
+    "label": "Create index \"Track_artistId_idx_5a004db6\" on \"Track\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "Track_artistId_idx_5a004db6",
+        "table": "Track"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"Track_artistId_idx_5a004db6\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Track_artistId_idx_5a004db6\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"Track_artistId_idx_5a004db6\"",
+        "sql": "CREATE INDEX \"Track_artistId_idx_5a004db6\" ON \"public\".\"Track\" (\"artistId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"Track_artistId_idx_5a004db6\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Track_artistId_idx_5a004db6\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.Track.Track_labelId_idx_e2585939",
+    "label": "Create index \"Track_labelId_idx_e2585939\" on \"Track\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "Track_labelId_idx_e2585939",
+        "table": "Track"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"Track_labelId_idx_e2585939\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Track_labelId_idx_e2585939\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"Track_labelId_idx_e2585939\"",
+        "sql": "CREATE INDEX \"Track_labelId_idx_e2585939\" ON \"public\".\"Track\" (\"labelId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"Track_labelId_idx_e2585939\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Track_labelId_idx_e2585939\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.Track.Track_title_idx_1c94c7b6",
+    "label": "Create index \"Track_title_idx_1c94c7b6\" on \"Track\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "Track_title_idx_1c94c7b6",
+        "table": "Track"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"Track_title_idx_1c94c7b6\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Track_title_idx_1c94c7b6\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"Track_title_idx_1c94c7b6\"",
+        "sql": "CREATE INDEX \"Track_title_idx_1c94c7b6\" ON \"public\".\"Track\" (\"title\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"Track_title_idx_1c94c7b6\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Track_title_idx_1c94c7b6\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.User.User_createdById_idx_8bf640ed",
+    "label": "Create index \"User_createdById_idx_8bf640ed\" on \"User\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "User_createdById_idx_8bf640ed",
+        "table": "User"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"User_createdById_idx_8bf640ed\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"User_createdById_idx_8bf640ed\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"User_createdById_idx_8bf640ed\"",
+        "sql": "CREATE INDEX \"User_createdById_idx_8bf640ed\" ON \"public\".\"User\" (\"createdById\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"User_createdById_idx_8bf640ed\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"User_createdById_idx_8bf640ed\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.Album.Album_artistId_fkey",
+    "label": "Add foreign key \"Album_artistId_fkey\" on \"Album\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "Album_artistId_fkey",
+        "table": "Album"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"Album_artistId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Album_artistId_fkey",
+          "public",
+          "\"public\".\"Album\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"Album_artistId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"Album\"\nADD CONSTRAINT \"Album_artistId_fkey\"\nFOREIGN KEY (\"artistId\")\nREFERENCES \"public\".\"Artist\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"Album_artistId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Album_artistId_fkey",
+          "public",
+          "\"public\".\"Album\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.ListeningHistory.ListeningHistory_userId_fkey",
+    "label": "Add foreign key \"ListeningHistory_userId_fkey\" on \"ListeningHistory\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "ListeningHistory_userId_fkey",
+        "table": "ListeningHistory"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"ListeningHistory_userId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "ListeningHistory_userId_fkey",
+          "public",
+          "\"public\".\"ListeningHistory\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"ListeningHistory_userId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"ListeningHistory\"\nADD CONSTRAINT \"ListeningHistory_userId_fkey\"\nFOREIGN KEY (\"userId\")\nREFERENCES \"public\".\"User\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"ListeningHistory_userId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "ListeningHistory_userId_fkey",
+          "public",
+          "\"public\".\"ListeningHistory\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.ListeningHistory.ListeningHistory_trackId_fkey",
+    "label": "Add foreign key \"ListeningHistory_trackId_fkey\" on \"ListeningHistory\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "ListeningHistory_trackId_fkey",
+        "table": "ListeningHistory"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"ListeningHistory_trackId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "ListeningHistory_trackId_fkey",
+          "public",
+          "\"public\".\"ListeningHistory\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"ListeningHistory_trackId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"ListeningHistory\"\nADD CONSTRAINT \"ListeningHistory_trackId_fkey\"\nFOREIGN KEY (\"trackId\")\nREFERENCES \"public\".\"Track\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"ListeningHistory_trackId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "ListeningHistory_trackId_fkey",
+          "public",
+          "\"public\".\"ListeningHistory\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.Playlist.Playlist_userId_fkey",
+    "label": "Add foreign key \"Playlist_userId_fkey\" on \"Playlist\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "Playlist_userId_fkey",
+        "table": "Playlist"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"Playlist_userId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Playlist_userId_fkey",
+          "public",
+          "\"public\".\"Playlist\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"Playlist_userId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"Playlist\"\nADD CONSTRAINT \"Playlist_userId_fkey\"\nFOREIGN KEY (\"userId\")\nREFERENCES \"public\".\"User\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"Playlist_userId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Playlist_userId_fkey",
+          "public",
+          "\"public\".\"Playlist\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.PlaylistTrack.PlaylistTrack_playlistId_fkey",
+    "label": "Add foreign key \"PlaylistTrack_playlistId_fkey\" on \"PlaylistTrack\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "PlaylistTrack_playlistId_fkey",
+        "table": "PlaylistTrack"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"PlaylistTrack_playlistId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "PlaylistTrack_playlistId_fkey",
+          "public",
+          "\"public\".\"PlaylistTrack\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"PlaylistTrack_playlistId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"PlaylistTrack\"\nADD CONSTRAINT \"PlaylistTrack_playlistId_fkey\"\nFOREIGN KEY (\"playlistId\")\nREFERENCES \"public\".\"Playlist\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"PlaylistTrack_playlistId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "PlaylistTrack_playlistId_fkey",
+          "public",
+          "\"public\".\"PlaylistTrack\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.PlaylistTrack.PlaylistTrack_trackId_fkey",
+    "label": "Add foreign key \"PlaylistTrack_trackId_fkey\" on \"PlaylistTrack\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "PlaylistTrack_trackId_fkey",
+        "table": "PlaylistTrack"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"PlaylistTrack_trackId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "PlaylistTrack_trackId_fkey",
+          "public",
+          "\"public\".\"PlaylistTrack\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"PlaylistTrack_trackId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"PlaylistTrack\"\nADD CONSTRAINT \"PlaylistTrack_trackId_fkey\"\nFOREIGN KEY (\"trackId\")\nREFERENCES \"public\".\"Track\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"PlaylistTrack_trackId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "PlaylistTrack_trackId_fkey",
+          "public",
+          "\"public\".\"PlaylistTrack\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.Track.Track_artistId_fkey",
+    "label": "Add foreign key \"Track_artistId_fkey\" on \"Track\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "Track_artistId_fkey",
+        "table": "Track"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"Track_artistId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Track_artistId_fkey",
+          "public",
+          "\"public\".\"Track\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"Track_artistId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"Track\"\nADD CONSTRAINT \"Track_artistId_fkey\"\nFOREIGN KEY (\"artistId\")\nREFERENCES \"public\".\"Artist\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"Track_artistId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Track_artistId_fkey",
+          "public",
+          "\"public\".\"Track\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.Track.Track_albumId_fkey",
+    "label": "Add foreign key \"Track_albumId_fkey\" on \"Track\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "Track_albumId_fkey",
+        "table": "Track"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"Track_albumId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Track_albumId_fkey",
+          "public",
+          "\"public\".\"Track\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"Track_albumId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"Track\"\nADD CONSTRAINT \"Track_albumId_fkey\"\nFOREIGN KEY (\"albumId\")\nREFERENCES \"public\".\"Album\" (\"id\")\nON DELETE SET NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"Track_albumId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Track_albumId_fkey",
+          "public",
+          "\"public\".\"Track\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.Track.Track_labelId_fkey",
+    "label": "Add foreign key \"Track_labelId_fkey\" on \"Track\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "Track_labelId_fkey",
+        "table": "Track"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"Track_labelId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Track_labelId_fkey",
+          "public",
+          "\"public\".\"Track\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"Track_labelId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"Track\"\nADD CONSTRAINT \"Track_labelId_fkey\"\nFOREIGN KEY (\"labelId\")\nREFERENCES \"public\".\"User\" (\"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"Track_labelId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Track_labelId_fkey",
+          "public",
+          "\"public\".\"Track\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.User.User_createdById_fkey",
+    "label": "Add foreign key \"User_createdById_fkey\" on \"User\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "User_createdById_fkey",
+        "table": "User"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"User_createdById_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "User_createdById_fkey",
+          "public",
+          "\"public\".\"User\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"User_createdById_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"User\"\nADD CONSTRAINT \"User_createdById_fkey\"\nFOREIGN KEY (\"createdById\")\nREFERENCES \"public\".\"User\" (\"id\")\nON DELETE SET NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"User_createdById_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "User_createdById_fkey",
+          "public",
+          "\"public\".\"User\""
+        ]
+      }
+    ]
+  }
+]
