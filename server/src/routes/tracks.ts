@@ -5,6 +5,7 @@ import { uploadAudio } from '../config/multer';
 import { parseFile } from 'music-metadata';
 import path from 'path';
 import fs from 'fs'
+import { getAudioMimeType } from '../utils/mime';
 
 const router = Router();
 
@@ -33,6 +34,92 @@ router.get('/', async (req, res) => {
   res.json(tracks);
 });
 
+router.get('/:id/stream', async (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id)) {
+    return res.status(400).json({ error: 'Неверный id' });
+  }
+
+  const track = await db.orm.public.Track.where({ id }).first();
+  if (!track) {
+    return res.status(404).json({ error: 'Трек не найден' });
+  }
+
+  const filePath = path.resolve('uploads', track.fileUrl);
+
+  if (!fs.existsSync(filePath)) {
+    return res.status(404).json({ error: 'Файл трека не найден на диске' });
+  }
+
+  const stat = fs.statSync(filePath);
+  const fileSize = stat.size;
+  const mimeType = getAudioMimeType(track.fileUrl);
+
+  const rangeHeader = req.headers.range;
+
+  if (!rangeHeader) {
+    res.writeHead(200, { 'Content-Length': fileSize, 'Content-Type': mimeType, 'Accept-Ranges': 'bytes', });
+    fs.createReadStream(filePath).pipe(res);
+    return;
+  }
+
+  const match = /^bytes=(\d*)-(\d*)$/.exec(rangeHeader);
+  if (!match) {
+    res.setHeader('Content-Range', `bytes */${fileSize}`);
+    return res.status(416).json({ error: 'Invalid Range header' });
+  }
+
+  const startStr = match[1] ?? '';
+  const endStr = match[2] ?? '';
+
+  let start: number;
+  let end: number;
+
+  if (startStr === '' && endStr === '') {
+    res.setHeader('Content-Range', `bytes */${fileSize}`);
+    return res.status(416).json({ error: 'Invalid Range header' });
+  }
+
+  if (startStr === '') {
+    const suffixLength = parseInt(endStr, 10);
+    start = Math.max(0, fileSize - suffixLength);
+    end = fileSize - 1;
+  } else {
+    start = parseInt(startStr, 10);
+    end = endStr === '' ? fileSize - 1 : parseInt(endStr, 10);
+  }
+
+  if (
+    Number.isNaN(start) ||
+    Number.isNaN(end) ||
+    start > end ||
+    start >= fileSize
+  ) {
+    res.setHeader('Content-Range', `bytes */${fileSize}`);
+    return res.status(416).json({ error: 'Requested Range Not Satisfiable' });
+  }
+
+  if (end >= fileSize) {
+    end = fileSize - 1;
+  }
+
+  const chunkSize = end - start + 1;
+
+  res.writeHead(206, { 'Content-Range': `bytes ${start}-${end}/${fileSize}`, 'Accept-Ranges': 'bytes', 'Content-Length': chunkSize, 'Content-Type': mimeType, });
+
+  const stream = fs.createReadStream(filePath, { start, end });
+  stream.pipe(res);
+
+  stream.on('error', (err) => {
+    console.error('Ошибка стриминга:', err);
+    if (!res.headersSent) {
+      res.status(500).json({ error: 'Ошибка чтения файла' });
+    } else {
+      res.end();
+    }
+  });
+});
+
 router.get('/:id', async (req, res) => {
   const id = Number(req.params.id);
   if (!Number.isInteger(id)) {
@@ -58,15 +145,15 @@ router.post(
     }
 
     const { title, artistId, albumId, genre } = req.body as {
-        title?: string;
-        artistId?: string;
-        albumId?: string;
-        genre?: string;
+      title?: string;
+      artistId?: string;
+      albumId?: string;
+      genre?: string;
     };
 
     if (!title || !artistId) {
-        cleanupFile(req.file.path);
-        return res.status(400).json({ error: 'title и artistId обязательны', });
+      cleanupFile(req.file.path);
+      return res.status(400).json({ error: 'title и artistId обязательны', });
     }
 
     const artist = await db.orm.public.Artist.where({ id: Number(artistId) }).first();
