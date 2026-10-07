@@ -381,6 +381,13 @@
                   "kind": "scalar"
                 }
               },
+              "isPublic": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/bool@1",
+                  "kind": "scalar"
+                }
+              },
               "name": {
                 "nullable": false,
                 "type": {
@@ -436,6 +443,9 @@
                 },
                 "id": {
                   "column": "id"
+                },
+                "isPublic": {
+                  "column": "isPublic"
                 },
                 "name": {
                   "column": "name"
@@ -1218,6 +1228,15 @@
                   "nativeType": "int4",
                   "nullable": false
                 },
+                "isPublic": {
+                  "codecId": "pg/bool@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": false
+                  },
+                  "nativeType": "bool",
+                  "nullable": false
+                },
                 "name": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
@@ -1249,6 +1268,14 @@
                 }
               ],
               "indexes": [
+                {
+                  "columns": [
+                    "isPublic"
+                  ],
+                  "name": "Playlist_isPublic_idx_ceb5dcf6",
+                  "prefix": "Playlist_isPublic_idx",
+                  "unique": false
+                },
                 {
                   "columns": [
                     "userId"
@@ -1669,7 +1696,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "7882854c6b2ab1f0f2301bb46e4d882f9c1bf3a91ed19df9665a5e218e261848"
+    "storageHash": "22cf605569747cc4aa7384be6dfdc5cd337f2bc1a59bee2b65b554375902e53c"
   },
   "execution": {
     "executionHash": "622fc64991b3ba6b8eadfdea72d0cbcc863ccb59b2d8cb44a7b286ef55c7d46c",

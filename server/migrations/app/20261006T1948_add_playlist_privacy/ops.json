@@ -1,0 +1,83 @@
+[
+  {
+    "id": "column.public.Playlist.isPublic",
+    "label": "Add column \"isPublic\" to \"Playlist\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "isPublic",
+        "table": "Playlist"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"isPublic\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Playlist",
+          "isPublic"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"isPublic\"",
+        "sql": "ALTER TABLE \"public\".\"Playlist\" ADD COLUMN \"isPublic\" bool DEFAULT false NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"isPublic\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Playlist",
+          "isPublic"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.Playlist.Playlist_isPublic_idx_ceb5dcf6",
+    "label": "Create index \"Playlist_isPublic_idx_ceb5dcf6\" on \"Playlist\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "Playlist_isPublic_idx_ceb5dcf6",
+        "table": "Playlist"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"Playlist_isPublic_idx_ceb5dcf6\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Playlist_isPublic_idx_ceb5dcf6\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"Playlist_isPublic_idx_ceb5dcf6\"",
+        "sql": "CREATE INDEX \"Playlist_isPublic_idx_ceb5dcf6\" ON \"public\".\"Playlist\" (\"isPublic\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"Playlist_isPublic_idx_ceb5dcf6\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Playlist_isPublic_idx_ceb5dcf6\""
+        ]
+      }
+    ]
+  }
+]
