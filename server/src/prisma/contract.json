@@ -600,6 +600,13 @@
                   "kind": "scalar"
                 }
               },
+              "playCount": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
               "title": {
                 "nullable": false,
                 "type": {
@@ -720,6 +727,9 @@
                 },
                 "labelId": {
                   "column": "labelId"
+                },
+                "playCount": {
+                  "column": "playCount"
                 },
                 "title": {
                   "column": "title"
@@ -1441,6 +1451,15 @@
                   "nativeType": "int4",
                   "nullable": false
                 },
+                "playCount": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": 0
+                  },
+                  "nativeType": "int4",
+                  "nullable": false
+                },
                 "title": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
@@ -1696,7 +1715,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "22cf605569747cc4aa7384be6dfdc5cd337f2bc1a59bee2b65b554375902e53c"
+    "storageHash": "f56039493e97092a0099db0bfd07a2df045dbffbb1043205efef854a1128172e"
   },
   "execution": {
     "executionHash": "622fc64991b3ba6b8eadfdea72d0cbcc863ccb59b2d8cb44a7b286ef55c7d46c",
