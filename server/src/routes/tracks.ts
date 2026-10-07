@@ -218,4 +218,38 @@ router.post(
   }
 );
 
+router.delete(
+  '/:id',
+  authenticate,
+  requireRole('LABEL', 'ADMIN'),
+  async (req: AuthRequest, res) => {
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id)) {
+      return res.status(400).json({ error: 'Неверный id' });
+    }
+
+    const track = await db.orm.public.Track.where({ id }).first();
+    if (!track) {
+      return res.status(404).json({ error: 'Трек не найден' });
+    }
+
+    if (req.user!.role === 'LABEL' && track.labelId !== req.user!.id) {
+      return res.status(403).json({ error: 'Это не ваш трек' });
+    }
+
+    const filePath = path.resolve('uploads', track.fileUrl);
+    if (fs.existsSync(filePath)) {
+      try {
+        fs.unlinkSync(filePath);
+      } catch (err) {
+        console.error('Не удалось удалить файл:', filePath, err);
+      }
+    }
+
+    await db.orm.public.Track.where({ id }).delete();
+
+    res.status(204).send();
+  },
+);
+
 export default router;
