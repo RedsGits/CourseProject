@@ -1,10 +1,18 @@
 import { Router } from 'express';
 import { db } from '../prisma/db';
+import Fuse from 'fuse.js';
 
 const router = Router();
 
 const MAX_LIMIT = 50;
 const DEFAULT_LIMIT = 20;
+
+const FUSE_OPTIONS = {
+  includeScore: true,
+  threshold: 0.3,
+  ignoreLocation: true,
+  minMatchCharLength: 2,
+};
 
 router.get('/', async (req, res) => {
   const q = String(req.query.q ?? '').trim().toLowerCase();
@@ -28,35 +36,29 @@ router.get('/', async (req, res) => {
 
   if (type === 'all' || type === 'tracks') {
     const allTracks = await db.orm.public.Track.all();
-    const matched = allTracks.filter((t) => t.title.toLowerCase().includes(q)).sort((a, b) => (b.playCount ?? 0) - (a.playCount ?? 0)).slice(0, limit);
+    const fuse = new Fuse(allTracks, { ...FUSE_OPTIONS, keys: ['title', 'genre'], });
+    const matched = fuse.search(q).slice(0, limit).map((r) => r.item);
     result.tracks = matched;
   }
 
   if (type === 'all' || type === 'artists') {
     const allArtists = await db.orm.public.Artist.all();
-    const matched = allArtists.filter((a) =>
-        a.name.toLowerCase().includes(q) ||
-        a.nameNormalized.includes(q),
-      )
-      .sort((a, b) => a.name.localeCompare(b.name)).slice(0, limit);
+    const fuse = new Fuse(allArtists, { ...FUSE_OPTIONS, keys: ['name', 'nameNormalized'], });
+    const matched = fuse.search(q).slice(0, limit).map((r) => r.item);
     result.artists = matched;
   }
 
   if (type === 'all' || type === 'playlists') {
     const publicPlaylists = await db.orm.public.Playlist.where({ isPublic: true }).all();
-    const matched = publicPlaylists
-      .filter((p) => p.name.toLowerCase().includes(q))
-      .sort((a, b) => a.name.localeCompare(b.name))
-      .slice(0, limit);
+    const fuse = new Fuse(publicPlaylists, { ...FUSE_OPTIONS, keys: ['name'], });
+    const matched = fuse.search(q).slice(0, limit).map((r) => r.item);
     result.playlists = matched;
   }
 
   if (type === 'all' || type === 'albums') {
     const allAlbums = await db.orm.public.Album.all();
-    const matched = allAlbums
-      .filter((a) => a.title.toLowerCase().includes(q))
-      .sort((a, b) => a.title.localeCompare(b.title))
-      .slice(0, limit);
+    const fuse = new Fuse(allAlbums, { ...FUSE_OPTIONS, keys: ['title'], });
+    const matched = fuse.search(q).slice(0, limit).map((r) => r.item);
     result.albums = matched;
   }
 
