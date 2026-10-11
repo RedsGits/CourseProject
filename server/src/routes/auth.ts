@@ -13,7 +13,36 @@ router.post('/register', async (req, res) => {
   };
 
   if (!email || !password) {
-    return res.status(400).json({ error: 'Почта и пароль обязательны' });
+    return res.status(400).json({ error: 'Email и пароль обязательны', field: null, });
+  }
+
+  const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRe.test(email.trim())) {
+    return res.status(400).json({ error: 'Некорректный email', field: 'email', });
+  }
+
+  if (password.length < 6) {
+    return res.status(400).json({ error: 'Пароль не должен быть короче 6 символов', field: 'password', });
+  }
+
+  if (!name || !name.trim()) {
+    return res.status(400).json({ error: 'Имя обязательно', field: 'name', });
+  }
+
+  if (email.length > 100) {
+    return res.status(400).json({ error: 'Email слишком длинный', field: 'email' });
+  }
+
+  if (name.trim().length < 2) {
+    return res.status(400).json({ error: 'Имя не должно быть короче 2 символов', field: 'name' });
+  }
+
+  if (name.trim().length > 30) {
+    return res.status(400).json({ error: 'Имя слишком длинное', field: 'name' });
+  }
+
+  if (password.length > 64) {
+    return res.status(400).json({ error: 'Пароль слишком длинный', field: 'password' });
   }
 
   const normalizedEmail = email.toLowerCase().trim();
@@ -23,7 +52,7 @@ router.post('/register', async (req, res) => {
     .first();
 
   if (existing) {
-    return res.status(409).json({ error: 'Почта уже используется' });
+    return res.status(409).json({ error: 'Эта почта уже используется', field: 'email', });
   }
 
   const hash = await bcrypt.hash(password, 10);
@@ -55,7 +84,7 @@ router.post('/login', async (req, res) => {
   };
 
   if (!email || !password) {
-    return res.status(400).json({ error: 'Почта и пароль обязательны' });
+    return res.status(400).json({ error: 'Email и пароль обязательны', field: null, });
   }
 
   const normalizedEmail = email.toLowerCase().trim();
@@ -65,12 +94,12 @@ router.post('/login', async (req, res) => {
     .first();
 
   if (!user) {
-    return res.status(401).json({ error: 'Неверная почта' });
+    return res.status(401).json({ error: 'Пользователь с такой почтой не найден', field: 'email', });
   }
 
   const ok = await bcrypt.compare(password, user.password);
   if (!ok) {
-    return res.status(401).json({ error: 'Неверный пароль' });
+    return res.status(401).json({ error: 'Неверный пароль', field: 'password', });
   }
 
   const token = signToken({

@@ -1,17 +1,12 @@
-import { Outlet, useNavigate } from 'react-router-dom';
+import { Outlet, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../store/auth';
 import { usePlayer } from '../store/player';
 import Player from './Player';
 
 export default function Layout() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const { current } = usePlayer();
   const navigate = useNavigate();
-
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
 
   return (
     <div className={`app ${current ? 'has-player' : ''}`}>
@@ -21,7 +16,7 @@ export default function Layout() {
           onClick={() => navigate('/')}
           title="На главную"
         >
-          <img src="/Logonotext.png" alt="Music Stream" />
+          <img src="/Logonotext.png"/>
         </button>
       </aside>
 
@@ -29,21 +24,21 @@ export default function Layout() {
         <header className="header">
           <div className="header-right">
             {user ? (
-              <>
-                <span className="header-user">
+              <Link to="/profile" className="header-user-block">
+                <img
+                  className="header-avatar"
+                  src={user.avatarUrl || '/Defpfp.png'}
+                  alt={user.name ?? user.email}
+                  onLoad={(e) => e.currentTarget.classList.add('loaded')}
+                />
+                <span className="header-user-name">
                   {user.name ?? user.email}
                 </span>
-                <button onClick={handleLogout} className="btn-pill">
-                  Выйти
-                </button>
-              </>
+              </Link>
             ) : (
-              <button
-                onClick={() => navigate('/login')}
-                className="btn-pill"
-              >
+              <Link to="/login" className="btn-pill">
                 Войти
-              </button>
+              </Link>
             )}
           </div>
         </header>

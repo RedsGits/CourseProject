@@ -7,11 +7,13 @@ interface AuthState {
   token: string | null;
   isLoading: boolean;
   error: string | null;
+  errorField: string | null;
 
   login: (email: string, password: string) => Promise<boolean>;
   register: (email: string, password: string, name?: string) => Promise<boolean>;
   logout: () => void;
   loadFromStorage: () => void;
+  clearError: () => void;
 }
 
 export const useAuth = create<AuthState>((set) => ({
@@ -19,9 +21,10 @@ export const useAuth = create<AuthState>((set) => ({
   token: null,
   isLoading: false,
   error: null,
+  errorField: null,
 
   login: async (email, password) => {
-    set({ isLoading: true, error: null });
+    set({ isLoading: true, error: null, errorField: null });
     try {
       const { data } = await api.post<AuthResponse>('/auth/login', { email, password });
       localStorage.setItem('token', data.token);
@@ -30,13 +33,14 @@ export const useAuth = create<AuthState>((set) => ({
       return true;
     } catch (e: any) {
       const message = e.response?.data?.error ?? 'Ошибка входа';
-      set({ error: message, isLoading: false });
+      const field = e.response?.data?.field ?? null;
+      set({ error: message, errorField: field, isLoading: false });
       return false;
     }
   },
 
   register: async (email, password, name) => {
-    set({ isLoading: true, error: null });
+    set({ isLoading: true, error: null, errorField: null });
     try {
       const { data } = await api.post<AuthResponse>('/auth/register', { email, password, name });
       localStorage.setItem('token', data.token);
@@ -45,7 +49,8 @@ export const useAuth = create<AuthState>((set) => ({
       return true;
     } catch (e: any) {
       const message = e.response?.data?.error ?? 'Ошибка регистрации';
-      set({ error: message, isLoading: false });
+      const field = e.response?.data?.field ?? null;
+      set({ error: message, errorField: field, isLoading: false });
       return false;
     }
   },
@@ -53,7 +58,7 @@ export const useAuth = create<AuthState>((set) => ({
   logout: () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    set({ user: null, token: null });
+    set({ user: null, token: null, error: null, errorField: null });
   },
 
   loadFromStorage: () => {
@@ -69,4 +74,6 @@ export const useAuth = create<AuthState>((set) => ({
       }
     }
   },
+
+  clearError: () => set({ error: null, errorField: null }),
 }));

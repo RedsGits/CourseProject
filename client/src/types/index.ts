@@ -2,6 +2,7 @@ export interface User {
   id: number;
   email: string;
   name: string | null;
+  avatarUrl: string | null;
   role: 'USER' | 'LABEL' | 'ADMIN';
   labelName?: string | null;
 }
