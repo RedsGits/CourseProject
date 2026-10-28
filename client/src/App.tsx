@@ -7,6 +7,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import ArtistDetail from './pages/ArtistDetail';
 import Profile from './pages/Profile';
+import Search from './pages/Search';
 
 function App() {
   const { loadFromStorage } = useAuth();
@@ -25,6 +26,7 @@ function App() {
           <Route path="artist" element={<ArtistDetail />} />
           <Route path="artist/:id" element={<ArtistDetail />} />
           <Route path="profile" element={<Profile />} />
+          <Route path="search" element={<Search />} />
         </Route>
       </Routes>
     </BrowserRouter>
