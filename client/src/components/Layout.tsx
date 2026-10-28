@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Outlet, Link, NavLink } from 'react-router-dom';
 import { useAuth } from '../store/auth';
 import { usePlayer } from '../store/player';
@@ -15,9 +16,17 @@ const IconSearch = () => (
   </svg>
 );
 
+const IconLibrary = () => (
+  <svg viewBox="0 -960 960 960" width="24" height="24" fill="currentColor">
+    <path d="m509-220 91-55 91 55-24-104 80-69-105-9-42-98-42 98-105 9 80 69-24 104ZM240-400v80h-80q-33 0-56.5-23.5T80-400v-400q0-33 23.5-56.5T160-880h400q33 0 56.5 23.5T640-800v80h-80v-80H160v400h80ZM400-80q-33 0-56.5-23.5T320-160v-400q0-33 23.5-56.5T400-640h400q33 0 56.5 23.5T880-560v400q0 33-23.5 56.5T800-80H400Zm0-80h400v-400H400v400Zm200-200Z" />
+  </svg>
+);
+
 export default function Layout() {
   const { user } = useAuth();
   const { current } = usePlayer();
+  
+  const [avatarLoaded, setAvatarLoaded] = useState(false);
 
   return (
     <div className={`app ${current ? 'has-player' : ''}`}>
@@ -37,6 +46,11 @@ export default function Layout() {
             <span className="sidebar-icon"><IconSearch /></span>
             <span className="sidebar-link-text">Поиск</span>
           </NavLink>
+
+          <NavLink to="/library" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>
+            <span className="sidebar-icon"><IconLibrary /></span>
+            <span className="sidebar-link-text">Библиотека</span>
+          </NavLink>
         </nav>
       </aside>
 
@@ -46,9 +60,10 @@ export default function Layout() {
             {user ? (
               <Link to="/profile" className="header-user-block">
                 <img
-                  className="header-avatar"
+                  className={`header-avatar ${avatarLoaded ? 'loaded' : ''}`}
                   src={user.avatarUrl || '/Defpfp.png'}
                   alt={user.name ?? user.email}
+                  onLoad={() => setAvatarLoaded(true)}
                 />
                 <span className="header-user-name">
                   {user.name ?? user.email}

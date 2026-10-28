@@ -28,6 +28,10 @@
       "model": "Track",
       "namespace": "public"
     },
+    "TrackReaction": {
+      "model": "TrackReaction",
+      "namespace": "public"
+    },
     "User": {
       "model": "User",
       "namespace": "public"
@@ -37,6 +41,19 @@
     "namespaces": {
       "public": {
         "enum": {
+          "ReactionType": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "LIKE",
+                "value": "LIKE"
+              },
+              {
+                "name": "DISLIKE",
+                "value": "DISLIKE"
+              }
+            ]
+          },
           "Role": {
             "codecId": "pg/text@1",
             "members": [
@@ -565,6 +582,13 @@
                   "kind": "scalar"
                 }
               },
+              "dislikeCount": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
               "duration": {
                 "nullable": false,
                 "type": {
@@ -594,6 +618,13 @@
                 }
               },
               "labelId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "likeCount": {
                 "nullable": false,
                 "type": {
                   "codecId": "pg/int4@1",
@@ -700,6 +731,21 @@
                   "model": "PlaylistTrack",
                   "namespace": "public"
                 }
+              },
+              "reactions": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "trackId"
+                  ]
+                },
+                "to": {
+                  "model": "TrackReaction",
+                  "namespace": "public"
+                }
               }
             },
             "storage": {
@@ -712,6 +758,9 @@
                 },
                 "createdAt": {
                   "column": "createdAt"
+                },
+                "dislikeCount": {
+                  "column": "dislikeCount"
                 },
                 "duration": {
                   "column": "duration"
@@ -728,6 +777,9 @@
                 "labelId": {
                   "column": "labelId"
                 },
+                "likeCount": {
+                  "column": "likeCount"
+                },
                 "playCount": {
                   "column": "playCount"
                 },
@@ -740,6 +792,116 @@
               },
               "namespaceId": "public",
               "table": "Track"
+            }
+          },
+          "TrackReaction": {
+            "fields": {
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "trackId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "type": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "ReactionType",
+                  "namespaceId": "public",
+                  "plane": "domain"
+                }
+              },
+              "updatedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "userId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "track": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "trackId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Track",
+                  "namespace": "public"
+                }
+              },
+              "user": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "userId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "User",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "trackId": {
+                  "column": "trackId"
+                },
+                "type": {
+                  "column": "type"
+                },
+                "updatedAt": {
+                  "column": "updatedAt"
+                },
+                "userId": {
+                  "column": "userId"
+                }
+              },
+              "namespaceId": "public",
+              "table": "TrackReaction"
             }
           },
           "User": {
@@ -916,6 +1078,21 @@
                 },
                 "to": {
                   "model": "Playlist",
+                  "namespace": "public"
+                }
+              },
+              "reactions": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "userId"
+                  ]
+                },
+                "to": {
+                  "model": "TrackReaction",
                   "namespace": "public"
                 }
               }
@@ -1432,6 +1609,15 @@
                   "nativeType": "timestamptz",
                   "nullable": false
                 },
+                "dislikeCount": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": 0
+                  },
+                  "nativeType": "int4",
+                  "nullable": false
+                },
                 "duration": {
                   "codecId": "pg/int4@1",
                   "nativeType": "int4",
@@ -1458,6 +1644,15 @@
                 },
                 "labelId": {
                   "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "likeCount": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": 0
+                  },
                   "nativeType": "int4",
                   "nullable": false
                 },
@@ -1574,6 +1769,124 @@
                 ]
               },
               "uniques": []
+            },
+            "TrackReaction": {
+              "checks": [
+                {
+                  "expression": "\"type\" IN ('LIKE', 'DISLIKE')",
+                  "name": "TrackReaction_type_check_37b7ee9b",
+                  "prefix": "TrackReaction_type_check"
+                }
+              ],
+              "columns": {
+                "createdAt": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "expression": "autoincrement()",
+                    "kind": "function"
+                  },
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "trackId": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "type": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "ReactionType",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
+                },
+                "updatedAt": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "userId": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "userId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "TrackReaction"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "User"
+                  }
+                },
+                {
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "trackId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "TrackReaction"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "Track"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "trackId"
+                  ],
+                  "name": "TrackReaction_trackId_idx_8b560769",
+                  "prefix": "TrackReaction_trackId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "userId"
+                  ],
+                  "name": "TrackReaction_userId_idx_a489d58a",
+                  "prefix": "TrackReaction_userId_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "userId",
+                    "trackId"
+                  ]
+                }
+              ]
             },
             "User": {
               "checks": [
@@ -1716,6 +2029,13 @@
             }
           },
           "valueSet": {
+            "ReactionType": {
+              "kind": "valueSet",
+              "values": [
+                "LIKE",
+                "DISLIKE"
+              ]
+            },
             "Role": {
               "kind": "valueSet",
               "values": [
@@ -1730,10 +2050,10 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "a9f07fa748479aa6b3105f63bd951bb8e2c3c1a57d929ab4a7a160c4aded7c03"
+    "storageHash": "284db78235cd529be1d280b36dfcc85b6bb5f4bf3d5546071d33e4e2530b8332"
   },
   "execution": {
-    "executionHash": "622fc64991b3ba6b8eadfdea72d0cbcc863ccb59b2d8cb44a7b286ef55c7d46c",
+    "executionHash": "72d477c118df8adf639abd48920f502cca4a9c16de2e37e606b10fc765075b2a",
     "mutations": {
       "defaults": [
         {
@@ -1762,6 +2082,32 @@
           },
           "ref": {
             "entry": "Track",
+            "field": "updatedAt",
+            "namespace": "public"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "instantNow",
+            "kind": "generator"
+          },
+          "ref": {
+            "entry": "TrackReaction",
+            "field": "createdAt",
+            "namespace": "public"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "instantNow",
+            "kind": "generator"
+          },
+          "onUpdate": {
+            "id": "instantNow",
+            "kind": "generator"
+          },
+          "ref": {
+            "entry": "TrackReaction",
             "field": "updatedAt",
             "namespace": "public"
           }

@@ -34,9 +34,9 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'a9f07fa748479aa6b3105f63bd951bb8e2c3c1a57d929ab4a7a160c4aded7c03'>;
+  StorageHashBase<'284db78235cd529be1d280b36dfcc85b6bb5f4bf3d5546071d33e4e2530b8332'>;
 export type ExecutionHash =
-  ExecutionHashBase<'622fc64991b3ba6b8eadfdea72d0cbcc863ccb59b2d8cb44a7b286ef55c7d46c'>;
+  ExecutionHashBase<'72d477c118df8adf639abd48920f502cca4a9c16de2e37e606b10fc765075b2a'>;
 export type ProfileHash =
   ProfileHashBase<'3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2'>;
 
@@ -291,14 +291,24 @@ export type FieldOutputTypes = {
       readonly albumId: CodecTypes['pg/int4@1']['output'] | null;
       readonly artistId: CodecTypes['pg/int4@1']['output'];
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly dislikeCount: CodecTypes['pg/int4@1']['output'];
       readonly duration: CodecTypes['pg/int4@1']['output'];
       readonly fileUrl: CodecTypes['pg/text@1']['output'];
       readonly genre: CodecTypes['pg/text@1']['output'] | null;
       readonly id: CodecTypes['pg/int4@1']['output'];
       readonly labelId: CodecTypes['pg/int4@1']['output'];
+      readonly likeCount: CodecTypes['pg/int4@1']['output'];
       readonly playCount: CodecTypes['pg/int4@1']['output'];
       readonly title: CodecTypes['pg/text@1']['output'];
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    };
+    readonly TrackReaction: {
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly id: CodecTypes['pg/int4@1']['output'];
+      readonly trackId: CodecTypes['pg/int4@1']['output'];
+      readonly type: 'LIKE' | 'DISLIKE';
+      readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly userId: CodecTypes['pg/int4@1']['output'];
     };
     readonly User: {
       readonly avatarUrl: CodecTypes['pg/text@1']['output'] | null;
@@ -360,14 +370,24 @@ export type FieldInputTypes = {
       readonly albumId: CodecTypes['pg/int4@1']['input'] | null;
       readonly artistId: CodecTypes['pg/int4@1']['input'];
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly dislikeCount: CodecTypes['pg/int4@1']['input'];
       readonly duration: CodecTypes['pg/int4@1']['input'];
       readonly fileUrl: CodecTypes['pg/text@1']['input'];
       readonly genre: CodecTypes['pg/text@1']['input'] | null;
       readonly id: CodecTypes['pg/int4@1']['input'];
       readonly labelId: CodecTypes['pg/int4@1']['input'];
+      readonly likeCount: CodecTypes['pg/int4@1']['input'];
       readonly playCount: CodecTypes['pg/int4@1']['input'];
       readonly title: CodecTypes['pg/text@1']['input'];
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+    };
+    readonly TrackReaction: {
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly id: CodecTypes['pg/int4@1']['input'];
+      readonly trackId: CodecTypes['pg/int4@1']['input'];
+      readonly type: 'LIKE' | 'DISLIKE';
+      readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly userId: CodecTypes['pg/int4@1']['input'];
     };
     readonly User: {
       readonly avatarUrl: CodecTypes['pg/text@1']['input'] | null;
@@ -429,14 +449,24 @@ export type StorageColumnTypes = {
       readonly albumId: CodecTypes['pg/int4@1']['output'] | null;
       readonly artistId: CodecTypes['pg/int4@1']['output'];
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly dislikeCount: CodecTypes['pg/int4@1']['output'];
       readonly duration: CodecTypes['pg/int4@1']['output'];
       readonly fileUrl: CodecTypes['pg/text@1']['output'];
       readonly genre: CodecTypes['pg/text@1']['output'] | null;
       readonly id: CodecTypes['pg/int4@1']['output'];
       readonly labelId: CodecTypes['pg/int4@1']['output'];
+      readonly likeCount: CodecTypes['pg/int4@1']['output'];
       readonly playCount: CodecTypes['pg/int4@1']['output'];
       readonly title: CodecTypes['pg/text@1']['output'];
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    };
+    readonly TrackReaction: {
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly id: CodecTypes['pg/int4@1']['output'];
+      readonly trackId: CodecTypes['pg/int4@1']['output'];
+      readonly type: 'LIKE' | 'DISLIKE';
+      readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly userId: CodecTypes['pg/int4@1']['output'];
     };
     readonly User: {
       readonly avatarUrl: CodecTypes['pg/text@1']['output'] | null;
@@ -498,14 +528,24 @@ export type StorageColumnInputTypes = {
       readonly albumId: CodecTypes['pg/int4@1']['input'] | null;
       readonly artistId: CodecTypes['pg/int4@1']['input'];
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly dislikeCount: CodecTypes['pg/int4@1']['input'];
       readonly duration: CodecTypes['pg/int4@1']['input'];
       readonly fileUrl: CodecTypes['pg/text@1']['input'];
       readonly genre: CodecTypes['pg/text@1']['input'] | null;
       readonly id: CodecTypes['pg/int4@1']['input'];
       readonly labelId: CodecTypes['pg/int4@1']['input'];
+      readonly likeCount: CodecTypes['pg/int4@1']['input'];
       readonly playCount: CodecTypes['pg/int4@1']['input'];
       readonly title: CodecTypes['pg/text@1']['input'];
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+    };
+    readonly TrackReaction: {
+      readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly id: CodecTypes['pg/int4@1']['input'];
+      readonly trackId: CodecTypes['pg/int4@1']['input'];
+      readonly type: 'LIKE' | 'DISLIKE';
+      readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly userId: CodecTypes['pg/int4@1']['input'];
     };
     readonly User: {
       readonly avatarUrl: CodecTypes['pg/text@1']['input'] | null;
@@ -582,11 +622,13 @@ export namespace Models {
     albumId: CodecTypes['pg/int4@1']['output'] | null;
     artistId: CodecTypes['pg/int4@1']['output'];
     createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    dislikeCount: CodecTypes['pg/int4@1']['output'];
     duration: CodecTypes['pg/int4@1']['output'];
     fileUrl: CodecTypes['pg/text@1']['output'];
     genre: CodecTypes['pg/text@1']['output'] | null;
     id: CodecTypes['pg/int4@1']['output'];
     labelId: CodecTypes['pg/int4@1']['output'];
+    likeCount: CodecTypes['pg/int4@1']['output'];
     playCount: CodecTypes['pg/int4@1']['output'];
     title: CodecTypes['pg/text@1']['output'];
     updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
@@ -595,7 +637,19 @@ export namespace Models {
     history: public_ListeningHistory[];
     label: public_User;
     playlists: public_PlaylistTrack[];
-    readonly [RelationKeys]?: 'album' | 'artist' | 'history' | 'label' | 'playlists';
+    reactions: public_TrackReaction[];
+    readonly [RelationKeys]?: 'album' | 'artist' | 'history' | 'label' | 'playlists' | 'reactions';
+  };
+  export type public_TrackReaction = {
+    createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    id: CodecTypes['pg/int4@1']['output'];
+    trackId: CodecTypes['pg/int4@1']['output'];
+    type: 'LIKE' | 'DISLIKE';
+    updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    userId: CodecTypes['pg/int4@1']['output'];
+    track: public_Track;
+    user: public_User;
+    readonly [RelationKeys]?: 'track' | 'user';
   };
   export type public_User = {
     avatarUrl: CodecTypes['pg/text@1']['output'] | null;
@@ -616,8 +670,9 @@ export namespace Models {
     history: public_ListeningHistory[];
     ownedTracks: public_Track[];
     playlists: public_Playlist[];
+    reactions: public_TrackReaction[];
     readonly [RelationKeys]?:
-      'createdBy' | 'createdLabels' | 'history' | 'ownedTracks' | 'playlists';
+      'createdBy' | 'createdLabels' | 'history' | 'ownedTracks' | 'playlists' | 'reactions';
   };
 }
 
@@ -629,6 +684,7 @@ export declare const models: {
     Playlist: Models.public_Playlist;
     PlaylistTrack: Models.public_PlaylistTrack;
     Track: Models.public_Track;
+    TrackReaction: Models.public_TrackReaction;
     User: Models.public_User;
   };
 };
@@ -1011,6 +1067,15 @@ type ContractBase = Omit<
                   readonly nullable: false;
                   readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
                 };
+                readonly dislikeCount: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/int4@1', 0>;
+                  };
+                };
                 readonly duration: {
                   readonly nativeType: 'int4';
                   readonly codecId: 'pg/int4@1';
@@ -1039,6 +1104,15 @@ type ContractBase = Omit<
                   readonly nativeType: 'int4';
                   readonly codecId: 'pg/int4@1';
                   readonly nullable: false;
+                };
+                readonly likeCount: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/int4@1', 0>;
+                  };
                 };
                 readonly playCount: {
                   readonly nativeType: 'int4';
@@ -1122,6 +1196,86 @@ type ContractBase = Omit<
                   readonly target: {
                     readonly namespaceId: 'public' & NamespaceId;
                     readonly tableName: 'User';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+              ];
+            };
+            readonly TrackReaction: {
+              columns: {
+                readonly createdAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: false;
+                };
+                readonly id: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'function';
+                    readonly expression: 'autoincrement()';
+                  };
+                };
+                readonly trackId: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                };
+                readonly type: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly updatedAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                  readonly nullable: false;
+                };
+                readonly userId: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [{ readonly columns: readonly ['userId', 'trackId'] }];
+              indexes: readonly [
+                {
+                  readonly name: 'TrackReaction_trackId_idx_8b560769';
+                  readonly prefix: 'TrackReaction_trackId_idx';
+                  readonly columns: readonly ['trackId'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'TrackReaction_userId_idx_a489d58a';
+                  readonly prefix: 'TrackReaction_userId_idx';
+                  readonly columns: readonly ['userId'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'TrackReaction';
+                    readonly columns: readonly ['userId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'User';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'TrackReaction';
+                    readonly columns: readonly ['trackId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'Track';
                     readonly columns: readonly ['id'];
                   };
                 },
@@ -1235,6 +1389,10 @@ type ContractBase = Omit<
             };
           };
           readonly valueSet: {
+            readonly ReactionType: {
+              readonly kind: 'valueSet';
+              readonly values: readonly ['LIKE', 'DISLIKE'];
+            };
             readonly Role: {
               readonly kind: 'valueSet';
               readonly values: readonly ['USER', 'LABEL', 'ADMIN'];
@@ -1262,6 +1420,10 @@ type ContractBase = Omit<
       readonly model: 'PlaylistTrack';
     };
     readonly Track: { readonly namespace: 'public' & NamespaceId; readonly model: 'Track' };
+    readonly TrackReaction: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'TrackReaction';
+    };
     readonly User: { readonly namespace: 'public' & NamespaceId; readonly model: 'User' };
   };
   readonly domain: {
@@ -1605,6 +1767,10 @@ type ContractBase = Omit<
                   readonly codecId: 'pg/timestamptz-temporal@1';
                 };
               };
+              readonly dislikeCount: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
               readonly duration: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
@@ -1622,6 +1788,10 @@ type ContractBase = Omit<
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
               };
               readonly labelId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly likeCount: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
               };
@@ -1697,6 +1867,17 @@ type ContractBase = Omit<
                   readonly targetFields: readonly ['trackId'];
                 };
               };
+              readonly reactions: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'TrackReaction';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['trackId'];
+                };
+              };
             };
             readonly storage: {
               readonly table: 'Track';
@@ -1705,14 +1886,85 @@ type ContractBase = Omit<
                 readonly albumId: { readonly column: 'albumId' };
                 readonly artistId: { readonly column: 'artistId' };
                 readonly createdAt: { readonly column: 'createdAt' };
+                readonly dislikeCount: { readonly column: 'dislikeCount' };
                 readonly duration: { readonly column: 'duration' };
                 readonly fileUrl: { readonly column: 'fileUrl' };
                 readonly genre: { readonly column: 'genre' };
                 readonly id: { readonly column: 'id' };
                 readonly labelId: { readonly column: 'labelId' };
+                readonly likeCount: { readonly column: 'likeCount' };
                 readonly playCount: { readonly column: 'playCount' };
                 readonly title: { readonly column: 'title' };
                 readonly updatedAt: { readonly column: 'updatedAt' };
+              };
+            };
+          };
+          readonly TrackReaction: {
+            readonly fields: {
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly trackId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly type: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly updatedAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-temporal@1';
+                };
+              };
+              readonly userId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+            };
+            readonly relations: {
+              readonly track: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Track';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['trackId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+              readonly user: {
+                readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'User' };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['userId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'TrackReaction';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly createdAt: { readonly column: 'createdAt' };
+                readonly id: { readonly column: 'id' };
+                readonly trackId: { readonly column: 'trackId' };
+                readonly type: { readonly column: 'type' };
+                readonly updatedAt: { readonly column: 'updatedAt' };
+                readonly userId: { readonly column: 'userId' };
               };
             };
           };
@@ -1828,6 +2080,17 @@ type ContractBase = Omit<
                   readonly targetFields: readonly ['userId'];
                 };
               };
+              readonly reactions: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'TrackReaction';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['userId'];
+                };
+              };
             };
             readonly storage: {
               readonly table: 'User';
@@ -1851,6 +2114,13 @@ type ContractBase = Omit<
           };
         };
         readonly enum: {
+          readonly ReactionType: {
+            readonly codecId: 'pg/text@1';
+            readonly members: readonly [
+              { readonly name: 'LIKE'; readonly value: 'LIKE' },
+              { readonly name: 'DISLIKE'; readonly value: 'DISLIKE' },
+            ];
+          };
           readonly Role: {
             readonly codecId: 'pg/text@1';
             readonly members: readonly [
@@ -1902,6 +2172,23 @@ type ContractBase = Omit<
           readonly onUpdate: { readonly id: 'instantNow'; readonly kind: 'generator' };
           readonly ref: {
             readonly entry: 'Track';
+            readonly field: 'updatedAt';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: { readonly id: 'instantNow'; readonly kind: 'generator' };
+          readonly ref: {
+            readonly entry: 'TrackReaction';
+            readonly field: 'createdAt';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: { readonly id: 'instantNow'; readonly kind: 'generator' };
+          readonly onUpdate: { readonly id: 'instantNow'; readonly kind: 'generator' };
+          readonly ref: {
+            readonly entry: 'TrackReaction';
             readonly field: 'updatedAt';
             readonly namespace: 'public';
           };

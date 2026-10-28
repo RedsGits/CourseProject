@@ -11,6 +11,7 @@ interface PlayerState {
   fadeIn: boolean;
   shuffle: boolean;
   repeat: RepeatMode;
+  isPlaying: boolean; // <-- ДОБАВИЛИ
 
   setTrack: (track: Track, queue?: Track[]) => void;
   next: () => void;
@@ -18,6 +19,8 @@ interface PlayerState {
   stop: () => void;
   toggleShuffle: () => void;
   toggleRepeat: () => void;
+  setIsPlaying: (val: boolean) => void; // <-- ДОБАВИЛИ
+  togglePlay: () => void; // <-- ДОБАВИЛИ
 }
 
 function shuffleArray<T>(arr: T[]): T[] {
@@ -37,6 +40,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
   fadeIn: false,
   shuffle: false,
   repeat: 'off',
+  isPlaying: false,
 
   setTrack: (track, queue) => {
     const q = queue ?? get().queue;
@@ -50,6 +54,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
         originalQueue: q,
         currentIndex: 0,
         fadeIn: false,
+        isPlaying: true,
       });
     } else {
       const idx = q.findIndex((t) => t.id === track.id);
@@ -59,6 +64,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
         originalQueue: q,
         currentIndex: idx >= 0 ? idx : 0,
         fadeIn: false,
+        isPlaying: true,
       });
     }
   },
@@ -66,22 +72,21 @@ export const usePlayer = create<PlayerState>((set, get) => ({
   next: () => {
     const { queue, currentIndex, repeat } = get();
     if (queue.length === 0) return;
-
     const nextIdx = currentIndex + 1;
     if (nextIdx >= queue.length) {
       if (repeat === 'all') {
-        set({ current: queue[0], currentIndex: 0, fadeIn: true });
+        set({ current: queue[0], currentIndex: 0, fadeIn: true, isPlaying: true });
       }
       return;
     }
-    set({ current: queue[nextIdx], currentIndex: nextIdx, fadeIn: true });
+    set({ current: queue[nextIdx], currentIndex: nextIdx, fadeIn: true, isPlaying: true });
   },
 
   prev: () => {
     const { queue, currentIndex } = get();
     if (queue.length === 0) return;
     const prevIdx = (currentIndex - 1 + queue.length) % queue.length;
-    set({ current: queue[prevIdx], currentIndex: prevIdx, fadeIn: true });
+    set({ current: queue[prevIdx], currentIndex: prevIdx, fadeIn: true, isPlaying: true });
   },
 
   stop: () =>
@@ -91,6 +96,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
       originalQueue: [],
       currentIndex: -1,
       fadeIn: false,
+      isPlaying: false,
     }),
 
   toggleShuffle: () => {
@@ -99,23 +105,14 @@ export const usePlayer = create<PlayerState>((set, get) => ({
       set({ shuffle: !shuffle });
       return;
     }
-
     if (!shuffle) {
       const others = queue.filter((t) => t.id !== current.id);
-      set({
-        shuffle: true,
-        queue: [current, ...shuffleArray(others)],
-        currentIndex: 0,
-      });
+      set({ shuffle: true, queue: [current, ...shuffleArray(others)], currentIndex: 0 });
     } else {
       const { originalQueue } = get();
       const restored = originalQueue.length > 0 ? originalQueue : queue;
       const idx = restored.findIndex((t) => t.id === current.id);
-      set({
-        shuffle: false,
-        queue: restored,
-        currentIndex: idx >= 0 ? idx : 0,
-      });
+      set({ shuffle: false, queue: restored, currentIndex: idx >= 0 ? idx : 0 });
     }
   },
 
@@ -124,4 +121,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
     const idx = order.indexOf(get().repeat);
     set({ repeat: order[(idx + 1) % order.length] });
   },
+
+  setIsPlaying: (val) => set({ isPlaying: val }),
+  togglePlay: () => set((state) => ({ isPlaying: !state.isPlaying })),
 }));

@@ -9,6 +9,7 @@ import trackRoutes from './routes/tracks';
 import playlistRoutes from './routes/playlists';
 import historyRoutes from './routes/history';
 import searchRoutes from './routes/search';
+import reactionRoutes from './routes/reactions';
 
 const app = express();
 const PORT = Number(process.env.PORT) || 5000;
@@ -27,6 +28,7 @@ app.use('/api/tracks', trackRoutes);
 app.use('/api/playlists', playlistRoutes);
 app.use('/api/history', historyRoutes);
 app.use('/api/search', searchRoutes);
+app.use('/api/reactions', reactionRoutes);
 
 app.listen(PORT, () => {
   console.log(`Сервер работает на http://localhost:${PORT}`);

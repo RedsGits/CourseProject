@@ -1,0 +1,329 @@
+[
+  {
+    "id": "table.TrackReaction",
+    "label": "Create table \"TrackReaction\"",
+    "summary": "Creates table \"TrackReaction\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "TrackReaction"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"TrackReaction\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"TrackReaction\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"TrackReaction\"",
+        "sql": "CREATE TABLE \"public\".\"TrackReaction\" (\n  \"createdAt\" timestamptz NOT NULL,\n  \"id\" SERIAL NOT NULL,\n  \"trackId\" int4 NOT NULL,\n  \"type\" text NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  \"userId\" int4 NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"TrackReaction_type_check_37b7ee9b\" CHECK (\"type\" IN ('LIKE', 'DISLIKE'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"TrackReaction\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"TrackReaction\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.Track.dislikeCount",
+    "label": "Add column \"dislikeCount\" to \"Track\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "dislikeCount",
+        "table": "Track"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"dislikeCount\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Track",
+          "dislikeCount"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"dislikeCount\"",
+        "sql": "ALTER TABLE \"public\".\"Track\" ADD COLUMN \"dislikeCount\" int4 DEFAULT 0 NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"dislikeCount\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Track",
+          "dislikeCount"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.Track.likeCount",
+    "label": "Add column \"likeCount\" to \"Track\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "likeCount",
+        "table": "Track"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"likeCount\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Track",
+          "likeCount"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"likeCount\"",
+        "sql": "ALTER TABLE \"public\".\"Track\" ADD COLUMN \"likeCount\" int4 DEFAULT 0 NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"likeCount\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Track",
+          "likeCount"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.TrackReaction.TrackReaction_userId_trackId_key",
+    "label": "Add unique constraint on \"TrackReaction\" (userId, trackId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "TrackReaction_userId_trackId_key",
+        "table": "TrackReaction"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"TrackReaction_userId_trackId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "TrackReaction_userId_trackId_key",
+          "public",
+          "\"public\".\"TrackReaction\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"TrackReaction_userId_trackId_key\"",
+        "sql": "ALTER TABLE \"public\".\"TrackReaction\" ADD CONSTRAINT \"TrackReaction_userId_trackId_key\" UNIQUE (\"userId\", \"trackId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"TrackReaction_userId_trackId_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "TrackReaction_userId_trackId_key",
+          "public",
+          "\"public\".\"TrackReaction\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.TrackReaction.TrackReaction_trackId_idx_8b560769",
+    "label": "Create index \"TrackReaction_trackId_idx_8b560769\" on \"TrackReaction\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "TrackReaction_trackId_idx_8b560769",
+        "table": "TrackReaction"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"TrackReaction_trackId_idx_8b560769\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"TrackReaction_trackId_idx_8b560769\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"TrackReaction_trackId_idx_8b560769\"",
+        "sql": "CREATE INDEX \"TrackReaction_trackId_idx_8b560769\" ON \"public\".\"TrackReaction\" (\"trackId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"TrackReaction_trackId_idx_8b560769\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"TrackReaction_trackId_idx_8b560769\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.TrackReaction.TrackReaction_userId_idx_a489d58a",
+    "label": "Create index \"TrackReaction_userId_idx_a489d58a\" on \"TrackReaction\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "TrackReaction_userId_idx_a489d58a",
+        "table": "TrackReaction"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"TrackReaction_userId_idx_a489d58a\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"TrackReaction_userId_idx_a489d58a\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"TrackReaction_userId_idx_a489d58a\"",
+        "sql": "CREATE INDEX \"TrackReaction_userId_idx_a489d58a\" ON \"public\".\"TrackReaction\" (\"userId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"TrackReaction_userId_idx_a489d58a\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"TrackReaction_userId_idx_a489d58a\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.TrackReaction.TrackReaction_userId_fkey",
+    "label": "Add foreign key \"TrackReaction_userId_fkey\" on \"TrackReaction\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "TrackReaction_userId_fkey",
+        "table": "TrackReaction"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"TrackReaction_userId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "TrackReaction_userId_fkey",
+          "public",
+          "\"public\".\"TrackReaction\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"TrackReaction_userId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"TrackReaction\"\nADD CONSTRAINT \"TrackReaction_userId_fkey\"\nFOREIGN KEY (\"userId\")\nREFERENCES \"public\".\"User\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"TrackReaction_userId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "TrackReaction_userId_fkey",
+          "public",
+          "\"public\".\"TrackReaction\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.TrackReaction.TrackReaction_trackId_fkey",
+    "label": "Add foreign key \"TrackReaction_trackId_fkey\" on \"TrackReaction\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "TrackReaction_trackId_fkey",
+        "table": "TrackReaction"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"TrackReaction_trackId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "TrackReaction_trackId_fkey",
+          "public",
+          "\"public\".\"TrackReaction\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"TrackReaction_trackId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"TrackReaction\"\nADD CONSTRAINT \"TrackReaction_trackId_fkey\"\nFOREIGN KEY (\"trackId\")\nREFERENCES \"public\".\"Track\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"TrackReaction_trackId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "TrackReaction_trackId_fkey",
+          "public",
+          "\"public\".\"TrackReaction\""
+        ]
+      }
+    ]
+  }
+]

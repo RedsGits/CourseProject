@@ -400,11 +400,6 @@ input.input-error:focus {
   color: inherit;
   font: inherit;
   cursor: pointer;
-  transition: transform 0.15s;
-}
-
-.track-card:hover {
-  transform: translateY(-2px);
 }
 
 .track-card-cover {
@@ -420,6 +415,41 @@ input.input-error:focus {
 
 .track-card:hover .track-card-cover {
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+}
+
+.track-card-play-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  border-radius: 8px;
+}
+
+.track-card-play-overlay svg {
+  width: 48px;
+  height: 48px;
+  background-color: var(--text);
+  color: var(--bg);
+  border-radius: 50%;
+  padding: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  transform: scale(0.4);
+  transition: transform 0.2s ease;
+}
+
+.track-card:hover .track-card-play-overlay {
+  opacity: 1;
+}
+
+.track-card:hover .track-card-play-overlay svg {
+  transform: scale(1);
 }
 
 .track-card-cover-placeholder {
@@ -1113,7 +1143,7 @@ input.input-error:focus {
   border-radius: 12px;
   padding: 16px;
   text-align: center;
-  transition: background-color 0.2s, transform 0.2s;
+  transition: background-color 0.2s ease, transform 0.2s ease;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1121,7 +1151,7 @@ input.input-error:focus {
 
 .search-artist-card:hover {
   background-color: var(--bg-hover);
-  transform: translateY(-2px);
+  transform: translateY(-3px);
 }
 
 .search-artist-avatar {
@@ -1187,7 +1217,7 @@ input.input-error:focus {
   border-radius: 8px;
   background-color: transparent;
   cursor: pointer;
-  transition: background-color 0.15s;
+  transition: background-color 0.2s ease, transform 0.2s ease; 
 }
 
 .track-row:hover {
@@ -1196,6 +1226,10 @@ input.input-error:focus {
 
 .track-row-active {
   background-color: rgba(255, 255, 255, 0.05);
+}
+
+.track-row-active:hover {
+  transform: none;
 }
 
 .track-row-active .track-row-title {
@@ -1339,4 +1373,367 @@ input.input-error:focus {
     padding: 14px 48px 14px 48px;
     font-size: 16px;
   }
+}
+
+.library-page {
+  padding-bottom: 40px;
+}
+
+.library-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+}
+
+.library-header h1 {
+  font-size: 32px;
+  font-weight: 800;
+}
+
+.library-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 24px;
+}
+
+.library-card {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-elevated);
+  border-radius: 12px;
+  padding: 16px;
+  transition: background-color 0.2s ease, transform 0.2s ease; 
+  text-decoration: none;
+  color: inherit;
+}
+
+.library-card:hover {
+  background-color: var(--bg-hover);
+  transform: translateY(-3px);
+}
+
+.library-card-cover {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: 8px;
+  background-color: #2a2a2a;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+}
+
+.liked-cover {
+  background: linear-gradient(135deg, #444444, #111111);
+}
+
+.library-card-placeholder {
+  font-size: 48px;
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.library-card-info {
+  min-width: 0;
+}
+
+.library-card-title {
+  font-size: 16px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 4px;
+}
+
+.library-card-sub {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+.modal-content {
+  background-color: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 32px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6);
+}
+
+.modal-content h2 {
+  margin-bottom: 24px;
+  font-size: 24px;
+}
+
+.modal-content form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.toggle-switch {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.toggle-switch input {
+  display: none;
+}
+
+.toggle-slider {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  background-color: #2a2a2a;
+  border-radius: 999px;
+  transition: background-color 0.3s;
+  flex-shrink: 0;
+}
+
+.toggle-slider::before {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 16px;
+  height: 16px;
+  background-color: #888888;
+  border-radius: 50%;
+  transition: transform 0.3s, background-color 0.3s;
+}
+
+.toggle-switch input:checked + .toggle-slider {
+  background-color: var(--text); 
+}
+
+.toggle-switch input:checked + .toggle-slider::before {
+  transform: translateX(20px);
+  background-color: var(--bg);
+}
+
+.toggle-label {
+  font-size: 14px;
+  color: var(--text-muted);
+  transition: color 0.2s;
+}
+
+.toggle-switch:hover .toggle-label {
+  color: var(--text);
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.btn-cancel {
+  padding: 10px 20px;
+  border-radius: 999px;
+  color: var(--text-muted);
+  font-weight: 600;
+  transition: color 0.15s;
+}
+
+.btn-cancel:hover {
+  color: var(--text);
+}
+
+.playlist-page {
+  padding-bottom: 40px;
+}
+
+.playlist-header {
+  display: flex;
+  align-items: flex-end;
+  gap: 32px;
+  margin-bottom: 32px;
+}
+
+.playlist-cover-large {
+  width: 200px;
+  height: 200px;
+  border-radius: 12px;
+  background-color: #2a2a2a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  flex-shrink: 0;
+}
+
+.playlist-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.playlist-type {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.playlist-name {
+  font-size: 64px;
+  font-weight: 800;
+  line-height: 1.1;
+  margin: 0;
+  word-break: break-word;
+}
+
+.playlist-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.playlist-header-content {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  width: 100%;
+  gap: 24px;
+}
+
+.playlist-actions-inline {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding-bottom: 8px;
+}
+
+.btn-play-large {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background-color: var(--text);
+  color: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.1s;
+}
+.btn-play-large:hover {
+  transform: scale(1.05);
+}
+.btn-play-large:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-delete-playlist {
+  color: var(--text-muted);
+  font-size: 14px;
+  text-decoration: underline;
+}
+.btn-delete-playlist:hover {
+  color: #ff5555;
+}
+
+.track-index {
+  width: 24px;
+  text-align: right;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.track-row-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.btn-remove-track {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 16px;
+  opacity: 0;
+  transition: opacity 0.2s, color 0.2s;
+}
+
+.track-row:hover .btn-remove-track {
+  opacity: 1;
+}
+.btn-remove-track:hover {
+  color: #ff5555;
+}
+
+.scroll-row-content .library-card {
+  min-width: 160px;
+  max-width: 160px;
+  scroll-snap-align: start;
+}
+
+.library-card-cover {
+  aspect-ratio: 1 / 1;
+  width: 100%;
+}
+
+.artist-card {
+  text-align: center;
+}
+
+.artist-card .library-card-info {
+  text-align: center;
+}
+
+.artist-card .library-card-cover {
+  border-radius: 8px; 
+}
+
+.track-row-cover {
+  position: relative;
+  overflow: hidden;
+}
+
+.track-row-play-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  border-radius: 4px;
+}
+
+.track-row:hover .track-row-play-overlay {
+  opacity: 1;
+}
+
+.track-row-play-overlay svg {
+  color: #fff;
+  width: 20px;
+  height: 20px;
 }

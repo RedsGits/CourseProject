@@ -6,6 +6,11 @@ enum Role {
   ADMIN
 }
 
+enum ReactionType {
+  LIKE
+  DISLIKE
+}
+
 model User {
   id          Int      @id @default(autoincrement())
   email       String   @unique
@@ -25,6 +30,8 @@ model User {
   playlists   Playlist[]
   history     ListeningHistory[]
   ownedTracks Track[]  @relation("LabelTracks")
+
+  reactions   TrackReaction[]
 
   createdAt DateTime @default(now())
   updatedAt temporal.updatedAt()
@@ -69,6 +76,9 @@ model Track {
   genre     String?
 
   playCount Int @default(0)
+  likeCount    Int      @default(0)
+  dislikeCount Int      @default(0)
+  reactions    TrackReaction[]
 
   artistId  Int
   artist    Artist   @relation(fields: [artistId], references: [id], onDelete: Cascade)
@@ -124,4 +134,21 @@ model ListeningHistory {
   listenedAt DateTime @default(now())
 
   @@index([userId, listenedAt])
+}
+
+model TrackReaction {
+  id        Int          @id @default(autoincrement())
+  userId    Int
+  trackId   Int
+  type      ReactionType
+  
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  track     Track        @relation(fields: [trackId], references: [id], onDelete: Cascade)
+  
+  createdAt temporal.createdAt()
+  updatedAt temporal.updatedAt()
+
+  @@unique([userId, trackId])
+  @@index([trackId])
+  @@index([userId])
 }

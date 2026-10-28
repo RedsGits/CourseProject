@@ -8,6 +8,9 @@ import Register from './pages/Register';
 import ArtistDetail from './pages/ArtistDetail';
 import Profile from './pages/Profile';
 import Search from './pages/Search';
+import Library from './pages/Library';
+import LikedTracks from './pages/LikedTracks';
+import PlaylistDetail from './pages/PlaylistDetail';
 
 function App() {
   const { loadFromStorage } = useAuth();
@@ -27,6 +30,9 @@ function App() {
           <Route path="artist/:id" element={<ArtistDetail />} />
           <Route path="profile" element={<Profile />} />
           <Route path="search" element={<Search />} />
+          <Route path="library" element={<Library />} />
+          <Route path="liked" element={<LikedTracks />} />
+          <Route path="playlist/:id" element={<PlaylistDetail />} />
         </Route>
       </Routes>
     </BrowserRouter>

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { usePlayer } from '../store/player';
 import { Link } from 'react-router-dom';
 import { api } from '../api/client';
+import { useAuth } from '../store/auth';
 
 function formatTime(sec: number) {
   if (!Number.isFinite(sec) || sec < 0) return '0:00';
@@ -80,10 +81,9 @@ function loadMuted(): boolean {
 }
 
 export default function Player() {
-  const {current, next, prev, currentIndex, fadeIn, shuffle, repeat, toggleShuffle, toggleRepeat,} = usePlayer();
+  const {current, next, prev, currentIndex, fadeIn, shuffle, repeat, toggleShuffle, toggleRepeat, isPlaying, setIsPlaying} = usePlayer();
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(loadVolume);
@@ -97,13 +97,34 @@ export default function Player() {
   const fadeInRef = useRef(fadeIn);
   fadeInRef.current = fadeIn;
   const [artistName, setArtistName] = useState<string | null>(null);
+  const { user } = useAuth(); // Получаем текущего юзера
 
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio || !current) return;
-    audio.load();
-    audio.play().then(() => setIsPlaying(true)).catch(() => setIsPlaying(false));
-  }, [current]);
+
+    if (isPlaying) {
+      audio.play().catch(() => setIsPlaying(false));
+    } else {
+      audio.pause();
+    }
+  }, [isPlaying, current, setIsPlaying]);
+
+  useEffect(() => {
+    if (!current || !user) {
+      setIsLiked(false);
+      return;
+    }
+
+    api.get(`/reactions/${current.id}`)
+      .then((res) => {
+        setIsLiked(res.data?.type === 'LIKE');
+      })
+      .catch((err) => {
+        console.error('Ошибка загрузки лайка:', err);
+        setIsLiked(false);
+      });
+  }, [current, user]);
 
   useEffect(() => {
     if (!current) {
@@ -181,6 +202,24 @@ export default function Player() {
     } else {
       audio.play();
       setIsPlaying(true);
+    }
+  };
+
+    const toggleLike = async () => {
+    if (!current || !user) return;
+
+    const newState = !isLiked;
+    setIsLiked(newState);
+
+    try {
+      if (newState) {
+        await api.post(`/reactions/${current.id}`, { type: 'LIKE' });
+      } else {
+        await api.delete(`/reactions/${current.id}`);
+      }
+    } catch (error) {
+      console.error('Ошибка при сохранении лайка:', error);
+      setIsLiked(!newState);
     }
   };
 
@@ -284,7 +323,7 @@ export default function Player() {
             >
               <IconPrev />
             </button>
-            <button className="player-play" onClick={togglePlay} title={isPlaying ? 'Пауза' : 'Играть'}>
+            <button className="player-play" onClick={() => setIsPlaying(!isPlaying)}>
               {isPlaying ? <IconPause /> : <IconPlay />}
             </button>
             <button className="player-btn" onClick={next} title="Следующий">
@@ -334,8 +373,8 @@ export default function Player() {
         <div className="player-right">
           <button
             className={`player-btn ${isLiked ? 'is-active' : ''}`}
-            onClick={() => setIsLiked(!isLiked)}
-            title="В избранное"
+            onClick={toggleLike}
+            title={isLiked ? 'Убрать из избранного' : 'В избранное'}
           >
             <IconHeart filled={isLiked} />
           </button>

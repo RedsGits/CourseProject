@@ -10,7 +10,8 @@ export default function ArtistDetail() {
   const [tracks, setTracks] = useState<Track[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
-  const { setTrack, current } = usePlayer();
+  
+  const { setTrack, current, isPlaying, togglePlay } = usePlayer();
 
   useEffect(() => {
     if (!id) {
@@ -74,17 +75,36 @@ export default function ArtistDetail() {
               {tracks.map((t) => {
                 const year = new Date(t.createdAt).getFullYear();
                 const type = t.albumId ? 'Альбом' : 'Сингл';
-                const isActive = current?.id === t.id;
+                
+                const isCurrent = current?.id === t.id;
+                const isActuallyPlaying = isCurrent && isPlaying;
 
                 return (
                   <button
                     key={t.id}
-                    className={`track-card ${isActive ? 'is-active' : ''}`}
-                    onClick={() => setTrack(t, tracks)}
+                    className={`track-card ${isCurrent ? 'is-active' : ''} ${isActuallyPlaying ? 'is-playing' : ''}`}
+                    onClick={() => {
+                      if (isCurrent) {
+                        togglePlay();
+                      } else {
+                        setTrack(t, tracks);
+                      }
+                    }}
                   >
                     <div className="track-card-cover">
                       <div className="track-card-cover-placeholder">
                         {t.title[0]?.toUpperCase() ?? '♪'}
+                      </div>
+                      <div className="track-card-play-overlay">
+                        {isActuallyPlaying ? (
+                          <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+                            <path d="M6 5h4v14H6zM14 5h4v14h-4z" />
+                          </svg>
+                        ) : (
+                          <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+                            <path d="M8 5v14l11-7z" />
+                          </svg>
+                        )}
                       </div>
                     </div>
                     <div className="track-card-info">

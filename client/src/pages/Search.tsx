@@ -108,7 +108,7 @@ export default function Search() {
   const [isSearching, setIsSearching] = useState(false);
   const [activeTab, setActiveTab] = useState<'all' | 'artists' | 'tracks' | 'albums' | 'playlists'>('all');
   
-  const { setTrack, current } = usePlayer();
+  const { setTrack, current, isPlaying, togglePlay } = usePlayer();
 
   const isActive = isFocused || query.length > 0;
 
@@ -214,15 +214,33 @@ export default function Search() {
                         </h2>
                         <div className={`search-tracks-list ${results.tracks.slice(0, 6).length > 3 ? 'two-cols' : 'one-col'}`}>
                           {results.tracks.slice(0, 6).map((track) => {
-                            const isTrackActive = current?.id === track.id;
+                            const isCurrent = current?.id === track.id;
+                            const isActuallyPlaying = isCurrent && isPlaying;
+                            
                             return (
                               <div
                                 key={track.id}
-                                className={`track-row ${isTrackActive ? 'track-row-active' : ''}`}
-                                onClick={() => setTrack(track, results.tracks)}
+                                className={`track-row ${isCurrent ? 'track-row-active' : ''}`}
+                                onClick={() => {
+                                  if (isCurrent) togglePlay();
+                                  else setTrack(track, results.tracks!);
+                                }}
                               >
                                 <div className="track-row-left">
-                                  <div className="track-row-cover">{track.title[0]?.toUpperCase() ?? '♪'}</div>
+                                  <div className="track-row-cover">
+                                    {track.title[0]?.toUpperCase() ?? '♪'}
+                                    <div className="track-row-play-overlay">
+                                      {isActuallyPlaying ? (
+                                        <svg viewBox="0 0 24 24" fill="currentColor">
+                                          <path d="M6 5h4v14H6zM14 5h4v14h-4z" />
+                                        </svg>
+                                      ) : (
+                                        <svg viewBox="0 0 24 24" fill="currentColor">
+                                          <path d="M8 5v14l11-7z" />
+                                        </svg>
+                                      )}
+                                    </div>
+                                  </div>
                                   <span className="track-row-title">{track.title}</span>
                                 </div>
                                 <span className="track-row-meta">
@@ -238,11 +256,13 @@ export default function Search() {
                     {results.artists && results.artists.length > 0 && (
                       <ScrollRow title="Исполнители" onTitleClick={() => setActiveTab('artists')}>
                         {results.artists.slice(0, 10).map((artist) => (
-                          <Link key={artist.id} to={`/artist/${artist.id}`} className="search-artist-card">
-                            <div className="search-artist-avatar">
-                              <img src="/Defpfp.png" alt={artist.name} />
+                          <Link key={artist.id} to={`/artist/${artist.id}`} className="library-card artist-card">
+                            <div className="library-card-cover">
+                              <img src="/Defpfp.png" alt={artist.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                             </div>
-                            <span className="search-artist-name">{artist.name}</span>
+                            <div className="library-card-info">
+                              <div className="library-card-title">{artist.name}</div>
+                            </div>
                           </Link>
                         ))}
                       </ScrollRow>
@@ -251,11 +271,15 @@ export default function Search() {
                     {results.albums && results.albums.length > 0 && (
                       <ScrollRow title="Альбомы" onTitleClick={() => setActiveTab('albums')}>
                         {results.albums.slice(0, 10).map((album) => (
-                          <div key={album.id} className="search-artist-card">
-                            <div className="search-artist-avatar" style={{ borderRadius: '8px' }}>
-                              <div style={{ width: '100%', height: '100%', background: '#2a2a2a', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '32px' }}>💿</div>
+                          <div key={album.id} className="library-card">
+                            <div className="library-card-cover">
+                              <svg viewBox="0 0 24 24" width="48" height="48" fill="#fff">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 14.5c-2.49 0-4.5-2.01-4.5-4.5S9.51 7.5 12 7.5s4.5 2.01 4.5 4.5-2.01 4.5-4.5 4.5zm0-5.5c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1z" />
+                              </svg>
                             </div>
-                            <span className="search-artist-name">{album.title}</span>
+                            <div className="library-card-info">
+                              <div className="library-card-title">{album.title}</div>
+                            </div>
                           </div>
                         ))}
                       </ScrollRow>
@@ -264,12 +288,16 @@ export default function Search() {
                     {results.playlists && results.playlists.length > 0 && (
                       <ScrollRow title="Плейлисты" onTitleClick={() => setActiveTab('playlists')}>
                         {results.playlists.slice(0, 10).map((playlist) => (
-                          <div key={playlist.id} className="search-artist-card">
-                            <div className="search-artist-avatar" style={{ borderRadius: '8px' }}>
-                              <div style={{ width: '100%', height: '100%', background: '#2a2a2a', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '32px' }}>🎵</div>
+                          <Link key={playlist.id} to={`/playlist/${playlist.id}`} className="library-card">
+                            <div className="library-card-cover">
+                              <svg viewBox="0 0 24 24" width="48" height="48" fill="#fff">
+                                <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
+                              </svg>
                             </div>
-                            <span className="search-artist-name">{playlist.name}</span>
-                          </div>
+                            <div className="library-card-info">
+                              <div className="library-card-title">{playlist.name}</div>
+                            </div>
+                          </Link>
                         ))}
                       </ScrollRow>
                     )}
@@ -277,11 +305,15 @@ export default function Search() {
                 )}
 
                 {activeTab === 'artists' && results.artists && (
-                  <div className="search-artists-grid">
+                  <div className="library-grid">
                     {results.artists.map((artist) => (
-                      <Link key={artist.id} to={`/artist/${artist.id}`} className="search-artist-card">
-                        <div className="search-artist-avatar"><img src="/Defpfp.png" alt={artist.name} /></div>
-                        <span className="search-artist-name">{artist.name}</span>
+                      <Link key={artist.id} to={`/artist/${artist.id}`} className="library-card artist-card">
+                        <div className="library-card-cover">
+                          <img src="/Defpfp.png" alt={artist.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        </div>
+                        <div className="library-card-info">
+                          <div className="library-card-title">{artist.name}</div>
+                        </div>
                       </Link>
                     ))}
                   </div>
@@ -290,15 +322,33 @@ export default function Search() {
                 {activeTab === 'tracks' && results.tracks && (
                   <div className="search-tracks-list one-col" style={{ marginTop: '24px' }}>
                     {results.tracks.map((track) => {
-                      const isTrackActive = current?.id === track.id;
+                      const isCurrent = current?.id === track.id;
+                      const isActuallyPlaying = isCurrent && isPlaying;
+                      
                       return (
                         <div
                           key={track.id}
-                          className={`track-row ${isTrackActive ? 'track-row-active' : ''}`}
-                          onClick={() => setTrack(track, results.tracks)}
+                          className={`track-row ${isCurrent ? 'track-row-active' : ''}`}
+                          onClick={() => {
+                            if (isCurrent) togglePlay();
+                            else setTrack(track, results.tracks!);
+                          }}
                         >
                           <div className="track-row-left">
-                            <div className="track-row-cover">{track.title[0]?.toUpperCase() ?? '♪'}</div>
+                            <div className="track-row-cover">
+                              {track.title[0]?.toUpperCase() ?? '♪'}
+                              <div className="track-row-play-overlay">
+                                {isActuallyPlaying ? (
+                                  <svg viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M6 5h4v14H6zM14 5h4v14h-4z" />
+                                  </svg>
+                                ) : (
+                                  <svg viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M8 5v14l11-7z" />
+                                  </svg>
+                                )}
+                              </div>
+                            </div>
                             <span className="track-row-title">{track.title}</span>
                           </div>
                           <span className="track-row-meta">
@@ -307,6 +357,40 @@ export default function Search() {
                         </div>
                       );
                     })}
+                  </div>
+                )}
+
+                {activeTab === 'albums' && results.albums && results.albums.length > 0 && (
+                  <div className="library-grid">
+                    {results.albums.map((album) => (
+                      <div key={album.id} className="library-card">
+                        <div className="library-card-cover">
+                          <svg viewBox="0 0 24 24" width="48" height="48" fill="#fff">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 14.5c-2.49 0-4.5-2.01-4.5-4.5S9.51 7.5 12 7.5s4.5 2.01 4.5 4.5-2.01 4.5-4.5 4.5zm0-5.5c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1z" />
+                          </svg>
+                        </div>
+                        <div className="library-card-info">
+                          <div className="library-card-title">{album.title}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {activeTab === 'playlists' && results.playlists && results.playlists.length > 0 && (
+                  <div className="library-grid">
+                    {results.playlists.map((playlist) => (
+                      <Link key={playlist.id} to={`/playlist/${playlist.id}`} className="library-card">
+                        <div className="library-card-cover">
+                          <svg viewBox="0 0 24 24" width="48" height="48" fill="#fff">
+                            <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
+                          </svg>
+                        </div>
+                        <div className="library-card-info">
+                          <div className="library-card-title">{playlist.name}</div>
+                        </div>
+                      </Link>
+                    ))}
                   </div>
                 )}
 
