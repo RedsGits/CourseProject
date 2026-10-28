@@ -19,7 +19,7 @@ const storage = multer.diskStorage({
 export const uploadAudio = multer({
     storage,
     limits: {
-        fileSize: 50 * 1024 * 1024, // 50 МБ
+        fileSize: 20 * 1024 * 1024, // 50 МБ
     },
     fileFilter: (_req, file, cb) => {
         const allowed = ['audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/ogg', 'audio/flac'];
@@ -29,4 +29,16 @@ export const uploadAudio = multer({
             cb(new Error('Поддерживаются только аудиофайлы'));
         }
     },
+});
+
+export const uploadImage = multer({
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Поддерживаются только изображения'));
+    }
+  },
 });

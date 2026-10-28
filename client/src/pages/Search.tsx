@@ -3,9 +3,11 @@ import { Link } from 'react-router-dom';
 import { api } from '../api/client';
 import { usePlayer } from '../store/player';
 import type { Track, Artist } from '../types';
+import LikeButton from '../components/LikeButton';
+import AddToPlaylistMenu from '../components/AddToPlaylistMenu';
 
 interface Album { id: number; title: string; artistId: number; }
-interface Playlist { id: number; name: string; isPublic: boolean; }
+interface Playlist { id: number; name: string; isPublic: boolean; coverUrl?: string | null; }
 
 const IconSearchBig = () => (
   <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
@@ -243,9 +245,13 @@ export default function Search() {
                                   </div>
                                   <span className="track-row-title">{track.title}</span>
                                 </div>
-                                <span className="track-row-meta">
-                                  {Math.floor(track.duration / 60)}:{String(track.duration % 60).padStart(2, '0')}
-                                </span>
+                                <div className="track-row-right">
+                                  <LikeButton trackId={track.id} className="track-row-btn" />
+                                  <AddToPlaylistMenu trackId={track.id} className="track-row-btn" />
+                                  <span className="track-row-meta">
+                                    {Math.floor(track.duration / 60)}:{String(track.duration % 60).padStart(2, '0')}
+                                  </span>
+                                </div>
                               </div>
                             );
                           })}
@@ -290,9 +296,17 @@ export default function Search() {
                         {results.playlists.slice(0, 10).map((playlist) => (
                           <Link key={playlist.id} to={`/playlist/${playlist.id}`} className="library-card">
                             <div className="library-card-cover">
-                              <svg viewBox="0 0 24 24" width="48" height="48" fill="#fff">
-                                <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
-                              </svg>
+                              {playlist.coverUrl ? (
+                                <img 
+                                  src={`http://localhost:5000/uploads/${playlist.coverUrl}`} 
+                                  alt={playlist.name} 
+                                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                />
+                              ) : (
+                                <svg viewBox="0 0 24 24" width="48" height="48" fill="#fff">
+                                  <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
+                                </svg>
+                              )}
                             </div>
                             <div className="library-card-info">
                               <div className="library-card-title">{playlist.name}</div>
@@ -382,9 +396,17 @@ export default function Search() {
                     {results.playlists.map((playlist) => (
                       <Link key={playlist.id} to={`/playlist/${playlist.id}`} className="library-card">
                         <div className="library-card-cover">
-                          <svg viewBox="0 0 24 24" width="48" height="48" fill="#fff">
-                            <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
-                          </svg>
+                          {playlist.coverUrl ? (
+                            <img 
+                              src={`http://localhost:5000/uploads/${playlist.coverUrl}`} 
+                              alt={playlist.name} 
+                              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                            />
+                          ) : (
+                            <svg viewBox="0 0 24 24" width="48" height="48" fill="#fff">
+                              <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
+                            </svg>
+                          )}
                         </div>
                         <div className="library-card-info">
                           <div className="library-card-title">{playlist.name}</div>

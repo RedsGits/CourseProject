@@ -1,0 +1,44 @@
+[
+  {
+    "id": "column.public.Playlist.coverUrl",
+    "label": "Add column \"coverUrl\" to \"Playlist\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "coverUrl",
+        "table": "Playlist"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"coverUrl\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Playlist",
+          "coverUrl"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"coverUrl\"",
+        "sql": "ALTER TABLE \"public\".\"Playlist\" ADD COLUMN \"coverUrl\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"coverUrl\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Playlist",
+          "coverUrl"
+        ]
+      }
+    ]
+  }
+]

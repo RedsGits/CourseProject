@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../api/client';
 import { useAuth } from '../store/auth';
@@ -10,6 +10,8 @@ interface Playlist {
   name: string;
   isPublic: boolean;
   userId: number;
+  coverUrl: string | null;
+  owner?: { name: string | null; email: string; } | null;
   tracks?: Track[];
 }
 
@@ -22,6 +24,11 @@ export default function PlaylistDetail() {
   const [playlist, setPlaylist] = useState<Playlist | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  
+  // Состояния для обложки
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isCoverOpen, setIsCoverOpen] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
 
   const fetchPlaylist = () => {
     api.get<Playlist>(`/playlists/${id}`)
@@ -51,7 +58,6 @@ export default function PlaylistDetail() {
   const handleDeleteTrack = async (e: React.MouseEvent, trackId: number) => {
     e.stopPropagation();
     if (!window.confirm('Удалить трек из плейлиста?')) return;
-
     try {
       await api.delete(`/playlists/${id}/tracks/${trackId}`);
       setPlaylist((prev) => prev ? { ...prev, tracks: prev.tracks?.filter(t => t.id !== trackId) } : null);
@@ -70,6 +76,28 @@ export default function PlaylistDetail() {
     }
   };
 
+  // Загрузка обложки
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !id) return;
+
+    setIsUploading(true);
+    const formData = new FormData();
+    formData.append('cover', file);
+
+    try {
+      const { data } = await api.post(`/playlists/${id}/cover`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      setPlaylist((prev) => prev ? { ...prev, coverUrl: data.coverUrl } : null);
+    } catch (err) {
+      console.error('Ошибка загрузки обложки:', err);
+      alert('Не удалось загрузить обложку');
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   if (loading) return <p className="muted">Загрузка...</p>;
   if (error || !playlist) return <p className="muted">Плейлист не найден или у вас нет к нему доступа.</p>;
 
@@ -78,10 +106,47 @@ export default function PlaylistDetail() {
   return (
     <div className="playlist-page">
       <header className="playlist-header">
-        <div className="playlist-cover-large">
-          <svg viewBox="0 0 24 24" width="80" height="80" fill="#fff">
-            <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
-          </svg>
+        
+        {/* Обложка */}
+        <div 
+          className="playlist-cover-large playlist-cover-interactive"
+          onClick={() => setIsCoverOpen(true)}
+        >
+          {playlist.coverUrl ? (
+            <img 
+              src={`http://localhost:5000/uploads/${playlist.coverUrl}`} 
+              alt="Cover" 
+              className="playlist-cover-img"
+            />
+          ) : (
+            <svg viewBox="0 0 24 24" width="80" height="80" fill="#fff">
+              <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
+            </svg>
+          )}
+
+          {/* Оверлей при наведении */}
+          {isOwner && (
+            <div className="playlist-cover-overlay">
+              <button 
+                className="btn-upload-cover"
+                onClick={(e) => {
+                  e.stopPropagation(); // <-- Теперь клик по кнопке не открывает модалку
+                  fileInputRef.current?.click();
+                }}
+                disabled={isUploading}
+              >
+                {isUploading ? 'Загрузка...' : 'Изменить обложку'}
+              </button>
+              <input 
+                type="file" 
+                ref={fileInputRef} 
+                onChange={handleFileChange} 
+                accept="image/*" 
+                style={{ display: 'none' }} 
+                onClick={(e) => e.stopPropagation()}
+              />
+            </div>
+          )}
         </div>
 
         <div className="playlist-header-content">
@@ -89,7 +154,7 @@ export default function PlaylistDetail() {
             <span className="playlist-type">{playlist.isPublic ? 'Публичный плейлист' : 'Приватный плейлист'}</span>
             <h1 className="playlist-name">{playlist.name}</h1>
             <div className="playlist-meta">
-              <span>{isOwner ? user.name : 'Пользователь'}</span>
+              <span>{playlist.owner?.name || playlist.owner?.email || 'Пользователь'}</span>
               <span>•</span>
               <span>{tracks.length} треков</span>
             </div>
@@ -116,6 +181,7 @@ export default function PlaylistDetail() {
         </div>
       </header>
 
+      {/* Список треков */}
       <div className="search-tracks-list one-col">
         {tracks.length === 0 ? (
           <p className="muted">В этом плейлисте пока нет треков.</p>
@@ -164,6 +230,30 @@ export default function PlaylistDetail() {
           })
         )}
       </div>
+
+      {/* Полноэкранный просмотр обложки */}
+      {isCoverOpen && (
+        <div className="cover-fullscreen-modal" onClick={() => setIsCoverOpen(false)}>
+          <div className="cover-fullscreen-content" onClick={(e) => e.stopPropagation()}>
+            {playlist.coverUrl ? (
+              <img 
+                src={`http://localhost:5000/uploads/${playlist.coverUrl}`} 
+                alt="Cover Fullscreen" 
+                className="cover-fullscreen-img"
+              />
+            ) : (
+              <div className="cover-fullscreen-placeholder">
+                <svg viewBox="0 0 24 24" width="120" height="120" fill="#fff">
+                  <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
+                </svg>
+              </div>
+            )}
+            <button className="close-fullscreen-btn" onClick={() => setIsCoverOpen(false)}>
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,15 +1,12 @@
 import { Router } from 'express';
 import { db } from '../prisma/db';
 import { authenticate, type AuthRequest } from '../middleware/auth';
+import { uploadImage } from '../config/multer';
 
 const router = Router();
 
-// Все роуты требуют авторизации
 router.use(authenticate);
 
-// ---------------------------------------------------------------
-// GET /api/playlists — мои плейлисты
-// ---------------------------------------------------------------
 router.get('/', async (req: AuthRequest, res) => {
   const playlists = await db.orm.public.Playlist
     .where({ userId: req.user!.id })
@@ -18,9 +15,6 @@ router.get('/', async (req: AuthRequest, res) => {
   res.json(playlists);
 });
 
-// ---------------------------------------------------------------
-// GET /api/playlists/:id — плейлист с треками
-// ---------------------------------------------------------------
 router.get('/:id', async (req: AuthRequest, res) => {
   const id = Number(req.params.id);
   if (!Number.isInteger(id)) {
@@ -33,13 +27,12 @@ router.get('/:id', async (req: AuthRequest, res) => {
   }
 
   const isOwner = playlist.userId === req.user!.id;
-
-  // Если не владелец и плейлист приватный — скрываем существование
   if (!isOwner && !playlist.isPublic) {
     return res.status(404).json({ error: 'Плейлист не найден' });
   }
 
-  // Загружаем треки
+  const owner = await db.orm.public.User.where({ id: playlist.userId }).first();
+
   const playlistTracks = await db.orm.public.PlaylistTrack
     .where({ playlistId: id })
     .all();
@@ -53,6 +46,7 @@ router.get('/:id', async (req: AuthRequest, res) => {
 
   res.json({
     ...playlist,
+    owner: owner ? { name: owner.name, email: owner.email } : null,
     tracks: playlistTracks
       .sort((a, b) => a.order - b.order)
       .map((pt) => ({
@@ -62,9 +56,6 @@ router.get('/:id', async (req: AuthRequest, res) => {
   });
 });
 
-// ---------------------------------------------------------------
-// POST /api/playlists — создать плейлист
-// ---------------------------------------------------------------
 router.post('/', async (req: AuthRequest, res) => {
   const { name, isPublic } = req.body as {
     name?: string;
@@ -84,9 +75,6 @@ router.post('/', async (req: AuthRequest, res) => {
   res.status(201).json(playlist);
 });
 
-// ---------------------------------------------------------------
-// PATCH /api/playlists/:id — переименовать
-// ---------------------------------------------------------------
 router.patch('/:id', async (req: AuthRequest, res) => {
   const id = Number(req.params.id);
   if (!Number.isInteger(id)) {
@@ -131,9 +119,6 @@ router.patch('/:id', async (req: AuthRequest, res) => {
   res.json(updated);
 });
 
-// ---------------------------------------------------------------
-// DELETE /api/playlists/:id — удалить
-// ---------------------------------------------------------------
 router.delete('/:id', async (req: AuthRequest, res) => {
   const id = Number(req.params.id);
   if (!Number.isInteger(id)) {
@@ -149,15 +134,11 @@ router.delete('/:id', async (req: AuthRequest, res) => {
     return res.status(403).json({ error: 'Это не ваш плейлист' });
   }
 
-  // PlaylistTrack удалится каскадно (onDelete: Cascade в схеме)
   await db.orm.public.Playlist.where({ id }).delete();
 
   res.status(204).send();
 });
 
-// ---------------------------------------------------------------
-// POST /api/playlists/:id/tracks — добавить трек
-// ---------------------------------------------------------------
 router.post('/:id/tracks', async (req: AuthRequest, res) => {
   const id = Number(req.params.id);
   const { trackId } = req.body as { trackId?: number };
@@ -180,7 +161,6 @@ router.post('/:id/tracks', async (req: AuthRequest, res) => {
     return res.status(404).json({ error: 'Трек не найден' });
   }
 
-  // Проверка на дубликат
   const existing = await db.orm.public.PlaylistTrack
     .where({ playlistId: id, trackId })
     .first();
@@ -189,7 +169,6 @@ router.post('/:id/tracks', async (req: AuthRequest, res) => {
     return res.status(409).json({ error: 'Трек уже в плейлисте' });
   }
 
-  // Определяем следующий order
   const allLinks = await db.orm.public.PlaylistTrack
     .where({ playlistId: id })
     .all();
@@ -206,9 +185,7 @@ router.post('/:id/tracks', async (req: AuthRequest, res) => {
   res.status(201).json(link);
 });
 
-// ---------------------------------------------------------------
-// DELETE /api/playlists/:id/tracks/:trackId — убрать трек
-// ---------------------------------------------------------------
+
 router.delete('/:id/tracks/:trackId', async (req: AuthRequest, res) => {
   const id = Number(req.params.id);
   const trackId = Number(req.params.trackId);
@@ -237,6 +214,21 @@ router.delete('/:id/tracks/:trackId', async (req: AuthRequest, res) => {
   await db.orm.public.PlaylistTrack.where({ id: link.id }).delete();
 
   res.status(204).send();
+});
+
+router.post('/:id/cover', authenticate, uploadImage.single('cover'), async (req: AuthRequest, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id) || !req.file) return res.status(400).json({ error: 'Неверный id или файл' });
+
+  const playlist = await db.orm.public.Playlist.where({ id }).first();
+  if (!playlist) return res.status(404).json({ error: 'Плейлист не найден' });
+  if (playlist.userId !== req.user!.id) return res.status(403).json({ error: 'Нет прав' });
+
+  const coverUrl = req.file.filename; // Сохраняем только имя файла
+
+  await db.orm.public.Playlist.where({ id }).update({ coverUrl });
+
+  res.json({ coverUrl });
 });
 
 export default router;

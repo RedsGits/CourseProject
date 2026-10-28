@@ -252,4 +252,27 @@ router.delete(
   },
 );
 
+router.get('/:id/playlists', authenticate, async (req: AuthRequest, res) => {
+  const trackId = Number(req.params.id);
+  if (!Number.isInteger(trackId)) return res.status(400).json({ error: 'Неверный id' });
+
+  const userPlaylists = await db.orm.public.Playlist
+    .where({ userId: req.user!.id })
+    .all();
+
+  const links = await db.orm.public.PlaylistTrack
+    .where({ trackId })
+    .all();
+
+  const linksMap = new Set(links.map((l) => l.playlistId));
+
+  const result = userPlaylists.map((p) => ({
+    id: p.id,
+    name: p.name,
+    hasTrack: linksMap.has(p.id),
+  }));
+
+  res.json(result);
+});
+
 export default router;

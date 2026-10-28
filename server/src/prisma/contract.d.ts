@@ -34,7 +34,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'284db78235cd529be1d280b36dfcc85b6bb5f4bf3d5546071d33e4e2530b8332'>;
+  StorageHashBase<'30e13eba3203047e59c75abd7dcfb4d9e31298b78d38315e4efcf5a7ec39680c'>;
 export type ExecutionHash =
   ExecutionHashBase<'72d477c118df8adf639abd48920f502cca4a9c16de2e37e606b10fc765075b2a'>;
 export type ProfileHash =
@@ -275,6 +275,7 @@ export type FieldOutputTypes = {
       readonly userId: CodecTypes['pg/int4@1']['output'];
     };
     readonly Playlist: {
+      readonly coverUrl: CodecTypes['pg/text@1']['output'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly id: CodecTypes['pg/int4@1']['output'];
       readonly isPublic: CodecTypes['pg/bool@1']['output'];
@@ -354,6 +355,7 @@ export type FieldInputTypes = {
       readonly userId: CodecTypes['pg/int4@1']['input'];
     };
     readonly Playlist: {
+      readonly coverUrl: CodecTypes['pg/text@1']['input'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly id: CodecTypes['pg/int4@1']['input'];
       readonly isPublic: CodecTypes['pg/bool@1']['input'];
@@ -433,6 +435,7 @@ export type StorageColumnTypes = {
       readonly userId: CodecTypes['pg/int4@1']['output'];
     };
     readonly Playlist: {
+      readonly coverUrl: CodecTypes['pg/text@1']['output'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly id: CodecTypes['pg/int4@1']['output'];
       readonly isPublic: CodecTypes['pg/bool@1']['output'];
@@ -512,6 +515,7 @@ export type StorageColumnInputTypes = {
       readonly userId: CodecTypes['pg/int4@1']['input'];
     };
     readonly Playlist: {
+      readonly coverUrl: CodecTypes['pg/text@1']['input'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly id: CodecTypes['pg/int4@1']['input'];
       readonly isPublic: CodecTypes['pg/bool@1']['input'];
@@ -600,6 +604,7 @@ export namespace Models {
     readonly [RelationKeys]?: 'track' | 'user';
   };
   export type public_Playlist = {
+    coverUrl: CodecTypes['pg/text@1']['output'] | null;
     createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     id: CodecTypes['pg/int4@1']['output'];
     isPublic: CodecTypes['pg/bool@1']['output'];
@@ -909,6 +914,11 @@ type ContractBase = Omit<
             };
             readonly Playlist: {
               columns: {
+                readonly coverUrl: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
                 readonly createdAt: {
                   readonly nativeType: 'timestamptz';
                   readonly codecId: 'pg/timestamptz-temporal@1';
@@ -1636,6 +1646,10 @@ type ContractBase = Omit<
           };
           readonly Playlist: {
             readonly fields: {
+              readonly coverUrl: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
               readonly createdAt: {
                 readonly nullable: false;
                 readonly type: {
@@ -1686,6 +1700,7 @@ type ContractBase = Omit<
               readonly table: 'Playlist';
               readonly namespaceId: 'public';
               readonly fields: {
+                readonly coverUrl: { readonly column: 'coverUrl' };
                 readonly createdAt: { readonly column: 'createdAt' };
                 readonly id: { readonly column: 'id' };
                 readonly isPublic: { readonly column: 'isPublic' };

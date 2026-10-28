@@ -384,6 +384,13 @@
           },
           "Playlist": {
             "fields": {
+              "coverUrl": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "createdAt": {
                 "nullable": false,
                 "type": {
@@ -455,6 +462,9 @@
             },
             "storage": {
               "fields": {
+                "coverUrl": {
+                  "column": "coverUrl"
+                },
                 "createdAt": {
                   "column": "createdAt"
                 },
@@ -1407,6 +1417,11 @@
             },
             "Playlist": {
               "columns": {
+                "coverUrl": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
                 "createdAt": {
                   "codecId": "pg/timestamptz-temporal@1",
                   "default": {
@@ -2050,7 +2065,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "284db78235cd529be1d280b36dfcc85b6bb5f4bf3d5546071d33e4e2530b8332"
+    "storageHash": "30e13eba3203047e59c75abd7dcfb4d9e31298b78d38315e4efcf5a7ec39680c"
   },
   "execution": {
     "executionHash": "72d477c118df8adf639abd48920f502cca4a9c16de2e37e606b10fc765075b2a",

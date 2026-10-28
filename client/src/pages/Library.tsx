@@ -9,6 +9,7 @@ interface Playlist {
   name: string;
   isPublic: boolean;
   userId: number;
+  coverUrl: string | null;
 }
 
 export default function Library() {
@@ -94,9 +95,17 @@ export default function Library() {
         {playlists.map((playlist) => (
           <Link to={`/playlist/${playlist.id}`} key={playlist.id} className="library-card">
             <div className="library-card-cover">
-              <svg viewBox="0 0 24 24" width="48" height="48" fill="#fff">
-                <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
-              </svg>
+              {playlist.coverUrl ? (
+                <img 
+                  src={`http://localhost:5000/uploads/${playlist.coverUrl}`} 
+                  alt={playlist.name} 
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                />
+              ) : (
+                <svg viewBox="0 0 24 24" width="48" height="48" fill="#fff">
+                  <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
+                </svg>
+              )}
             </div>
             <div className="library-card-info">
               <div className="library-card-title">{playlist.name}</div>

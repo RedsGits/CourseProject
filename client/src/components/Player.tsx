@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { usePlayer } from '../store/player';
 import { Link } from 'react-router-dom';
 import { api } from '../api/client';
-import { useAuth } from '../store/auth';
+import LikeButton from './LikeButton';
+import AddToPlaylistMenu from './AddToPlaylistMenu';
 
 function formatTime(sec: number) {
   if (!Number.isFinite(sec) || sec < 0) return '0:00';
@@ -44,18 +45,7 @@ const IconRepeat = () => (
     <path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z" />
   </svg>
 );
-const IconHeart = ({ filled }: { filled: boolean }) => (
-  <svg
-    viewBox="0 0 24 24"
-    width="20"
-    height="20"
-    fill={filled ? 'currentColor' : 'none'}
-    stroke="currentColor"
-    strokeWidth="2"
-  >
-    <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" />
-  </svg>
-);
+
 const IconVolume = ({ muted }: { muted: boolean }) => (
   <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
     {muted ? (
@@ -88,7 +78,6 @@ export default function Player() {
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(loadVolume);
   const [isMuted, setIsMuted] = useState(loadMuted);
-  const [isLiked, setIsLiked] = useState(false);
   const [isSeeking, setIsSeeking] = useState(false);
   const volumeRef = useRef(volume);
   const isMutedRef = useRef(isMuted);
@@ -97,7 +86,6 @@ export default function Player() {
   const fadeInRef = useRef(fadeIn);
   fadeInRef.current = fadeIn;
   const [artistName, setArtistName] = useState<string | null>(null);
-  const { user } = useAuth(); // Получаем текущего юзера
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -109,22 +97,6 @@ export default function Player() {
       audio.pause();
     }
   }, [isPlaying, current, setIsPlaying]);
-
-  useEffect(() => {
-    if (!current || !user) {
-      setIsLiked(false);
-      return;
-    }
-
-    api.get(`/reactions/${current.id}`)
-      .then((res) => {
-        setIsLiked(res.data?.type === 'LIKE');
-      })
-      .catch((err) => {
-        console.error('Ошибка загрузки лайка:', err);
-        setIsLiked(false);
-      });
-  }, [current, user]);
 
   useEffect(() => {
     if (!current) {
@@ -192,36 +164,6 @@ export default function Player() {
   if (!current) return null;
 
   const streamUrl = `http://localhost:5000/api/tracks/${current.id}/stream`;
-
-  const togglePlay = () => {
-    const audio = audioRef.current;
-    if (!audio) return;
-    if (isPlaying) {
-      audio.pause();
-      setIsPlaying(false);
-    } else {
-      audio.play();
-      setIsPlaying(true);
-    }
-  };
-
-    const toggleLike = async () => {
-    if (!current || !user) return;
-
-    const newState = !isLiked;
-    setIsLiked(newState);
-
-    try {
-      if (newState) {
-        await api.post(`/reactions/${current.id}`, { type: 'LIKE' });
-      } else {
-        await api.delete(`/reactions/${current.id}`);
-      }
-    } catch (error) {
-      console.error('Ошибка при сохранении лайка:', error);
-      setIsLiked(!newState);
-    }
-  };
 
   const isFirstInQueue = currentIndex <= 0;
   const canGoPrevByTrack = !isFirstInQueue;
@@ -371,13 +313,8 @@ export default function Player() {
         </div>
 
         <div className="player-right">
-          <button
-            className={`player-btn ${isLiked ? 'is-active' : ''}`}
-            onClick={toggleLike}
-            title={isLiked ? 'Убрать из избранного' : 'В избранное'}
-          >
-            <IconHeart filled={isLiked} />
-          </button>
+          <AddToPlaylistMenu trackId={current.id} />
+          <LikeButton trackId={current.id} />
           <button
             className="player-btn"
             onClick={() => setIsMuted(!isMuted)}
