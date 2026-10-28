@@ -13,12 +13,25 @@ export default function LikeButton({ trackId, className = "player-btn" }: { trac
       .catch(() => setIsLiked(false));
   }, [trackId, user]);
 
+  useEffect(() => {
+    const handleLikeUpdate = (e: Event) => {
+      const customEvent = e as CustomEvent<{ trackId: number; isLiked: boolean }>;
+      if (customEvent.detail.trackId === trackId) {
+        setIsLiked(customEvent.detail.isLiked);
+      }
+    };
+    window.addEventListener('like-updated', handleLikeUpdate);
+    return () => window.removeEventListener('like-updated', handleLikeUpdate);
+  }, [trackId]);
+
   const toggleLike = async (e: React.MouseEvent) => {
     e.stopPropagation();
     if (!user) return;
 
     const newState = !isLiked;
     setIsLiked(newState);
+
+    window.dispatchEvent(new CustomEvent('like-updated', { detail: { trackId, isLiked: newState } }));
 
     try {
       if (newState) {
@@ -28,6 +41,7 @@ export default function LikeButton({ trackId, className = "player-btn" }: { trac
       }
     } catch (err) {
       setIsLiked(!newState);
+      window.dispatchEvent(new CustomEvent('like-updated', { detail: { trackId, isLiked: !newState } }));
     }
   };
 

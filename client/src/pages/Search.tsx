@@ -365,9 +365,13 @@ export default function Search() {
                             </div>
                             <span className="track-row-title">{track.title}</span>
                           </div>
-                          <span className="track-row-meta">
-                            {Math.floor(track.duration / 60)}:{String(track.duration % 60).padStart(2, '0')}
-                          </span>
+                          <div className="track-row-right">
+                            <LikeButton trackId={track.id} className="track-row-btn" />
+                            <AddToPlaylistMenu trackId={track.id} className="track-row-btn" />
+                            <span className="track-row-meta">
+                              {Math.floor(track.duration / 60)}:{String(track.duration % 60).padStart(2, '0')}
+                            </span>
+                          </div>
                         </div>
                       );
                     })}
