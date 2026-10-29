@@ -19,6 +19,9 @@ function cleanupFile(fileName: string | null | undefined) {
   }
 }
 
+const MAX_PLAYLISTS_PER_USER = 100;
+const MAX_TRACKS_PER_PLAYLIST = 1000;
+
 router.use(authenticate);
 
 router.get('/', async (req: AuthRequest, res) => {
@@ -71,13 +74,20 @@ router.get('/:id', async (req: AuthRequest, res) => {
 });
 
 router.post('/', async (req: AuthRequest, res) => {
-  const { name, isPublic } = req.body as {
-    name?: string;
-    isPublic?: boolean;
-  };
+  const { name, isPublic } = req.body as { name?: string; isPublic?: boolean };
 
   if (!name || !name.trim()) {
     return res.status(400).json({ error: 'Имя плейлиста обязательно' });
+  }
+
+  const userPlaylists = await db.orm.public.Playlist
+    .where({ userId: req.user!.id })
+    .all();
+
+  if (userPlaylists.length >= MAX_PLAYLISTS_PER_USER) {
+    return res.status(403).json({ 
+      error: `Достигнут лимит плейлистов (${MAX_PLAYLISTS_PER_USER}). Удалите старые, чтобы создать новые.` 
+    });
   }
 
   const playlist = await db.orm.public.Playlist.create({
@@ -188,6 +198,13 @@ router.post('/:id/tracks', async (req: AuthRequest, res) => {
   const allLinks = await db.orm.public.PlaylistTrack
     .where({ playlistId: id })
     .all();
+
+  if (allLinks.length >= MAX_TRACKS_PER_PLAYLIST) {
+    return res.status(403).json({ 
+      error: `В плейлисте не может быть больше ${MAX_TRACKS_PER_PLAYLIST} треков` 
+    });
+  }
+
   const nextOrder = allLinks.length
     ? Math.max(...allLinks.map((l) => l.order)) + 1
     : 0;

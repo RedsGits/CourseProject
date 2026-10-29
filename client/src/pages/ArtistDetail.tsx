@@ -87,7 +87,7 @@ export default function ArtistDetail() {
                       if (isCurrent) {
                         togglePlay();
                       } else {
-                        setTrack(t, tracks);
+                        setTrack(t, tracks, `artist-${id}`);
                       }
                     }}
                   >

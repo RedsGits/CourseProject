@@ -5,6 +5,7 @@ import { usePlayer } from '../store/player';
 import type { Track, Artist } from '../types';
 import LikeButton from '../components/LikeButton';
 import AddToPlaylistMenu from '../components/AddToPlaylistMenu';
+import { useArtists } from '../store/artists';
 
 interface Album { id: number; title: string; artistId: number; }
 interface Playlist { id: number; name: string; isPublic: boolean; coverUrl?: string | null; }
@@ -111,6 +112,8 @@ export default function Search() {
   const [activeTab, setActiveTab] = useState<'all' | 'artists' | 'tracks' | 'albums' | 'playlists'>('all');
   
   const { setTrack, current, isPlaying, togglePlay } = usePlayer();
+
+  const { artistsMap } = useArtists();
 
   const isActive = isFocused || query.length > 0;
 
@@ -225,7 +228,7 @@ export default function Search() {
                                 className={`track-row ${isCurrent ? 'track-row-active' : ''}`}
                                 onClick={() => {
                                   if (isCurrent) togglePlay();
-                                  else setTrack(track, results.tracks!);
+                                  else setTrack(track, results.tracks!, 'search');
                                 }}
                               >
                                 <div className="track-row-left">
@@ -243,7 +246,17 @@ export default function Search() {
                                       )}
                                     </div>
                                   </div>
-                                  <span className="track-row-title">{track.title}</span>
+
+                                  <div className="track-row-info">
+                                    <span className="track-row-title">{track.title}</span>
+                                    <Link 
+                                      to={`/artist/${track.artistId}`} 
+                                      className="track-row-artist"
+                                      onClick={(e) => e.stopPropagation()}
+                                    >
+                                      {artistsMap[track.artistId] || '...'}
+                                    </Link>
+                                  </div>
                                 </div>
                                 <div className="track-row-right">
                                   <LikeButton trackId={track.id} className="track-row-btn" />
@@ -345,7 +358,7 @@ export default function Search() {
                           className={`track-row ${isCurrent ? 'track-row-active' : ''}`}
                           onClick={() => {
                             if (isCurrent) togglePlay();
-                            else setTrack(track, results.tracks!);
+                            else setTrack(track, results.tracks!, 'search');
                           }}
                         >
                           <div className="track-row-left">
@@ -363,7 +376,17 @@ export default function Search() {
                                 )}
                               </div>
                             </div>
-                            <span className="track-row-title">{track.title}</span>
+
+                            <div className="track-row-info">
+                              <span className="track-row-title">{track.title}</span>
+                              <Link 
+                                to={`/artist/${track.artistId}`} 
+                                className="track-row-artist"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                {artistsMap[track.artistId] || '...'}
+                              </Link>
+                            </div>
                           </div>
                           <div className="track-row-right">
                             <LikeButton trackId={track.id} className="track-row-btn" />

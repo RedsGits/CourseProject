@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { Outlet, Link, NavLink } from 'react-router-dom';
 import { useAuth } from '../store/auth';
 import { usePlayer } from '../store/player';
+import { useEffect } from 'react';
+import { useArtists } from '../store/artists';
 import Player from './Player';
 
 const IconHome = () => (
@@ -27,6 +29,12 @@ export default function Layout() {
   const { current } = usePlayer();
   
   const [avatarLoaded, setAvatarLoaded] = useState(false);
+
+    const { fetchArtists } = useArtists();
+
+  useEffect(() => {
+    fetchArtists();
+  }, [fetchArtists]);
 
   return (
     <div className={`app ${current ? 'has-player' : ''}`}>

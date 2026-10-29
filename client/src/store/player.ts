@@ -13,7 +13,8 @@ interface PlayerState {
   repeat: RepeatMode;
   isPlaying: boolean;
 
-  setTrack: (track: Track, queue?: Track[]) => void;
+  playbackContext: string | null;
+  setTrack: (track: Track, queue?: Track[], context?: string) => void;
   next: () => void;
   prev: () => void;
   stop: () => void;
@@ -22,6 +23,7 @@ interface PlayerState {
   setIsPlaying: (val: boolean) => void;
   togglePlay: () => void;
   updateQueue: (newQueue: Track[]) => void;
+  removeTrackFromQueue: (trackId: number) => void;
 }
 
 function shuffleArray<T>(arr: T[]): T[] {
@@ -42,8 +44,9 @@ export const usePlayer = create<PlayerState>((set, get) => ({
   shuffle: false,
   repeat: 'off',
   isPlaying: false,
+  playbackContext: null,
 
-  setTrack: (track, queue) => {
+  setTrack: (track, queue, context) => {
     const q = queue ?? get().queue;
     const { shuffle } = get();
 
@@ -56,6 +59,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
         currentIndex: 0,
         fadeIn: false,
         isPlaying: true,
+        playbackContext: context || null,
       });
     } else {
       const idx = q.findIndex((t) => t.id === track.id);
@@ -66,6 +70,7 @@ export const usePlayer = create<PlayerState>((set, get) => ({
         currentIndex: idx >= 0 ? idx : 0,
         fadeIn: false,
         isPlaying: true,
+        playbackContext: context || null,
       });
     }
   },
@@ -141,6 +146,42 @@ export const usePlayer = create<PlayerState>((set, get) => ({
         queue: newQueue, 
         originalQueue: newQueue,
         currentIndex: newIdx 
+      });
+    }
+  },
+
+  removeTrackFromQueue: (trackId) => {
+    const { queue, originalQueue, current, currentIndex } = get();
+
+    const newQueue = queue.filter(t => t.id !== trackId);
+    const newOriginalQueue = originalQueue.filter(t => t.id !== trackId);
+
+    if (newQueue.length === 0) {
+      get().stop();
+      return;
+    }
+
+    if (current?.id === trackId) {
+      let nextIndex = currentIndex;
+      
+      if (nextIndex >= newQueue.length) {
+        nextIndex = newQueue.length - 1;
+      }
+
+      set({
+        queue: newQueue,
+        originalQueue: newOriginalQueue,
+        current: newQueue[nextIndex],
+        currentIndex: nextIndex,
+        isPlaying: true,
+        fadeIn: true,
+      });
+    } else {
+      const newCurrentIndex = newQueue.findIndex(t => t.id === current?.id);
+      set({
+        queue: newQueue,
+        originalQueue: newOriginalQueue,
+        currentIndex: newCurrentIndex >= 0 ? newCurrentIndex : 0
       });
     }
   },

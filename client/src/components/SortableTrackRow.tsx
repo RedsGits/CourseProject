@@ -1,12 +1,26 @@
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { Link } from 'react-router-dom';
 import LikeButton from './LikeButton';
 import AddToPlaylistMenu from './AddToPlaylistMenu';
+import { useArtists } from '../store/artists';
 import type { Track } from '../types';
+
+const IconPlay = () => (
+  <svg viewBox="0 0 24 24" fill="currentColor">
+    <path d="M8 5v14l11-7z" />
+  </svg>
+);
+const IconPause = () => (
+  <svg viewBox="0 0 24 24" fill="currentColor">
+    <path d="M6 5h4v14H6zM14 5h4v14h-4z" />
+  </svg>
+);
 
 interface Props {
   track: Track;
   isCurrent: boolean;
+  isPlaying: boolean;
   isOwner?: boolean;
   isRecentlyDropped?: boolean;
   onPlay: () => void;
@@ -17,6 +31,7 @@ interface Props {
 export default function SortableTrackRow({ 
   track, 
   isCurrent, 
+  isPlaying,
   isOwner, 
   isRecentlyDropped, 
   onPlay, 
@@ -24,6 +39,9 @@ export default function SortableTrackRow({
   togglePlay 
 }: Props) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: track.id });
+  const { artistsMap } = useArtists();
+  
+  const artistName = artistsMap[track.artistId] || '...';
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -31,6 +49,7 @@ export default function SortableTrackRow({
     zIndex: isDragging ? 10 : 1,
     position: 'relative' as const,
     opacity: isDragging ? 0.8 : 1,
+    cursor: isOwner ? 'grab' : 'pointer', 
   };
 
   return (
@@ -38,8 +57,8 @@ export default function SortableTrackRow({
       ref={setNodeRef}
       style={style}
       className={`track-row-wrapper ${isDragging ? 'is-dragging' : ''}`}
-      {...attributes}
-      {...listeners}
+      {...(isOwner ? attributes : {})}
+      {...(isOwner ? listeners : {})}
     >
       <div 
         className={`track-row ${isCurrent ? 'track-row-active' : ''} ${isRecentlyDropped ? 'is-dropped' : ''}`}
@@ -48,9 +67,24 @@ export default function SortableTrackRow({
         <div className="track-row-left">
           <div className="track-row-cover">
             {track.title[0]?.toUpperCase() ?? '♪'}
+            <div className="track-row-play-overlay">
+              {isPlaying ? <IconPause /> : <IconPlay />}
+            </div>
           </div>
-          <span className="track-row-title">{track.title}</span>
+          
+          <div className="track-row-info">
+            <span className="track-row-title">{track.title}</span>
+            <Link 
+              to={`/artist/${track.artistId}`} 
+              className="track-row-artist"
+              onClick={(e) => e.stopPropagation()}
+              onPointerDown={(e) => e.stopPropagation()}
+            >
+              {artistName}
+            </Link>
+          </div>
         </div>
+        
         <div className="track-row-right" onPointerDown={(e) => e.stopPropagation()}>
           <LikeButton trackId={track.id} className="track-row-btn" />
           <AddToPlaylistMenu trackId={track.id} className="track-row-btn" />

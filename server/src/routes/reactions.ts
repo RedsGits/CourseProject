@@ -120,14 +120,14 @@ router.post('/:trackId', async (req: AuthRequest, res) => {
   }
 
   const userLikes = await db.orm.public.TrackReaction.where({ userId, type: 'LIKE' }).all();
-  const maxOrder = userLikes.length > 0 ? Math.max(...userLikes.map(l => l.order)) : 0;
+  const minOrder = userLikes.length > 0 ? Math.min(...userLikes.map(l => l.order)) : 0;
 
   await db.transaction(async (tx) => {
     await tx.orm.public.TrackReaction.create({
       userId,
       trackId,
       type,
-      order: type === 'LIKE' ? maxOrder + 1 : 0,
+      order: type === 'LIKE' ? minOrder - 1 : 0,
     });
 
     await tx.orm.public.Track

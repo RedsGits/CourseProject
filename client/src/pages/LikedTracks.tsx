@@ -14,7 +14,7 @@ import { restrictToVerticalAxis, restrictToParentElement } from '@dnd-kit/modifi
 
 export default function LikedTracks() {
   const { user } = useAuth();
-  const { setTrack, current, isPlaying, togglePlay, updateQueue } = usePlayer();
+  const { setTrack, current, isPlaying, togglePlay, updateQueue, playbackContext } = usePlayer();
   const navigate = useNavigate();
   const [tracks, setTracks] = useState<Track[]>([]);
   const [loading, setLoading] = useState(true);
@@ -33,11 +33,12 @@ export default function LikedTracks() {
       .finally(() => setLoading(false));
   }, [user, navigate]);
 
-  const isPlaylistPlaying = isPlaying && current && tracks.some(t => t.id === current.id);
+  const contextId = 'liked-tracks';
+  const isPlaylistPlaying = isPlaying && playbackContext === contextId;
 
   const handleMainPlay = () => {
     if (isPlaylistPlaying) togglePlay();
-    else if (tracks.length > 0) setTrack(tracks[0], tracks);
+    else if (tracks.length > 0) setTrack(tracks[0], tracks, contextId);
   };
 
   const handleDragEnd = async (event: DragEndEvent) => {
@@ -107,8 +108,10 @@ export default function LikedTracks() {
                   key={track.id}
                   track={track}
                   isCurrent={current?.id === track.id}
+                  isPlaying={current?.id === track.id && isPlaying}
+                  isOwner={true}
                   isRecentlyDropped={recentlyDropped === track.id}
-                  onPlay={() => setTrack(track, tracks)}
+                  onPlay={() => setTrack(track, tracks, contextId)}
                   togglePlay={togglePlay}
                 />
               ))}

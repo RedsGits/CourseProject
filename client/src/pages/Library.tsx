@@ -25,6 +25,15 @@ export default function Library() {
   const [isPublic, setIsPublic] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
 
+  const fetchPlaylists = async () => {
+    try {
+      const { data } = await api.get('/playlists');
+      setPlaylists(data);
+    } catch (err) {
+      console.error('Ошибка загрузки плейлистов:', err);
+    }
+  };
+
   useEffect(() => {
     if (!user) {
       navigate('/login');
@@ -41,6 +50,13 @@ export default function Library() {
       })
       .catch((err) => console.error('Ошибка загрузки библиотеки:', err))
       .finally(() => setLoading(false));
+
+    const handlePlaylistCreated = () => {
+      fetchPlaylists();
+    };
+    
+    window.addEventListener('playlist-created', handlePlaylistCreated);
+    return () => window.removeEventListener('playlist-created', handlePlaylistCreated);
   }, [user, navigate]);
 
   const handleCreatePlaylist = async (e: React.FormEvent) => {
@@ -57,9 +73,9 @@ export default function Library() {
       setIsModalOpen(false);
       setNewPlaylistName('');
       setIsPublic(false);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Ошибка создания плейлиста:', err);
-      alert('Не удалось создать плейлист');
+      alert(err.response?.data?.error || 'Не удалось создать плейлист');
     } finally {
       setIsCreating(false);
     }
@@ -119,9 +135,9 @@ export default function Library() {
 
       {isModalOpen && (
         <div className="modal-overlay" onClick={() => setIsModalOpen(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <h2>Новый плейлист</h2>
-            <form onSubmit={handleCreatePlaylist}>
+          <div className="auth-card modal-card" onClick={(e) => e.stopPropagation()}>
+            <h1 className="modal-title">Новый плейлист</h1>
+            <form onSubmit={handleCreatePlaylist} style={{ marginTop: '24px' }}>
               <input
                 type="text"
                 placeholder="Название плейлиста"
@@ -129,15 +145,18 @@ export default function Library() {
                 onChange={(e) => setNewPlaylistName(e.target.value)}
                 autoFocus
                 maxLength={50}
+                style={{ marginBottom: '20px' }}
               />
-              <label className="toggle-switch">
+              <label className="toggle-switch" style={{ justifyContent: 'center', marginBottom: '24px' }}>
                 <input
                   type="checkbox"
                   checked={isPublic}
                   onChange={(e) => setIsPublic(e.target.checked)}
                 />
                 <span className="toggle-slider"></span>
-                <span className="toggle-label">Сделать публичным</span>
+                <span className={`toggle-label ${isPublic ? 'is-public' : ''}`}>
+                  {isPublic ? 'Публичный' : 'Приватный'}
+                </span>
               </label>
               <div className="modal-actions">
                 <button type="button" className="btn-cancel" onClick={() => setIsModalOpen(false)}>
