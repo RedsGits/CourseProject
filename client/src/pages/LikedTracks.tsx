@@ -3,35 +3,62 @@ import { useNavigate } from 'react-router-dom';
 import { api } from '../api/client';
 import { useAuth } from '../store/auth';
 import { usePlayer } from '../store/player';
+import SortableTrackRow from '../components/SortableTrackRow';
 import type { Track } from '../types';
+
+import {
+  DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, type DragEndEvent,
+} from '@dnd-kit/core';
+import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { restrictToVerticalAxis, restrictToParentElement } from '@dnd-kit/modifiers';
 
 export default function LikedTracks() {
   const { user } = useAuth();
-  const { setTrack, current, isPlaying, togglePlay } = usePlayer();
+  const { setTrack, current, isPlaying, togglePlay, updateQueue } = usePlayer();
   const navigate = useNavigate();
   const [tracks, setTracks] = useState<Track[]>([]);
   const [loading, setLoading] = useState(true);
+  const [recentlyDropped, setRecentlyDropped] = useState<number | null>(null);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { delay: 500, tolerance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
 
   useEffect(() => {
-    if (!user) {
-      navigate('/login');
-      return;
-    }
-
+    if (!user) { navigate('/login'); return; }
     api.get<Track[]>('/reactions/me')
       .then((res) => setTracks(res.data))
-      .catch((err) => console.error('Ошибка загрузки лайков:', err))
+      .catch((err) => console.error(err))
       .finally(() => setLoading(false));
   }, [user, navigate]);
 
-  // Проверяем, играет ли сейчас какой-то трек из этого плейлиста
   const isPlaylistPlaying = isPlaying && current && tracks.some(t => t.id === current.id);
 
   const handleMainPlay = () => {
-    if (isPlaylistPlaying) {
-      togglePlay();
-    } else if (tracks.length > 0) {
-      setTrack(tracks[0], tracks);
+    if (isPlaylistPlaying) togglePlay();
+    else if (tracks.length > 0) setTrack(tracks[0], tracks);
+  };
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    const oldIndex = tracks.findIndex((t) => t.id === active.id);
+    const newIndex = tracks.findIndex((t) => t.id === over.id);
+    if (oldIndex === -1 || newIndex === -1) return;
+
+    const newTracks = arrayMove(tracks, oldIndex, newIndex);
+    setTracks(newTracks);
+    updateQueue(newTracks);
+
+    setRecentlyDropped(active.id as number);
+    setTimeout(() => setRecentlyDropped(null), 300);
+
+    try {
+      await api.put('/reactions/me/reorder', { trackIds: newTracks.map(t => t.id) });
+    } catch (err) {
+      console.error('Ошибка сохранения порядка:', err);
     }
   };
 
@@ -58,19 +85,11 @@ export default function LikedTracks() {
           </div>
 
           <div className="playlist-actions-inline">
-            <button 
-              className="btn-play-large" 
-              onClick={handleMainPlay} 
-              disabled={tracks.length === 0}
-            >
+            <button className="btn-play-large" onClick={handleMainPlay} disabled={tracks.length === 0}>
               {isPlaylistPlaying ? (
-                <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
-                  <path d="M6 5h4v14H6zM14 5h4v14h-4z" />
-                </svg>
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M6 5h4v14H6zM14 5h4v14h-4z" /></svg>
               ) : (
-                <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
-                  <path d="M8 5v14l11-7z" />
-                </svg>
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
               )}
             </button>
           </div>
@@ -81,42 +100,20 @@ export default function LikedTracks() {
         {tracks.length === 0 ? (
           <p className="muted">Вы пока не лайкнули ни одного трека.</p>
         ) : (
-          tracks.map((track) => {
-            const isCurrent = current?.id === track.id;
-            const isActuallyPlaying = isCurrent && isPlaying;
-            
-            return (
-              <div
-                key={track.id}
-                className={`track-row ${isCurrent ? 'track-row-active' : ''}`}
-                onClick={() => {
-                  if (isCurrent) togglePlay();
-                  else setTrack(track, tracks);
-                }}
-              >
-                <div className="track-row-left">
-                  <div className="track-row-cover">
-                    {track.title[0]?.toUpperCase() ?? '♪'}
-                    <div className="track-row-play-overlay">
-                      {isActuallyPlaying ? (
-                        <svg viewBox="0 0 24 24" fill="currentColor">
-                          <path d="M6 5h4v14H6zM14 5h4v14h-4z" />
-                        </svg>
-                      ) : (
-                        <svg viewBox="0 0 24 24" fill="currentColor">
-                          <path d="M8 5v14l11-7z" />
-                        </svg>
-                      )}
-                    </div>
-                  </div>
-                  <span className="track-row-title">{track.title}</span>
-                </div>
-                <span className="track-row-meta">
-                  {Math.floor(track.duration / 60)}:{String(track.duration % 60).padStart(2, '0')}
-                </span>
-              </div>
-            );
-          })
+          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd} modifiers={[restrictToVerticalAxis, restrictToParentElement]}>
+            <SortableContext items={tracks.map(t => t.id)} strategy={verticalListSortingStrategy}>
+              {tracks.map((track) => (
+                <SortableTrackRow
+                  key={track.id}
+                  track={track}
+                  isCurrent={current?.id === track.id}
+                  isRecentlyDropped={recentlyDropped === track.id}
+                  onPlay={() => setTrack(track, tracks)}
+                  togglePlay={togglePlay}
+                />
+              ))}
+            </SortableContext>
+          </DndContext>
         )}
       </div>
     </div>

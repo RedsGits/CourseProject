@@ -11,7 +11,7 @@ interface PlayerState {
   fadeIn: boolean;
   shuffle: boolean;
   repeat: RepeatMode;
-  isPlaying: boolean; // <-- ДОБАВИЛИ
+  isPlaying: boolean;
 
   setTrack: (track: Track, queue?: Track[]) => void;
   next: () => void;
@@ -19,8 +19,9 @@ interface PlayerState {
   stop: () => void;
   toggleShuffle: () => void;
   toggleRepeat: () => void;
-  setIsPlaying: (val: boolean) => void; // <-- ДОБАВИЛИ
-  togglePlay: () => void; // <-- ДОБАВИЛИ
+  setIsPlaying: (val: boolean) => void;
+  togglePlay: () => void;
+  updateQueue: (newQueue: Track[]) => void;
 }
 
 function shuffleArray<T>(arr: T[]): T[] {
@@ -124,4 +125,23 @@ export const usePlayer = create<PlayerState>((set, get) => ({
 
   setIsPlaying: (val) => set({ isPlaying: val }),
   togglePlay: () => set((state) => ({ isPlaying: !state.isPlaying })),
+
+  updateQueue: (newQueue) => {
+    const { current, shuffle } = get();
+    if (!current) return;
+
+    const newIdx = newQueue.findIndex(t => t.id === current.id);
+    
+    if (newIdx === -1) return; 
+
+    if (shuffle) {
+      set({ originalQueue: newQueue });
+    } else {
+      set({ 
+        queue: newQueue, 
+        originalQueue: newQueue,
+        currentIndex: newIdx 
+      });
+    }
+  },
 }));

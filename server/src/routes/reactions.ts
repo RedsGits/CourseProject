@@ -55,11 +55,7 @@ router.get('/me', async (req: AuthRequest, res) => {
   const allTracks = await db.orm.public.Track.all();
   const trackMap = new Map(allTracks.map((t) => [t.id, t]));
 
-  reactions.sort((a, b) => {
-    const ta = (a.createdAt as any).epochMilliseconds || new Date(a.createdAt as any).getTime();
-    const tb = (b.createdAt as any).epochMilliseconds || new Date(b.createdAt as any).getTime();
-    return tb - ta;
-  });
+    reactions.sort((a, b) => a.order - b.order);
 
   const result = reactions
     .map((r) => trackMap.get(r.trackId))
@@ -123,11 +119,15 @@ router.post('/:trackId', async (req: AuthRequest, res) => {
     return res.status(200).json({ message: 'Реакция изменена', type });
   }
 
+  const userLikes = await db.orm.public.TrackReaction.where({ userId, type: 'LIKE' }).all();
+  const maxOrder = userLikes.length > 0 ? Math.max(...userLikes.map(l => l.order)) : 0;
+
   await db.transaction(async (tx) => {
     await tx.orm.public.TrackReaction.create({
       userId,
       trackId,
       type,
+      order: type === 'LIKE' ? maxOrder + 1 : 0,
     });
 
     await tx.orm.public.Track
@@ -139,6 +139,20 @@ router.post('/:trackId', async (req: AuthRequest, res) => {
   });
 
   res.status(201).json({ message: 'Реакция добавлена', type });
+});
+
+router.put('/me/reorder', authenticate, async (req: AuthRequest, res) => {
+  const { trackIds } = req.body as { trackIds?: number[] };
+  if (!Array.isArray(trackIds)) return res.status(400).json({ error: 'Неверный список' });
+
+  await db.transaction(async (tx) => {
+    for (let i = 0; i < trackIds.length; i++) {
+      await tx.orm.public.TrackReaction
+        .where({ userId: req.user!.id, trackId: trackIds[i], type: 'LIKE' })
+        .update({ order: i });
+    }
+  });
+  res.json({ message: 'Порядок обновлен' });
 });
 
 export default router;

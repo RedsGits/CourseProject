@@ -34,7 +34,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'30e13eba3203047e59c75abd7dcfb4d9e31298b78d38315e4efcf5a7ec39680c'>;
+  StorageHashBase<'09ab0b15abb520edf6849f398742f9e4952a36cdd36f44404b4abfa11070796f'>;
 export type ExecutionHash =
   ExecutionHashBase<'72d477c118df8adf639abd48920f502cca4a9c16de2e37e606b10fc765075b2a'>;
 export type ProfileHash =
@@ -306,6 +306,7 @@ export type FieldOutputTypes = {
     readonly TrackReaction: {
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly id: CodecTypes['pg/int4@1']['output'];
+      readonly order: CodecTypes['pg/int4@1']['output'];
       readonly trackId: CodecTypes['pg/int4@1']['output'];
       readonly type: 'LIKE' | 'DISLIKE';
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
@@ -386,6 +387,7 @@ export type FieldInputTypes = {
     readonly TrackReaction: {
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly id: CodecTypes['pg/int4@1']['input'];
+      readonly order: CodecTypes['pg/int4@1']['input'];
       readonly trackId: CodecTypes['pg/int4@1']['input'];
       readonly type: 'LIKE' | 'DISLIKE';
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
@@ -466,6 +468,7 @@ export type StorageColumnTypes = {
     readonly TrackReaction: {
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly id: CodecTypes['pg/int4@1']['output'];
+      readonly order: CodecTypes['pg/int4@1']['output'];
       readonly trackId: CodecTypes['pg/int4@1']['output'];
       readonly type: 'LIKE' | 'DISLIKE';
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
@@ -546,6 +549,7 @@ export type StorageColumnInputTypes = {
     readonly TrackReaction: {
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly id: CodecTypes['pg/int4@1']['input'];
+      readonly order: CodecTypes['pg/int4@1']['input'];
       readonly trackId: CodecTypes['pg/int4@1']['input'];
       readonly type: 'LIKE' | 'DISLIKE';
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
@@ -648,6 +652,7 @@ export namespace Models {
   export type public_TrackReaction = {
     createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     id: CodecTypes['pg/int4@1']['output'];
+    order: CodecTypes['pg/int4@1']['output'];
     trackId: CodecTypes['pg/int4@1']['output'];
     type: 'LIKE' | 'DISLIKE';
     updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
@@ -1225,6 +1230,15 @@ type ContractBase = Omit<
                   readonly default: {
                     readonly kind: 'function';
                     readonly expression: 'autoincrement()';
+                  };
+                };
+                readonly order: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/int4@1', 0>;
                   };
                 };
                 readonly trackId: {
@@ -1927,6 +1941,10 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
               };
+              readonly order: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
               readonly trackId: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
@@ -1976,6 +1994,7 @@ type ContractBase = Omit<
               readonly fields: {
                 readonly createdAt: { readonly column: 'createdAt' };
                 readonly id: { readonly column: 'id' };
+                readonly order: { readonly column: 'order' };
                 readonly trackId: { readonly column: 'trackId' };
                 readonly type: { readonly column: 'type' };
                 readonly updatedAt: { readonly column: 'updatedAt' };

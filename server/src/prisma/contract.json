@@ -820,6 +820,13 @@
                   "kind": "scalar"
                 }
               },
+              "order": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
               "trackId": {
                 "nullable": false,
                 "type": {
@@ -896,6 +903,9 @@
                 },
                 "id": {
                   "column": "id"
+                },
+                "order": {
+                  "column": "order"
                 },
                 "trackId": {
                   "column": "trackId"
@@ -1808,6 +1818,15 @@
                   "nativeType": "int4",
                   "nullable": false
                 },
+                "order": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": 0
+                  },
+                  "nativeType": "int4",
+                  "nullable": false
+                },
                 "trackId": {
                   "codecId": "pg/int4@1",
                   "nativeType": "int4",
@@ -2065,7 +2084,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "30e13eba3203047e59c75abd7dcfb4d9e31298b78d38315e4efcf5a7ec39680c"
+    "storageHash": "09ab0b15abb520edf6849f398742f9e4952a36cdd36f44404b4abfa11070796f"
   },
   "execution": {
     "executionHash": "72d477c118df8adf639abd48920f502cca4a9c16de2e37e606b10fc765075b2a",

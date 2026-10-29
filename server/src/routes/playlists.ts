@@ -2,8 +2,22 @@ import { Router } from 'express';
 import { db } from '../prisma/db';
 import { authenticate, type AuthRequest } from '../middleware/auth';
 import { uploadImage } from '../config/multer';
+import fs from 'fs';
+import path from 'path';
 
 const router = Router();
+
+function cleanupFile(fileName: string | null | undefined) {
+  if (!fileName) return;
+  const filePath = path.resolve('uploads', fileName);
+  if (fs.existsSync(filePath)) {
+    try {
+      fs.unlinkSync(filePath);
+    } catch (err) {
+      console.error('Не удалось удалить файл:', filePath, err);
+    }
+  }
+}
 
 router.use(authenticate);
 
@@ -119,7 +133,7 @@ router.patch('/:id', async (req: AuthRequest, res) => {
   res.json(updated);
 });
 
-router.delete('/:id', async (req: AuthRequest, res) => {
+router.delete('/:id', authenticate, async (req: AuthRequest, res) => {
   const id = Number(req.params.id);
   if (!Number.isInteger(id)) {
     return res.status(400).json({ error: 'Неверный id' });
@@ -135,6 +149,8 @@ router.delete('/:id', async (req: AuthRequest, res) => {
   }
 
   await db.orm.public.Playlist.where({ id }).delete();
+
+  cleanupFile(playlist.coverUrl);
 
   res.status(204).send();
 });
@@ -221,14 +237,46 @@ router.post('/:id/cover', authenticate, uploadImage.single('cover'), async (req:
   if (!Number.isInteger(id) || !req.file) return res.status(400).json({ error: 'Неверный id или файл' });
 
   const playlist = await db.orm.public.Playlist.where({ id }).first();
+  if (!playlist) {
+    cleanupFile(req.file.filename);
+    return res.status(404).json({ error: 'Плейлист не найден' });
+  }
+  if (playlist.userId !== req.user!.id) {
+    cleanupFile(req.file.filename);
+    return res.status(403).json({ error: 'Нет прав' });
+  }
+
+  const oldCoverUrl = playlist.coverUrl;
+  const newCoverUrl = req.file.filename;
+
+  await db.orm.public.Playlist.where({ id }).update({ coverUrl: newCoverUrl });
+
+  cleanupFile(oldCoverUrl);
+
+  res.json({ coverUrl: newCoverUrl });
+});
+
+router.put('/:id/reorder', authenticate, async (req: AuthRequest, res) => {
+  const id = Number(req.params.id);
+  const { trackIds } = req.body as { trackIds?: number[] };
+
+  if (!Number.isInteger(id) || !Array.isArray(trackIds)) {
+    return res.status(400).json({ error: 'Неверный id или список треков' });
+  }
+
+  const playlist = await db.orm.public.Playlist.where({ id }).first();
   if (!playlist) return res.status(404).json({ error: 'Плейлист не найден' });
   if (playlist.userId !== req.user!.id) return res.status(403).json({ error: 'Нет прав' });
 
-  const coverUrl = req.file.filename; // Сохраняем только имя файла
+  await db.transaction(async (tx) => {
+    for (let i = 0; i < trackIds.length; i++) {
+      await tx.orm.public.PlaylistTrack
+        .where({ playlistId: id, trackId: trackIds[i] })
+        .update({ order: i });
+    }
+  });
 
-  await db.orm.public.Playlist.where({ id }).update({ coverUrl });
-
-  res.json({ coverUrl });
+  res.json({ message: 'Порядок обновлен' });
 });
 
 export default router;

@@ -142,6 +142,7 @@ model TrackReaction {
   userId    Int
   trackId   Int
   type      ReactionType
+  order     Int          @default(0)
   
   user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   track     Track        @relation(fields: [trackId], references: [id], onDelete: Cascade)

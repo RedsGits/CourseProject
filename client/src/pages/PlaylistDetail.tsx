@@ -3,7 +3,25 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../api/client';
 import { useAuth } from '../store/auth';
 import { usePlayer } from '../store/player';
+import SortableTrackRow from '../components/SortableTrackRow';
 import type { Track } from '../types';
+
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { restrictToVerticalAxis, restrictToParentElement } from '@dnd-kit/modifiers';
 
 interface Playlist {
   id: number;
@@ -18,17 +36,30 @@ interface Playlist {
 export default function PlaylistDetail() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
-  const { setTrack, current, isPlaying, togglePlay } = usePlayer();
+  const { setTrack, current, isPlaying, togglePlay, updateQueue } = usePlayer();
   const navigate = useNavigate();
   
   const [playlist, setPlaylist] = useState<Playlist | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   
-  // Состояния для обложки
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isCoverOpen, setIsCoverOpen] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+
+  const [recentlyDropped, setRecentlyDropped] = useState<number | null>(null);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        delay: 500, 
+        tolerance: 5,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   const fetchPlaylist = () => {
     api.get<Playlist>(`/playlists/${id}`)
@@ -55,6 +86,33 @@ export default function PlaylistDetail() {
     }
   };
 
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+    
+    if (!over || active.id === over.id || !playlist) return;
+
+    const oldIndex = tracks.findIndex((t) => t.id === active.id);
+    const newIndex = tracks.findIndex((t) => t.id === over.id);
+
+    if (oldIndex === -1 || newIndex === -1) return;
+
+    const newTracks = arrayMove(tracks, oldIndex, newIndex);
+    setPlaylist({ ...playlist, tracks: newTracks });
+
+    updateQueue(newTracks);
+
+    setRecentlyDropped(active.id as number);
+    setTimeout(() => setRecentlyDropped(null), 300);
+
+    try {
+      await api.put(`/playlists/${id}/reorder`, {
+        trackIds: newTracks.map(t => t.id)
+      });
+    } catch (err) {
+      console.error('Ошибка сохранения порядка:', err);
+    }
+  };
+
   const handleDeleteTrack = async (e: React.MouseEvent, trackId: number) => {
     e.stopPropagation();
     if (!window.confirm('Удалить трек из плейлиста?')) return;
@@ -76,7 +134,6 @@ export default function PlaylistDetail() {
     }
   };
 
-  // Загрузка обложки
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !id) return;
@@ -106,45 +163,20 @@ export default function PlaylistDetail() {
   return (
     <div className="playlist-page">
       <header className="playlist-header">
-        
-        {/* Обложка */}
-        <div 
-          className="playlist-cover-large playlist-cover-interactive"
-          onClick={() => setIsCoverOpen(true)}
-        >
+        <div className="playlist-cover-large playlist-cover-interactive" onClick={() => setIsCoverOpen(true)}>
           {playlist.coverUrl ? (
-            <img 
-              src={`http://localhost:5000/uploads/${playlist.coverUrl}`} 
-              alt="Cover" 
-              className="playlist-cover-img"
-            />
+            <img src={`http://localhost:5000/uploads/${playlist.coverUrl}`} alt="Cover" className="playlist-cover-img" />
           ) : (
             <svg viewBox="0 0 24 24" width="80" height="80" fill="#fff">
               <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
             </svg>
           )}
-
-          {/* Оверлей при наведении */}
           {isOwner && (
             <div className="playlist-cover-overlay">
-              <button 
-                className="btn-upload-cover"
-                onClick={(e) => {
-                  e.stopPropagation(); // <-- Теперь клик по кнопке не открывает модалку
-                  fileInputRef.current?.click();
-                }}
-                disabled={isUploading}
-              >
+              <button className="btn-upload-cover" onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }} disabled={isUploading}>
                 {isUploading ? 'Загрузка...' : 'Изменить обложку'}
               </button>
-              <input 
-                type="file" 
-                ref={fileInputRef} 
-                onChange={handleFileChange} 
-                accept="image/*" 
-                style={{ display: 'none' }} 
-                onClick={(e) => e.stopPropagation()}
-              />
+              <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*" style={{ display: 'none' }} onClick={(e) => e.stopPropagation()} />
             </div>
           )}
         </div>
@@ -163,94 +195,60 @@ export default function PlaylistDetail() {
           <div className="playlist-actions-inline">
             <button className="btn-play-large" onClick={handleMainPlay} disabled={tracks.length === 0}>
               {isPlaylistPlaying ? (
-                <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
-                  <path d="M6 5h4v14H6zM14 5h4v14h-4z" />
-                </svg>
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M6 5h4v14H6zM14 5h4v14h-4z" /></svg>
               ) : (
-                <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
-                  <path d="M8 5v14l11-7z" />
-                </svg>
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
               )}
             </button>
             {isOwner && (
-              <button className="btn-delete-playlist" onClick={handleDeletePlaylist} title="Удалить плейлист">
-                Удалить
-              </button>
+              <button className="btn-delete-playlist" onClick={handleDeletePlaylist} title="Удалить плейлист">Удалить</button>
             )}
           </div>
         </div>
       </header>
 
-      {/* Список треков */}
       <div className="search-tracks-list one-col">
         {tracks.length === 0 ? (
           <p className="muted">В этом плейлисте пока нет треков.</p>
         ) : (
-          tracks.map((track) => {
-            const isCurrent = current?.id === track.id;
-            const isActuallyPlaying = isCurrent && isPlaying;
-            return (
-              <div
-                key={track.id}
-                className={`track-row ${isCurrent ? 'track-row-active' : ''}`}
-                onClick={() => {
-                  if (isCurrent) togglePlay();
-                  else setTrack(track, tracks);
-                }}
-              >
-                <div className="track-row-left">
-                  <div className="track-row-cover">
-                    {track.title[0]?.toUpperCase() ?? '♪'}
-                    <div className="track-row-play-overlay">
-                      {isActuallyPlaying ? (
-                        <svg viewBox="0 0 24 24" fill="currentColor">
-                          <path d="M6 5h4v14H6zM14 5h4v14h-4z" />
-                        </svg>
-                      ) : (
-                        <svg viewBox="0 0 24 24" fill="currentColor">
-                          <path d="M8 5v14l11-7z" />
-                        </svg>
-                      )}
-                    </div>
-                  </div>
-                  <span className="track-row-title">{track.title}</span>
-                </div>
-                <div className="track-row-right">
-                  <span className="track-row-meta">
-                    {Math.floor(track.duration / 60)}:{String(track.duration % 60).padStart(2, '0')}
-                  </span>
-                  {isOwner && (
-                    <button className="btn-remove-track" onClick={(e) => handleDeleteTrack(e, track.id)} title="Удалить из плейлиста">
-                      ✕
-                    </button>
-                  )}
-                </div>
-              </div>
-            );
-          })
+          <DndContext 
+            sensors={sensors} 
+            collisionDetection={closestCenter} 
+            onDragEnd={handleDragEnd}
+            modifiers={[restrictToVerticalAxis, restrictToParentElement]}
+          >
+            <SortableContext items={tracks.map(t => t.id)} strategy={verticalListSortingStrategy}>
+              {tracks.map((track) => {
+                const isCurrent = current?.id === track.id;
+                return (
+                  <SortableTrackRow
+                    key={track.id}
+                    track={track}
+                    isCurrent={!!isCurrent}
+                    isOwner={isOwner}
+                    isRecentlyDropped={recentlyDropped === track.id}
+                    onPlay={() => setTrack(track, tracks)}
+                    onDelete={(e) => handleDeleteTrack(e, track.id)}
+                    togglePlay={togglePlay}
+                  />
+                );
+              })}
+            </SortableContext>
+          </DndContext>
         )}
       </div>
 
-      {/* Полноэкранный просмотр обложки */}
       {isCoverOpen && (
         <div className="cover-fullscreen-modal" onClick={() => setIsCoverOpen(false)}>
           <div className="cover-fullscreen-content" onClick={(e) => e.stopPropagation()}>
             {playlist.coverUrl ? (
-              <img 
-                src={`http://localhost:5000/uploads/${playlist.coverUrl}`} 
-                alt="Cover Fullscreen" 
-                className="cover-fullscreen-img"
-              />
+              <img src={`http://localhost:5000/uploads/${playlist.coverUrl}`} alt="Cover" className="cover-fullscreen-img" />
             ) : (
               <div className="cover-fullscreen-placeholder">
-                <svg viewBox="0 0 24 24" width="120" height="120" fill="#fff">
-                  <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
-                </svg>
+                <svg viewBox="0 0 24 24" width="120" height="120" fill="#fff"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" /></svg>
               </div>
             )}
-            <button className="close-fullscreen-btn" onClick={() => setIsCoverOpen(false)}>
-              ✕
-            </button>
+            <button className="close-fullscreen-btn" onClick={() => setIsCoverOpen(false)}>✕</button>
           </div>
         </div>
       )}

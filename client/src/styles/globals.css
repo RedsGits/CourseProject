@@ -1202,6 +1202,8 @@ input.input-error:focus {
   background-color: transparent;
   cursor: pointer;
   transition: background-color 0.2s ease, transform 0.2s ease; 
+
+  position: relative; 
 }
 
 .track-row:hover {
@@ -1918,4 +1920,49 @@ input.input-error:focus {
 .track-row-btn:hover {
   color: var(--text);
   transform: scale(1.1);
+}
+
+
+.track-row.is-dragging {
+  background-color: var(--bg-hover); 
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6); 
+  cursor: grabbing;
+  transition: none !important; 
+  animation: wobble 0.8s ease-in-out infinite;
+}
+
+@keyframes wobble {
+  0% { transform: rotate(-1deg) scale(1.02); }
+  50% { transform: rotate(1deg) scale(1.02); }
+  100% { transform: rotate(-1deg) scale(1.02); }
+}
+
+.track-row-wrapper {
+  position: relative;
+  margin-bottom: 4px;
+}
+
+.track-row-wrapper.is-dragging {
+  z-index: 100;
+}
+
+.track-row-wrapper.is-dragging .track-row {
+  background-color: var(--bg-elevated);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.8);
+  cursor: grabbing;
+  animation: wobble 0.8s ease-in-out infinite; 
+}
+
+@keyframes shadowRipple {
+  0% { 
+    box-shadow: 0 0 0 0px rgba(255, 255, 255, 0.2); 
+  }
+  100% { 
+    box-shadow: 0 0 0 15px rgba(255, 255, 255, 0); 
+  }
+}
+
+.track-row.is-dropped {
+  animation: shadowRipple 0.4s ease-out forwards;
+  z-index: 1; 
 }

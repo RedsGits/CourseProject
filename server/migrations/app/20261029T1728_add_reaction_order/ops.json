@@ -1,0 +1,44 @@
+[
+  {
+    "id": "column.public.TrackReaction.order",
+    "label": "Add column \"order\" to \"TrackReaction\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "order",
+        "table": "TrackReaction"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"order\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "TrackReaction",
+          "order"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"order\"",
+        "sql": "ALTER TABLE \"public\".\"TrackReaction\" ADD COLUMN \"order\" int4 DEFAULT 0 NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"order\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "TrackReaction",
+          "order"
+        ]
+      }
+    ]
+  }
+]
