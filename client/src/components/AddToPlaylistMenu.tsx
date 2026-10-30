@@ -9,13 +9,13 @@ interface PlaylistInfo {
 
 const IconPlus = () => (
   <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-    <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
+    <path d="M11,13H6q-0.42,0-0.71-0.29Q5,12.43 5,12t0.29-0.71T6,11h5V6q0-0.43 0.29-0.71T12,5t0.71,0.29T13,6v5h5q0.43,0 0.71,0.29T19,12t-0.29,0.71T18,13H13v5q0,0.43-0.29,0.71T12,19t-0.71-0.29Q11,18.43 11,18V13Z" />
   </svg>
 );
 
 const IconCheck = () => (
   <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
-    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+    <path d="M9.55,15.15l8.48-8.48q0.3-0.3 0.7-0.3t0.7,0.3q0.3,0.3 0.3,0.71T19.43,8.1l-9.18,9.2q-0.3,0.3-0.7,0.3t-0.7-0.3L4.55,13q-0.3-0.3-0.29-0.71t0.31-0.71t0.71-0.3T6,11.58l3.55,3.58Z" />
   </svg>
 );
 
@@ -114,10 +114,11 @@ export default function AddToPlaylistMenu({ trackId, className = "player-btn" }:
   return (
     <div className="add-to-playlist-wrap" ref={menuRef}>
       <button className={className} onClick={handleOpen} title="Добавить в плейлист">
-        <svg viewBox="0 -960 960 960" width="20" height="20" fill="currentColor">
-          <path d="M120-320v-80h280v80H120Zm0-160v-80h440v80H120Zm0-160v-80h440v80H120Zm520 480v-160H480v-80h160v-160h80v160h160v80H720v160h-80Z" />
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+          <path d="M4,16q-0.42,0-0.71-0.29T3,15t0.29-0.71T4,14H9q0.43,0 0.71,0.29T10,15T9.71,15.71T9,16H4Zm0-4q-0.42,0-0.71-0.29Q3,11.43 3,11t0.29-0.71T4,10h9q0.43,0 0.71,0.29T14,11t-0.29,0.71T13,12H4ZM4,8Q3.58,8 3.29,7.71Q3,7.43 3,7T3.29,6.29T4,6h9q0.43,0 0.71,0.29T14,7T13.71,7.71T13,8H4ZM16.29,19.71Q16,19.43 16,19V16H13q-0.42,0-0.71-0.29T12,15t0.29-0.71T13,14h3V11q0-0.43 0.29-0.71T17,10t0.71,0.29T18,11v3h3q0.43,0 0.71,0.29T22,15t-0.29,0.71T21,16H18v3q0,0.43-0.29,0.71T17,20t-0.71-0.29Z" />
         </svg>
       </button>
+
 
       {isOpen && (
         <div className="playlist-menu" onClick={(e) => e.stopPropagation()}>

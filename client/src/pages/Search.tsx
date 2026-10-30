@@ -12,13 +12,13 @@ interface Playlist { id: number; name: string; isPublic: boolean; coverUrl?: str
 
 const IconSearchBig = () => (
   <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
-    <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+    <path d="M9.5,16q-2.72,0-4.61-1.89Q3,12.23 3,9.5Q3,6.77 4.89,4.89T9.5,3t4.61,1.89T16,9.5q0,1.1-0.35,2.07T14.7,13.3l5.6,5.6q0.28,0.28 0.28,0.7q0,0.42-0.28,0.7q-0.27,0.27-0.7,0.27T18.9,20.3l-5.6-5.6q-0.75,0.6-1.72,0.95T9.5,16Zm0-2q1.88,0 3.19-1.31T14,9.5T12.69,6.31T9.5,5T6.31,6.31T5,9.5t1.31,3.19T9.5,14Z" />
   </svg>
 );
 
 const IconClose = () => (
   <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+    <path d="M12,13.4L7.1,18.3q-0.28,0.27-0.7,0.27T5.7,18.3q-0.27-0.28-0.27-0.7T5.7,16.9L10.6,12L5.7,7.1Q5.43,6.82 5.43,6.4T5.7,5.7T6.4,5.43T7.1,5.7L12,10.6l4.9-4.9q0.27-0.27 0.7-0.27T18.3,5.7t0.27,0.7T18.3,7.1L13.4,12l4.9,4.9q0.27,0.28 0.27,0.7q0,0.42-0.27,0.7t-0.7,0.27T16.9,18.3L12,13.4Z" />
   </svg>
 );
 
@@ -109,6 +109,7 @@ export default function Search() {
   const [isFocused, setIsFocused] = useState(false);
   const [results, setResults] = useState<SearchResults | null>(null);
   const [isSearching, setIsSearching] = useState(false);
+  const [logoLoaded, setLogoLoaded] = useState(false);
   const [activeTab, setActiveTab] = useState<'all' | 'artists' | 'tracks' | 'albums' | 'playlists'>('all');
   
   const { setTrack, current, isPlaying, togglePlay } = usePlayer();
@@ -154,7 +155,12 @@ export default function Search() {
     <div className={`search-page ${isActive ? 'is-active' : ''}`}>
       
       <div className="search-hero">
-        <img src="/Logo2.png" alt="DoeReMi" className="search-hero-logo" />
+        <img 
+          src="/Logo2.png" 
+          alt="DoeReMi" 
+          className={`search-hero-logo ${logoLoaded ? 'loaded' : ''}`}
+          onLoad={() => setLogoLoaded(true)}
+        />
       </div>
 
       <div className="search-input-wrap">

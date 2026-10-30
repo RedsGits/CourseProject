@@ -23,6 +23,19 @@ router.get('/:id', async (req, res) => {
   res.json(artist);
 });
 
+router.get('/:id/tracks', async (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id)) return res.status(400).json({ error: 'Неверный id' });
+
+  const tracks = await db.orm.public.Track.all();
+  
+  const artistTracks = tracks
+    .filter(t => t.artistId === id)
+    .sort((a, b) => (b.playCount ?? 0) - (a.playCount ?? 0));
+
+  res.json(artistTracks);
+});
+
 router.post(
   '/',
   authenticate,
@@ -42,7 +55,6 @@ router.post(
     const trimmed = name.trim();
     const nameNormalized = trimmed.toLowerCase();
 
-    // Проверка уникальности
     const existing = await db.orm.public.Artist.where({ nameNormalized }).first();
 
     if (existing) {
@@ -80,7 +92,6 @@ router.patch(
       return res.status(404).json({ error: 'Artist not found' });
     }
 
-    // Проверка прав для лейбла
     if (req.user!.role === 'LABEL') {
     const result = await db.orm.public.Track.where({ artistId: id, labelId: req.user!.id }).aggregate((a) => ({ total: a.count() }));
 
@@ -104,7 +115,6 @@ router.patch(
       const trimmed = name.trim();
       const nameNormalized = trimmed.toLowerCase();
 
-      // Если имя меняется, проверятеся уникальность
       if (nameNormalized !== artist.nameNormalized) {
         const clash = await db.orm.public.Artist.where({ nameNormalized }).first();
         if (clash) {

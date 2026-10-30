@@ -1034,6 +1034,13 @@ input.input-error:focus {
   max-width: 300px;
   object-fit: contain;
   margin-bottom: 16px;
+
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.search-hero-logo.loaded {
+  opacity: 1;
 }
 
 .search-hero p {
@@ -1903,10 +1910,15 @@ input.input-error:focus {
   border: none;
   background: none;
   width: 100%;
+  gap: 12px;
 }
 
 .playlist-menu-item:hover {
   background-color: rgba(255, 255, 255, 0.1);
+}
+
+.playlist-menu-item svg {
+  flex-shrink: 0;
 }
 
 .playlist-menu-empty {
@@ -2265,4 +2277,32 @@ input.input-error:focus {
 .playlist-name-input:focus {
   border-bottom: 2px solid var(--text);
   box-shadow: none;
+}
+
+.back-icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.05);
+  color: var(--text-muted);
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+
+.back-icon-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--text);
+  transform: scale(1.05);
+}
+
+.playlist-menu-item span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  
+  min-width: 0; 
+  flex: 1; 
 }

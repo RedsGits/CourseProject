@@ -27,13 +27,22 @@ interface Playlist {
 
 const IconTrash = () => (
   <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
-    <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
+    <path d="M7,21q-0.82,0-1.41-0.59T5,19V6Q4.58,6 4.29,5.71Q4,5.43 4,5T4.29,4.29T5,4H9Q9,3.57 9.29,3.29Q9.58,3 10,3h4q0.43,0 0.71,0.29T15,4h4q0.43,0 0.71,0.29T20,5T19.71,5.71T19,6V19q0,0.82-0.59,1.41T17,21H7Zm5-7.1l1.9,1.9q0.28,0.28 0.7,0.28t0.7-0.28q0.28-0.27 0.28-0.7T15.3,14.4l-1.9-1.9l1.9-1.9q0.28-0.28 0.28-0.7q0-0.42-0.28-0.7T14.6,8.92T13.9,9.2L12,11.1L10.1,9.2Q9.83,8.92 9.4,8.92T8.7,9.2T8.43,9.9q0,0.43 0.28,0.7l1.9,1.9L8.7,14.4q-0.28,0.28-0.28,0.7T8.7,15.8q0.27,0.28 0.7,0.28t0.7-0.28L12,13.9Z" />
   </svg>
 );
-
 const IconEdit = () => (
   <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
-    <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" />
+    <path d="M4,21q-0.42,0-0.71-0.29Q3,20.43 3,20V17.58q0-0.4 0.15-0.76t0.42-0.64L16.2,3.57q0.3-0.28 0.66-0.43T17.63,3q0.4,0 0.78,0.15T19.05,3.6L20.43,5q0.3,0.27 0.44,0.65T21,6.4q0,0.4-0.14,0.76T20.43,7.82L7.83,20.43Q7.55,20.7 7.19,20.85Q6.83,21 6.43,21H4ZM17.6,7.8L19,6.4L17.6,5L16.2,6.4l1.4,1.4Z" />
+  </svg>
+);
+const IconPlay = () => (
+  <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+    <path d="M8,17.18V6.82Q8,6.4 8.3,6.11Q8.6,5.82 9,5.82q0.13,0 0.26,0.04T9.53,5.97l8.15,5.18q0.23,0.15 0.34,0.38q0.11,0.23 0.11,0.48t-0.11,0.47t-0.34,0.38L9.53,18.02Q9.4,18.1 9.26,18.14Q9.13,18.18 9,18.18q-0.4,0-0.7-0.29T8,17.18Z" />
+  </svg>
+);
+const IconPause = () => (
+  <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+    <path d="M16,19q-0.82,0-1.41-0.59T14,17V7q0-0.82 0.59-1.41T16,5q0.82,0 1.41,0.59Q18,6.18 18,7V17q0,0.82-0.59,1.41T16,19ZM8,19q-0.82,0-1.41-0.59T6,17V7Q6,6.18 6.59,5.59T8,5Q8.83,5 9.41,5.59Q10,6.18 10,7V17q0,0.82-0.59,1.41Q8.83,19 8,19Z" />
   </svg>
 );
 
@@ -329,9 +338,9 @@ export default function PlaylistDetail() {
           <div className="playlist-actions-inline">
             <button className="btn-play-large" onClick={handleMainPlay} disabled={tracks.length === 0}>
               {isPlaylistPlaying ? (
-                <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M6 5h4v14H6zM14 5h4v14h-4z" /></svg>
+                <IconPause />
               ) : (
-                <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
+                <IconPlay />
               )}
             </button>
             

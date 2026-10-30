@@ -11,6 +11,7 @@ import Search from './pages/Search';
 import Library from './pages/Library';
 import LikedTracks from './pages/LikedTracks';
 import PlaylistDetail from './pages/PlaylistDetail';
+import ArtistTracks from './pages/ArtistTracks';
 
 function App() {
   const { loadFromStorage } = useAuth();
@@ -33,6 +34,7 @@ function App() {
           <Route path="library" element={<Library />} />
           <Route path="liked" element={<LikedTracks />} />
           <Route path="playlist/:id" element={<PlaylistDetail />} />
+          <Route path="artist/:id/tracks" element={<ArtistTracks />} />
         </Route>
       </Routes>
     </BrowserRouter>
