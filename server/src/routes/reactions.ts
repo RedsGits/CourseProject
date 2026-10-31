@@ -41,7 +41,7 @@ router.delete('/:trackId', async (req: AuthRequest, res) => {
 
 router.get('/me', async (req: AuthRequest, res) => {
   const userId = req.user!.id;
-  const type = req.query.type === 'DISLIKE' ? 'DISLIKE' : 'LIKE'; // по умолчанию LIKE
+  const type = req.query.type === 'DISLIKE' ? 'DISLIKE' : 'LIKE';
 
   const reactions = await db.orm.public.TrackReaction
     .where({ userId, type })

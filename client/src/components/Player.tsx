@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { api } from '../api/client';
 import LikeButton from './LikeButton';
 import AddToPlaylistMenu from './AddToPlaylistMenu';
+import { FastAverageColor } from 'fast-average-color';
 
 function formatTime(sec: number) {
   if (!Number.isFinite(sec) || sec < 0) return '0:00';
@@ -59,6 +60,18 @@ const IconVolume = ({ muted }: { muted: boolean }) => (
   </svg>
 );
 
+const IconClose = () => (
+  <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor">
+    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+  </svg>
+);
+
+const IconLyrics = () => (
+  <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+    <path d="M6,16h8V14H6v2Zm10,0h2V14H16v2ZM6,12H8V10H6v2Zm4,0h8V10H10v2ZM4,20q-0.82,0-1.41-0.59T2,18V6Q2,5.18 2.59,4.59T4,4H20q0.83,0 1.41,0.59Q22,5.18 22,6V18q0,0.82-0.59,1.41T20,20H4Zm0-2H20V6H4V18Zm0,0V6V18Z" />
+  </svg>
+);
+
 const VOLUME_KEY = 'player.volume';
 const MUTED_KEY = 'player.muted';
 
@@ -84,6 +97,10 @@ export default function Player() {
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(loadVolume);
   const [isMuted, setIsMuted] = useState(loadMuted);
+  const [albumCover, setAlbumCover] = useState<string | null>(null);
+  const [isFullScreen, setIsFullScreen] = useState(false);
+  const [dominantColor, setDominantColor] = useState<string>('#181818');
+  const fsImgRef = useRef<HTMLImageElement>(null);
   const [isSeeking, setIsSeeking] = useState(false);
   const volumeRef = useRef(volume);
   const isMutedRef = useRef(isMuted);
@@ -113,13 +130,31 @@ export default function Player() {
   useEffect(() => {
     if (!current) {
       setArtistName(null);
+      setAlbumCover(null);
       return;
     }
-    api
-      .get<{ name: string }>(`/artists/${current.artistId}`)
+
+    api.get<{ name: string }>(`/artists/${current.artistId}`)
       .then((r) => setArtistName(r.data.name))
       .catch(() => setArtistName('Неизвестный артист'));
+
+    if (current.albumId) {
+      api.get<{ coverUrl: string | null }>(`/albums/${current.albumId}`)
+        .then((r) => setAlbumCover(r.data.coverUrl))
+        .catch(() => setAlbumCover(null));
+    } else {
+      setAlbumCover(null);
+    }
   }, [current]);
+
+    useEffect(() => {
+    if (isFullScreen && fsImgRef.current) {
+      const fac = new FastAverageColor();
+      fac.getColorAsync(fsImgRef.current)
+        .then(color => setDominantColor(color.hex))
+        .catch(() => setDominantColor('#181818'));
+    }
+  }, [isFullScreen, current]);
 
   const applyVolumeWithFade = (audio: HTMLAudioElement) => {
     const base = isMutedRef.current ? 0 : volumeRef.current;
@@ -169,9 +204,7 @@ export default function Player() {
           current
         ) {
           hasScrobbledRef.current = true;
-          api.post(`/history/${current.id}`)
-            .then(() => console.log(`🎵 Прослушивание "${current.title}" засчитано (${Math.round(listenedTimeRef.current)} сек)`))
-            .catch((err) => console.error('Ошибка записи истории:', err));
+          api.post(`/history/${current.id}`).catch(console.error);
         }
       }
       rafId = requestAnimationFrame(tick);
@@ -248,95 +281,50 @@ export default function Player() {
     }
   };
 
-  return (
-    <div className="player">
-      <audio
-        ref={audioRef}
-        src={streamUrl}
-        onLoadedMetadata={(e) => setDuration(e.currentTarget.duration)}
-        onEnded={() => {
-          if (repeat === 'one') {
-              const audio = audioRef.current;
-              if (audio) {
-              audio.currentTime = 0;
-              audio.play();
-              }
-          } else {
-              next();
-          }
-        }}
-        onPlay={() => setIsPlaying(true)}
-        onPause={() => setIsPlaying(false)}
-      />
+  const coverUrl = albumCover ? `http://localhost:5000/uploads/${albumCover}` : '/Defcover.png';
 
-      <div className="player-content">
-        <div className="player-left">
-          <div className="player-cover">
-            {current.title[0]?.toUpperCase() ?? '♪'}
-          </div>
-          <div className="player-info">
-            <div className="player-title">{current.title}</div>
-            <Link to={`/artist/${current.artistId}`} className="player-artist">
-              {artistName ?? '...'}
-            </Link>
-          </div>
-        </div>
+  const fullScreenPlayer = (
+    <div 
+      className="fullscreen-player" 
+      style={{ background: `radial-gradient(circle at center, ${dominantColor} 0%, #0f0f0f 100%)` }}
+    >
+      <button className="fullscreen-close" onClick={() => setIsFullScreen(false)}>
+        <IconClose />
+      </button>
 
-        <div className="player-center">
-          <div className="player-controls">
-            <LikeButton trackId={current.id} type="dislike" className="player-btn" />
-
-            <button
-              className={`player-btn ${shuffle ? 'is-active' : ''}`}
-              onClick={toggleShuffle}
-              title={shuffle ? 'Перемешивание включено' : 'Перемешать'}
-            >
-              <IconShuffle />
-            </button>
-
-            <button
-              className={`player-btn ${isPrevDisabled ? 'is-disabled' : ''}`}
-              onClick={handlePrev}
-              disabled={isPrevDisabled}
-              title={shouldSeekToStart ? 'В начало трека' : 'Предыдущий'}
-            >
-              <IconPrev />
-            </button>
-
-            <button className="player-play" onClick={() => setIsPlaying(!isPlaying)}>
-              {isPlaying ? <IconPause /> : <IconPlay />}
-            </button>
-
-            <button className="player-btn" onClick={next} title="Следующий">
-              <IconNext />
-            </button>
-
-            <button
-              className={`player-btn ${repeat !== 'off' ? 'is-active' : ''}`}
-              onClick={toggleRepeat}
-              title={
-                  repeat === 'off'
-                  ? 'Повтор выключен'
-                  : repeat === 'all'
-                  ? 'Повтор всех'
-                  : 'Повтор одного'
-              }
-            >
-              <IconRepeat />
-              {repeat === 'one' && <span className="player-btn-badge">1</span>}
-            </button>
-
-            <LikeButton trackId={current.id} type="like" className="player-btn" />
+      <div className="fullscreen-content">
+        <div className="fullscreen-inner">
+          
+          <div className="fullscreen-cover" onClick={() => setIsPlaying(!isPlaying)}>
+             <img 
+              ref={fsImgRef}
+              src={coverUrl} 
+              alt={current.title} 
+              crossOrigin="anonymous"
+            />
+            <div className="fullscreen-cover-overlay">
+              <div className="fullscreen-cover-play-btn">
+                {isPlaying ? <IconPause /> : <IconPlay />}
+              </div>
+            </div>
           </div>
 
-          <div className="player-progress-row">
-            <span className="player-time">{formatTime(currentTime)}</span>
+          <div className="fullscreen-info">
+            <div className="fullscreen-title-wrapper">
+              <h1 className="fullscreen-title">{current.title}</h1>
+            </div>
+            
+            <div className="fullscreen-artist-wrapper">
+              <Link to={`/artist/${current.artistId}`} className="fullscreen-artist">
+                {artistName ?? '...'}
+              </Link>
+            </div>
+          </div>
+
+          <div className="fullscreen-progress">
+            <span className="time-left">{formatTime(currentTime)}</span>
             <input
-              type="range"
-              min="0"
-              max={duration || 0}
-              step="any"
-              value={currentTime}
+              type="range" min="0" max={duration || 0} step="any" value={currentTime}
               onChange={handleSeekChange}
               onMouseDown={() => setIsSeeking(true)}
               onMouseUp={commitSeek}
@@ -350,38 +338,173 @@ export default function Player() {
                 }%, #404040 ${duration ? (currentTime / duration) * 100 : 0}%, #404040 100%)`,
               }}
             />
-            <span className="player-time">{formatTime(duration)}</span>
+            <span className="time-right">{formatTime(duration)}</span>
           </div>
-        </div>
 
-        <div className="player-right">
-          <AddToPlaylistMenu trackId={current.id} />
-          <button
-            className="player-btn"
-            onClick={() => setIsMuted(!isMuted)}
-            title={isMuted ? 'Включить звук' : 'Выключить звук'}
-          >
-            <IconVolume muted={isMuted} />
-          </button>
-          <input
-            type="range"
-            min="0"
-            max="1"
-            step="0.01"
-            value={isMuted ? 0 : volume}
-            onChange={(e) => {
-                setVolume(Number(e.target.value));
-                setIsMuted(false);
-            }}
-            className="player-volume"
-            style={{
-                background: `linear-gradient(to right, var(--accent) 0%, var(--accent) ${
-                (isMuted ? 0 : volume) * 100
-                }%, #404040 ${(isMuted ? 0 : volume) * 100}%, #404040 100%)`,
-            }}
-          />
+          <div className="fullscreen-controls-row">
+            <LikeButton trackId={current.id} type="dislike" className="fullscreen-action-btn" />
+            <AddToPlaylistMenu trackId={current.id} className="fullscreen-action-btn" />
+            <button className={`fullscreen-action-btn ${shuffle ? 'is-active' : ''}`} onClick={toggleShuffle}><IconShuffle /></button>
+            <button className={`fullscreen-action-btn ${isPrevDisabled ? 'is-disabled' : ''}`} onClick={handlePrev} disabled={isPrevDisabled}><IconPrev /></button>
+            <button className="fullscreen-action-btn" onClick={next}><IconNext /></button>
+            
+            <button className={`fullscreen-action-btn ${repeat !== 'off' ? 'is-active' : ''}`} onClick={toggleRepeat}>
+              <IconRepeat />
+              {repeat === 'one' && <span className="player-btn-badge">1</span>}
+            </button>
+            
+            <button className="fullscreen-action-btn"><IconLyrics /></button>
+            <LikeButton trackId={current.id} type="like" className="fullscreen-action-btn" />
+          </div>
+
         </div>
       </div>
     </div>
+  );
+
+
+  return (
+    <>
+      <div className="player">
+        <audio
+          ref={audioRef}
+          src={streamUrl}
+          onLoadedMetadata={(e) => setDuration(e.currentTarget.duration)}
+          onEnded={() => {
+            if (repeat === 'one') {
+                const audio = audioRef.current;
+                if (audio) {
+                audio.currentTime = 0;
+                audio.play();
+                }
+            } else {
+                next();
+            }
+          }}
+          onPlay={() => setIsPlaying(true)}
+          onPause={() => setIsPlaying(false)}
+        />
+
+        <div className="player-content">
+          <div className="player-left">
+            <div className="player-cover" onClick={() => setIsFullScreen(true)} title="Открыть плеер">
+              <img 
+                src={coverUrl} 
+                alt="Cover" 
+                style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '6px' }}
+              />
+            </div>
+            <div className="player-info">
+              <div className="player-title">{current.title}</div>
+              <Link to={`/artist/${current.artistId}`} className="player-artist">
+                {artistName ?? '...'}
+              </Link>
+            </div>
+          </div>
+
+          <div className="player-center">
+            <div className="player-controls">
+              <LikeButton trackId={current.id} type="dislike" className="player-btn" />
+
+              <button
+                className={`player-btn ${shuffle ? 'is-active' : ''}`}
+                onClick={toggleShuffle}
+                title={shuffle ? 'Перемешивание включено' : 'Перемешать'}
+              >
+                <IconShuffle />
+              </button>
+
+              <button
+                className={`player-btn ${isPrevDisabled ? 'is-disabled' : ''}`}
+                onClick={handlePrev}
+                disabled={isPrevDisabled}
+                title={shouldSeekToStart ? 'В начало трека' : 'Предыдущий'}
+              >
+                <IconPrev />
+              </button>
+
+              <button className="player-play" onClick={() => setIsPlaying(!isPlaying)}>
+                {isPlaying ? <IconPause /> : <IconPlay />}
+              </button>
+
+              <button className="player-btn" onClick={next} title="Следующий">
+                <IconNext />
+              </button>
+
+              <button
+                className={`player-btn ${repeat !== 'off' ? 'is-active' : ''}`}
+                onClick={toggleRepeat}
+                title={
+                    repeat === 'off'
+                    ? 'Повтор выключен'
+                    : repeat === 'all'
+                    ? 'Повтор всех'
+                    : 'Повтор одного'
+                }
+              >
+                <IconRepeat />
+                {repeat === 'one' && <span className="player-btn-badge">1</span>}
+              </button>
+
+              <LikeButton trackId={current.id} type="like" className="player-btn" />
+            </div>
+
+            <div className="player-progress-row">
+              <span className="player-time">{formatTime(currentTime)}</span>
+              <input
+                type="range"
+                min="0"
+                max={duration || 0}
+                step="any"
+                value={currentTime}
+                onChange={handleSeekChange}
+                onMouseDown={() => setIsSeeking(true)}
+                onMouseUp={commitSeek}
+                onTouchStart={() => setIsSeeking(true)}
+                onTouchEnd={commitSeek}
+                onKeyDown={handleSeekKeyDown}
+                className="player-progress-slider"
+                style={{
+                  background: `linear-gradient(to right, var(--accent) 0%, var(--accent) ${
+                    duration ? (currentTime / duration) * 100 : 0
+                  }%, #404040 ${duration ? (currentTime / duration) * 100 : 0}%, #404040 100%)`,
+                }}
+              />
+              <span className="player-time">{formatTime(duration)}</span>
+            </div>
+          </div>
+
+          <div className="player-right">
+            <AddToPlaylistMenu trackId={current.id} />
+            <button
+              className="player-btn"
+              onClick={() => setIsMuted(!isMuted)}
+              title={isMuted ? 'Включить звук' : 'Выключить звук'}
+            >
+              <IconVolume muted={isMuted} />
+            </button>
+            <input
+              type="range"
+              min="0"
+              max="1"
+              step="0.01"
+              value={isMuted ? 0 : volume}
+              onChange={(e) => {
+                  setVolume(Number(e.target.value));
+                  setIsMuted(false);
+              }}
+              className="player-volume"
+              style={{
+                  background: `linear-gradient(to right, var(--accent) 0%, var(--accent) ${
+                  (isMuted ? 0 : volume) * 100
+                  }%, #404040 ${(isMuted ? 0 : volume) * 100}%, #404040 100%)`,
+              }}
+            />
+          </div>
+        </div>
+      </div>
+
+      {isFullScreen && fullScreenPlayer}
+    </>
   );
 }
