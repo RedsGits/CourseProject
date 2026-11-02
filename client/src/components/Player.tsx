@@ -5,6 +5,7 @@ import { api } from '../api/client';
 import LikeButton from './LikeButton';
 import AddToPlaylistMenu from './AddToPlaylistMenu';
 import { FastAverageColor } from 'fast-average-color';
+import { motion, AnimatePresence } from 'framer-motion';
 
 function formatTime(sec: number) {
   if (!Number.isFinite(sec) || sec < 0) return '0:00';
@@ -87,7 +88,7 @@ function loadMuted(): boolean {
 }
 
 export default function Player() {
-  const {current, next, prev, currentIndex, fadeIn, shuffle, repeat, toggleShuffle, toggleRepeat, isPlaying, setIsPlaying} = usePlayer();
+  const {current, next, prev, currentIndex, fadeIn, shuffle, repeat, toggleShuffle, toggleRepeat, isPlaying, setIsPlaying, togglePlay} = usePlayer();
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const [currentTime, setCurrentTime] = useState(0);
@@ -107,8 +108,10 @@ export default function Player() {
   volumeRef.current = volume;
   isMutedRef.current = isMuted;
   const fadeInRef = useRef(fadeIn);
+  const isSwitchingTrackRef = useRef(false);
   fadeInRef.current = fadeIn;
   const [artistName, setArtistName] = useState<string | null>(null);
+  const colorCacheRef = useRef<Record<string, string>>({});
 
   useEffect(() => {
     hasScrobbledRef.current = false;
@@ -120,12 +123,39 @@ export default function Player() {
     const audio = audioRef.current;
     if (!audio || !current) return;
 
-    if (isPlaying) {
-      audio.play().catch(() => setIsPlaying(false));
-    } else {
+    if (isPlaying && audio.paused) {
+      audio.play().catch((err) => {
+        if (err.name !== 'AbortError') {
+          setIsPlaying(false);
+        }
+      });
+    } else if (!isPlaying && !audio.paused) {
       audio.pause();
     }
   }, [isPlaying, current, setIsPlaying]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.code === 'Space') {
+        const target = e.target as HTMLElement;
+        
+        const isTextInput = 
+          (target.tagName === 'INPUT' && (target as HTMLInputElement).type !== 'range') || 
+          target.tagName === 'TEXTAREA' || 
+          target.isContentEditable;
+
+        if (isTextInput) {
+          return;
+        }
+        e.preventDefault(); 
+        
+        togglePlay();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isPlaying, setIsPlaying]);
 
   useEffect(() => {
     if (!current) {
@@ -227,6 +257,14 @@ export default function Player() {
   }, [isFullScreen]);
 
   useEffect(() => {
+    isSwitchingTrackRef.current = true;
+    const timer = setTimeout(() => {
+      isSwitchingTrackRef.current = false;
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [current]);
+
+  useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
     applyVolumeWithFade(audio);
@@ -268,6 +306,28 @@ export default function Player() {
     setCurrentTime(Number(e.target.value));
   };
 
+  const extractColor = async (img: HTMLImageElement) => {
+    const url = img.src;
+    
+    if (colorCacheRef.current[url]) {
+      setDominantColor(colorCacheRef.current[url]);
+      return;
+    }
+
+    try {
+      const fac = new FastAverageColor();
+      const color = await fac.getColorAsync(img);
+      
+      colorCacheRef.current[url] = color.hex;
+      
+      if (img.src === url) {
+        setDominantColor(color.hex);
+      }
+    } catch (err) {
+      console.error('Ошибка извлечения цвета:', err);
+    }
+  };
+
   const commitSeek = () => {
     const audio = audioRef.current;
     if (audio) {
@@ -296,82 +356,112 @@ export default function Player() {
   const coverUrl = albumCover ? `http://localhost:5000/uploads/${albumCover}` : '/Defcover.png';
 
   const fullScreenPlayer = (
-    <div 
-      className="fullscreen-player" 
-      style={{ background: `radial-gradient(circle at center, ${dominantColor} 0%, #0f0f0f 100%)` }}
+    <motion.div 
+      className="fullscreen-player"
+      exit={{ opacity: 0, transition: { duration: 0.4 } }}
     >
-      <button className="fullscreen-close" onClick={() => setIsFullScreen(false)}>
+
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.3 }}
+        className="fullscreen-bg"
+        style={{ backgroundColor: dominantColor }}
+      >
+        <div className="fullscreen-bg-gradient"/>
+      
+      </motion.div>
+
+      <motion.button 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.3 }}
+        className="fullscreen-close" 
+        onClick={() => setIsFullScreen(false)}
+      >
         <IconClose />
-      </button>
+      </motion.button>
 
       <div className="fullscreen-content">
         <div className="fullscreen-inner">
           
-          <div className="fullscreen-cover" onClick={() => setIsPlaying(!isPlaying)}>
+          <motion.div 
+            layoutId="album-cover" 
+            className="fullscreen-cover" 
+            onClick={() => togglePlay()}
+          >
              <img 
               ref={fsImgRef}
               src={coverUrl} 
               alt={current.title} 
               crossOrigin="anonymous"
+              onLoad={() => {
+                if (fsImgRef.current) extractColor(fsImgRef.current);
+              }}
             />
             <div className="fullscreen-cover-overlay">
               <div className="fullscreen-cover-play-btn">
                 {isPlaying ? <IconPause /> : <IconPlay />}
               </div>
             </div>
-          </div>
+          </motion.div>
 
-          <div className="fullscreen-info">
-            <div className="fullscreen-title-wrapper">
-              <h1 className="fullscreen-title">{current.title}</h1>
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="fullscreen-ui-elements"
+          >
+            <div className="fullscreen-info">
+              <div className="fullscreen-title-wrapper">
+                <h1 className="fullscreen-title">{current.title}</h1>
+              </div>
+              <div className="fullscreen-artist-wrapper">
+                <Link to={`/artist/${current.artistId}`} className="fullscreen-artist" onClick={() => setIsFullScreen(false)}>
+                  {artistName ?? '...'}
+                </Link>
+              </div>
             </div>
-            
-            <div className="fullscreen-artist-wrapper">
-              <Link to={`/artist/${current.artistId}`} className="fullscreen-artist">
-                {artistName ?? '...'}
-              </Link>
+
+            <div className="fullscreen-progress">
+              <span className="time-left">{formatTime(currentTime)}</span>
+              <input
+                type="range" min="0" max={duration || 0} step="any" value={currentTime}
+                onChange={handleSeekChange}
+                onMouseDown={() => setIsSeeking(true)}
+                onMouseUp={commitSeek}
+                onTouchStart={() => setIsSeeking(true)}
+                onTouchEnd={commitSeek}
+                onKeyDown={handleSeekKeyDown}
+                className="player-progress-slider"
+                style={{
+                  background: `linear-gradient(to right, var(--accent) 0%, var(--accent) ${
+                    duration ? (currentTime / duration) * 100 : 0
+                  }%, #404040 ${duration ? (currentTime / duration) * 100 : 0}%, #404040 100%)`,
+                }}
+              />
+              <span className="time-right">{formatTime(duration)}</span>
             </div>
-          </div>
 
-          <div className="fullscreen-progress">
-            <span className="time-left">{formatTime(currentTime)}</span>
-            <input
-              type="range" min="0" max={duration || 0} step="any" value={currentTime}
-              onChange={handleSeekChange}
-              onMouseDown={() => setIsSeeking(true)}
-              onMouseUp={commitSeek}
-              onTouchStart={() => setIsSeeking(true)}
-              onTouchEnd={commitSeek}
-              onKeyDown={handleSeekKeyDown}
-              className="player-progress-slider"
-              style={{
-                background: `linear-gradient(to right, var(--accent) 0%, var(--accent) ${
-                  duration ? (currentTime / duration) * 100 : 0
-                }%, #404040 ${duration ? (currentTime / duration) * 100 : 0}%, #404040 100%)`,
-              }}
-            />
-            <span className="time-right">{formatTime(duration)}</span>
-          </div>
-
-          <div className="fullscreen-controls-row">
-            <LikeButton trackId={current.id} type="dislike" className="fullscreen-action-btn" />
-            <AddToPlaylistMenu trackId={current.id} className="fullscreen-action-btn" />
-            <button className={`fullscreen-action-btn ${shuffle ? 'is-active' : ''}`} onClick={toggleShuffle}><IconShuffle /></button>
-            <button className={`fullscreen-action-btn ${isPrevDisabled ? 'is-disabled' : ''}`} onClick={handlePrev} disabled={isPrevDisabled}><IconPrev /></button>
-            <button className="fullscreen-action-btn" onClick={next}><IconNext /></button>
-            
-            <button className={`fullscreen-action-btn ${repeat !== 'off' ? 'is-active' : ''}`} onClick={toggleRepeat}>
-              <IconRepeat />
-              {repeat === 'one' && <span className="player-btn-badge">1</span>}
-            </button>
-            
-            <button className="fullscreen-action-btn"><IconLyrics /></button>
-            <LikeButton trackId={current.id} type="like" className="fullscreen-action-btn" />
-          </div>
-
+            <div className="fullscreen-controls-row">
+              <LikeButton trackId={current.id} type="dislike" className="fullscreen-action-btn" />
+              <AddToPlaylistMenu trackId={current.id} className="fullscreen-action-btn" />
+              <button className={`fullscreen-action-btn ${shuffle ? 'is-active' : ''}`} onClick={toggleShuffle}><IconShuffle /></button>
+              <button className={`fullscreen-action-btn ${isPrevDisabled ? 'is-disabled' : ''}`} onClick={handlePrev} disabled={isPrevDisabled}><IconPrev /></button>
+              <button className="fullscreen-action-btn" onClick={next}><IconNext /></button>
+              <button className={`fullscreen-action-btn ${repeat !== 'off' ? 'is-active' : ''}`} onClick={toggleRepeat}>
+                <IconRepeat />
+                {repeat === 'one' && <span className="player-btn-badge">1</span>}
+              </button>
+              <button className="fullscreen-action-btn"><IconLyrics /></button>
+              <LikeButton trackId={current.id} type="like" className="fullscreen-action-btn" />
+            </div>
+          </motion.div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 
 
@@ -388,24 +478,34 @@ export default function Player() {
                 if (audio) {
                 audio.currentTime = 0;
                 audio.play();
+                
                 }
             } else {
                 next();
             }
           }}
-          onPlay={() => setIsPlaying(true)}
-          onPause={() => setIsPlaying(false)}
+        onPlay={() => {
+          if (!isSwitchingTrackRef.current) setIsPlaying(true);
+        }}
+        onPause={() => {
+          if (!isSwitchingTrackRef.current) setIsPlaying(false);
+        }}
         />
 
         <div className="player-content">
           <div className="player-left">
-            <div className="player-cover" onClick={() => setIsFullScreen(true)} title="Открыть плеер">
+            <motion.div 
+              layoutId="album-cover" 
+              className="player-cover" 
+              onClick={() => setIsFullScreen(true)} 
+              title="Открыть плеер"
+            >
               <img 
                 src={coverUrl} 
                 alt="Cover" 
                 style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '6px' }}
               />
-            </div>
+            </motion.div>
             <div className="player-info">
               <div className="player-title">{current.title}</div>
               <Link to={`/artist/${current.artistId}`} className="player-artist">
@@ -435,7 +535,7 @@ export default function Player() {
                 <IconPrev />
               </button>
 
-              <button className="player-play" onClick={() => setIsPlaying(!isPlaying)}>
+              <button className="player-play" onClick={() => togglePlay()}>
                 {isPlaying ? <IconPause /> : <IconPlay />}
               </button>
 
@@ -516,7 +616,9 @@ export default function Player() {
         </div>
       </div>
 
-      {isFullScreen && fullScreenPlayer}
+      <AnimatePresence>
+        {isFullScreen && fullScreenPlayer}
+      </AnimatePresence>
     </>
   );
 }

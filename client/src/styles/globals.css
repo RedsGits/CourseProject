@@ -2307,7 +2307,6 @@ input.input-error:focus {
   flex: 1; 
 }
 
-/* ===== Полноэкранный плеер ===== */
 .fullscreen-player {
   position: fixed;
   top: 0;
@@ -2318,11 +2317,29 @@ input.input-error:focus {
   display: flex;
   align-items: center;
   justify-content: center;
-  animation: fadeIn 0.3s ease;
-  backdrop-filter: blur(20px);
 }
 
-/* Темная вуаль поверх градиента */
+.fullscreen-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 0;
+  backdrop-filter: blur(20px);
+  transition: background 0.2s ease-in-out;
+}
+
+.fullscreen-bg-gradient {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at center, transparent 0%, rgba(15, 15, 15, 0.9) 100%);
+  pointer-events: none;
+}
+
 .fullscreen-player::before {
   content: "";
   position: absolute;
@@ -2330,8 +2347,8 @@ input.input-error:focus {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.45); /* Настрой прозрачность: 0.4 или 0.5 */
-  z-index: 1; /* Под контентом, но над фоном */
+  background-color: rgba(0, 0, 0, 0.45);
+  z-index: 1;
   pointer-events: none;
 }
 
@@ -2359,7 +2376,13 @@ input.input-error:focus {
   padding: 20px; 
 }
 
-/* Контейнер для всего (без gap!) */
+.fullscreen-ui-elements {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
 .fullscreen-inner {
   display: flex;
   flex-direction: column;
@@ -2367,7 +2390,6 @@ input.input-error:focus {
   width: 350px; 
 }
 
-/* --- ОБЛОЖКА --- */
 .fullscreen-cover {
   position: relative;
   width: 100%;
@@ -2377,7 +2399,7 @@ input.input-error:focus {
   box-shadow: 0 0px 50px rgba(0, 0, 0, 0.6);
   background-color: #2a2a2a;
   cursor: pointer;
-  margin-bottom: 15px; /* Отступ от обложки до названия */
+  margin-bottom: 15px;
 }
 
 .fullscreen-cover img {
@@ -2423,7 +2445,6 @@ input.input-error:focus {
   transform: scale(1);
 }
 
-/* Контейнер для текста */
 .fullscreen-info {
   width: 100%;
   display: flex;
@@ -2431,10 +2452,9 @@ input.input-error:focus {
   align-items: center;
   margin-bottom: 8px;
   text-align: center;
-  gap: 6px; /* <-- Физический отступ между строками */
+  gap: 6px;
 }
 
-/* Обертки для изоляции выделения */
 .fullscreen-title-wrapper,
 .fullscreen-artist-wrapper {
   width: 100%;
@@ -2442,7 +2462,6 @@ input.input-error:focus {
   justify-content: center;
 }
 
-/* Название трека */
 .fullscreen-title {
   filter: drop-shadow(0 0px 4px rgba(0, 0, 0, 0.3));
   font-size: 20px;
@@ -2457,7 +2476,6 @@ input.input-error:focus {
   font-family: inherit;
 }
 
-/* Имя автора */
 .fullscreen-artist {
   filter: drop-shadow(0 0px 4px rgba(0, 0, 0, 0.3));
   font-size: 14px;
@@ -2470,7 +2488,6 @@ input.input-error:focus {
   overflow: hidden;
   text-overflow: ellipsis;
   font-family: inherit;
-  /* Убрали display: inline-block, так как теперь это делает обертка */
 }
 
 .fullscreen-artist:hover {
@@ -2478,12 +2495,11 @@ input.input-error:focus {
   text-decoration: underline;
 }
 
-/* --- ПОЛЗУНОК --- */
 .fullscreen-progress {
   filter: drop-shadow(0 0px 4px rgba(0, 0, 0, 0.3));
   position: relative; 
   width: 100%;        
-  margin-bottom: 16px; /* Отступ от ползунка до кнопок */
+  margin-bottom: 16px;
 }
 
 .fullscreen-progress .player-progress-slider {
@@ -2513,7 +2529,6 @@ input.input-error:focus {
   text-align: left;
 }
 
-/* --- КНОПКИ --- */
 .fullscreen-controls-row {
   display: flex;
   align-items: center;
