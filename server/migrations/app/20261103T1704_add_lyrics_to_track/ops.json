@@ -1,0 +1,86 @@
+[
+  {
+    "id": "column.public.Track.lyrics",
+    "label": "Add column \"lyrics\" to \"Track\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "lyrics",
+        "table": "Track"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"lyrics\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Track",
+          "lyrics"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"lyrics\"",
+        "sql": "ALTER TABLE \"public\".\"Track\" ADD COLUMN \"lyrics\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"lyrics\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Track",
+          "lyrics"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.Track.syncedLyrics",
+    "label": "Add column \"syncedLyrics\" to \"Track\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "syncedLyrics",
+        "table": "Track"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"syncedLyrics\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Track",
+          "syncedLyrics"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"syncedLyrics\"",
+        "sql": "ALTER TABLE \"public\".\"Track\" ADD COLUMN \"syncedLyrics\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"syncedLyrics\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Track",
+          "syncedLyrics"
+        ]
+      }
+    ]
+  }
+]

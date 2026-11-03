@@ -6,6 +6,8 @@ import LikeButton from './LikeButton';
 import AddToPlaylistMenu from './AddToPlaylistMenu';
 import { FastAverageColor } from 'fast-average-color';
 import { motion, AnimatePresence } from 'framer-motion';
+import LyricsPanel from './LyricsPanel';
+import type { LyricsResponse } from '../types';
 
 function formatTime(sec: number) {
   if (!Number.isFinite(sec) || sec < 0) return '0:00';
@@ -88,7 +90,7 @@ function loadMuted(): boolean {
 }
 
 export default function Player() {
-  const {current, next, prev, currentIndex, fadeIn, shuffle, repeat, toggleShuffle, toggleRepeat, isPlaying, setIsPlaying, togglePlay} = usePlayer();
+  const {current, next, prev, currentIndex, fadeIn, shuffle, repeat, toggleShuffle, toggleRepeat, isPlaying, setIsPlaying, togglePlay, isLyricsOpen, toggleLyrics, setLyricsOpen} = usePlayer();
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const [currentTime, setCurrentTime] = useState(0);
@@ -111,6 +113,8 @@ export default function Player() {
   const isSwitchingTrackRef = useRef(false);
   fadeInRef.current = fadeIn;
   const [artistName, setArtistName] = useState<string | null>(null);
+  const [lyricsData, setLyricsData] = useState<LyricsResponse | null>(null);
+  const [lyricsLoading, setLyricsLoading] = useState(false);
   const colorCacheRef = useRef<Record<string, string>>({});
 
   useEffect(() => {
@@ -176,15 +180,30 @@ export default function Player() {
       setAlbumCover(null);
     }
   }, [current]);
-
-    useEffect(() => {
-    if (isFullScreen && fsImgRef.current) {
-      const fac = new FastAverageColor();
-      fac.getColorAsync(fsImgRef.current)
-        .then(color => setDominantColor(color.hex))
-        .catch(() => setDominantColor('#181818'));
+  
+  useEffect(() => {
+    if (!current) {
+      setLyricsData(null);
+      setLyricsLoading(false);
+      return;
     }
-  }, [isFullScreen, current]);
+    let cancelled = false;
+    setLyricsLoading(true);
+    setLyricsData(null);
+    api.get<LyricsResponse>(`/tracks/${current.id}/lyrics`)
+      .then((res) => {
+        if (!cancelled) setLyricsData(res.data);
+      })
+      .catch(() => {
+        if (!cancelled) setLyricsData(null);
+      })
+      .finally(() => {
+        if (!cancelled) setLyricsLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [current]);
 
   const applyVolumeWithFade = (audio: HTMLAudioElement) => {
     const base = isMutedRef.current ? 0 : volumeRef.current;
@@ -277,6 +296,12 @@ export default function Player() {
   useEffect(() => {
     localStorage.setItem(MUTED_KEY, String(isMuted));
   }, [isMuted]);
+
+  useEffect(() => {
+    if (isLyricsOpen && lyricsData && !lyricsData.found) {
+      setLyricsOpen(false);
+    }
+  }, [lyricsData, isLyricsOpen, setLyricsOpen]);
 
   if (!current) return null;
 
@@ -587,6 +612,22 @@ export default function Player() {
           </div>
 
           <div className="player-right">
+            <button
+              className={`player-btn ${isLyricsOpen ? 'is-active' : ''}`}
+              onClick={toggleLyrics}
+              disabled={lyricsLoading || (lyricsData !== null && !lyricsData.found)}
+              title={
+                lyricsLoading
+                  ? 'Загрузка...'
+                  : lyricsData && !lyricsData.found
+                  ? 'Текст недоступен'
+                  : isLyricsOpen
+                  ? 'Скрыть текст'
+                  : 'Показать текст'
+              }
+            >
+              <IconLyrics />
+            </button>
             <AddToPlaylistMenu trackId={current.id} />
             <button
               className="player-btn"
@@ -615,6 +656,22 @@ export default function Player() {
           </div>
         </div>
       </div>
+
+      <AnimatePresence>
+        {isLyricsOpen && (
+          <LyricsPanel
+            trackId={current.id}
+            trackTitle={current.title}
+            lyricsData={lyricsData}
+            loading={lyricsLoading}
+            hasSyncedLyrics={lyricsData?.hasSyncedLyrics ?? false}
+            onClose={() => setLyricsOpen(false)}
+            onOpenKaraoke={() => {
+              setLyricsOpen(false);
+            }}
+          />
+        )}
+      </AnimatePresence>
 
       <AnimatePresence>
         {isFullScreen && fullScreenPlayer}

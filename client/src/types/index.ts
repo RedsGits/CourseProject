@@ -36,3 +36,16 @@ export interface AuthResponse {
   token: string;
   user: User;
 }
+
+export interface LyricsResponse {
+  lyrics: string | null;
+  syncedLyrics: string | null;
+  hasLyrics: boolean;
+  hasSyncedLyrics: boolean;
+  found: boolean;
+}
+
+export interface LrcLine {
+  time: number;
+  text: string;
+}

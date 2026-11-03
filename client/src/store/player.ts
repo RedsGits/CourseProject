@@ -12,6 +12,7 @@ interface PlayerState {
   shuffle: boolean;
   repeat: RepeatMode;
   isPlaying: boolean;
+  isLyricsOpen: boolean;
 
   playbackContext: string | null;
   setTrack: (track: Track, queue?: Track[], context?: string) => void;
@@ -24,6 +25,8 @@ interface PlayerState {
   togglePlay: () => void;
   updateQueue: (newQueue: Track[]) => void;
   removeTrackFromQueue: (trackId: number) => void;
+  toggleLyrics: () => void;
+  setLyricsOpen: (v: boolean) => void;
 }
 
 function shuffleArray<T>(arr: T[]): T[] {
@@ -45,6 +48,10 @@ export const usePlayer = create<PlayerState>((set, get) => ({
   repeat: 'off',
   isPlaying: false,
   playbackContext: null,
+  isLyricsOpen: false,
+
+  toggleLyrics: () => set((s) => ({ isLyricsOpen: !s.isLyricsOpen })),
+  setLyricsOpen: (v) => set({ isLyricsOpen: v }),
 
   setTrack: (track, queue, context) => {
     const q = queue ?? get().queue;

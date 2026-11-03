@@ -2566,3 +2566,102 @@ input.input-error:focus {
   cursor: not-allowed;
   transform: none;
 }
+
+.lyrics-panel {
+  position: fixed;
+  top: 80px;
+  bottom: 100px;
+  right: 0;
+  width: 400px;
+  background-color: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 12px 0 0 12px;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  box-shadow: -8px 0 32px rgba(0, 0, 0, 0.4);
+}
+
+.lyrics-panel-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 20px 20px 12px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.lyrics-panel-header-info {
+  min-width: 0;
+  flex: 1;
+}
+
+.lyrics-panel-type {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+  font-weight: 600;
+  display: block;
+  margin-bottom: 6px;
+}
+
+.lyrics-panel-title {
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.25;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.lyrics-panel-close {
+  color: var(--text-muted);
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: color 0.15s, transform 0.1s;
+}
+
+.lyrics-panel-close:hover {
+  color: var(--text);
+  transform: scale(1.1);
+}
+
+.lyrics-karaoke-btn {
+  margin: 12px 20px 0;
+  padding: 10px 16px;
+  border-radius: 999px;
+  background-color: rgba(255, 255, 255, 0.08);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
+  transition: background-color 0.15s, transform 0.1s;
+  flex-shrink: 0;
+}
+
+.lyrics-karaoke-btn:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+  transform: scale(1.02);
+}
+
+.lyrics-panel-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--bg-hover) transparent;
+}
+
+.lyrics-plain {
+  font-size: 15px;
+  line-height: 1.8;
+  color: var(--text);
+  white-space: pre-wrap;
+  word-break: break-word;
+}

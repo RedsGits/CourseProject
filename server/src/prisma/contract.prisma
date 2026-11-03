@@ -74,6 +74,8 @@ model Track {
   duration  Int
   fileUrl   String
   genre     String?
+  lyrics        String?
+  syncedLyrics  String?
 
   playCount Int @default(0)
   likeCount    Int      @default(0)

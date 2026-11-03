@@ -6,6 +6,7 @@ import { parseFile } from 'music-metadata';
 import path from 'path';
 import fs from 'fs'
 import { getAudioMimeType } from '../utils/mime';
+import { fetchLyricsFromLrclib } from '../services/lyrics';
 
 const router = Router();
 
@@ -17,6 +18,14 @@ function cleanupFile(filePath: string | undefined) {
       console.error('Не удалось удалить файл:', filePath, err);
     }
   }
+}
+
+function withLyricsFlags<T extends { lyrics: string | null; syncedLyrics: string | null }>(track: T) {
+  return {
+    ...track,
+    hasLyrics: track.lyrics != null,
+    hasSyncedLyrics: track.syncedLyrics != null,
+  };
 }
 
 router.get('/', async (req, res) => {
@@ -31,7 +40,7 @@ router.get('/', async (req, res) => {
     .where(filters)
     .all();
 
-  res.json(tracks);
+  res.json(tracks.map(withLyricsFlags));
 });
 
 router.get('/:id/stream', async (req, res) => {
@@ -131,7 +140,7 @@ router.get('/:id', async (req, res) => {
     return res.status(404).json({ error: 'Трек не найден' });
   }
 
-  res.json(track);
+  res.json(withLyricsFlags(track));
 });
 
 router.post(
@@ -273,6 +282,98 @@ router.get('/:id/playlists', authenticate, async (req: AuthRequest, res) => {
   }));
 
   res.json(result);
+});
+
+router.post(
+  '/:id/lyrics/fetch',
+  authenticate,
+  requireRole('LABEL', 'ADMIN'),
+  async (req: AuthRequest, res) => {
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id)) {
+      return res.status(400).json({ error: 'Неверный id' });
+    }
+
+    const track = await db.orm.public.Track.where({ id }).first();
+    if (!track) {
+      return res.status(404).json({ error: 'Трек не найден' });
+    }
+
+    if (req.user!.role === 'LABEL' && track.labelId !== req.user!.id) {
+      return res.status(403).json({ error: 'Это не ваш трек' });
+    }
+
+    const artist = await db.orm.public.Artist.where({ id: track.artistId }).first();
+    if (!artist) {
+      return res.status(404).json({ error: 'Артист не найден' });
+    }
+
+    let albumName: string | null = null;
+    if (track.albumId) {
+      const album = await db.orm.public.Album.where({ id: track.albumId }).first();
+      if (album) albumName = album.title;
+    }
+
+    try {
+      const result = await fetchLyricsFromLrclib(
+        track.title,
+        artist.name,
+        albumName,
+        track.duration,
+      );
+
+      if (!result) {
+        return res.json({
+          lyrics: track.lyrics,
+          syncedLyrics: track.syncedLyrics,
+          hasLyrics: track.lyrics != null,
+          hasSyncedLyrics: track.syncedLyrics != null,
+          found: false,
+        });
+      }
+
+      const updated = await db.orm.public.Track.where({ id }).update({
+        lyrics: result.plainLyrics,
+        syncedLyrics: result.syncedLyrics,
+      });
+
+      if (!updated) {
+        return res.status(500).json({ error: 'Не удалось сохранить текст' });
+      }
+
+      res.json({
+        lyrics: updated.lyrics,
+        syncedLyrics: updated.syncedLyrics,
+        hasLyrics: updated.lyrics != null,
+        hasSyncedLyrics: updated.syncedLyrics != null,
+        instrumental: result.instrumental,
+        found: true,
+      });
+    } catch (err) {
+      console.error('Ошибка получения текста из lrclib:', err);
+      res.status(502).json({ error: 'Не удалось получить текст песни' });
+    }
+  },
+);
+
+router.get('/:id/lyrics', async (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id)) {
+    return res.status(400).json({ error: 'Неверный id' });
+  }
+
+  const track = await db.orm.public.Track.where({ id }).first();
+  if (!track) {
+    return res.status(404).json({ error: 'Трек не найден' });
+  }
+
+  res.json({
+    lyrics: track.lyrics,
+    syncedLyrics: track.syncedLyrics,
+    hasLyrics: track.lyrics != null,
+    hasSyncedLyrics: track.syncedLyrics != null,
+    found: track.lyrics != null || track.syncedLyrics != null,
+  });
 });
 
 export default router;

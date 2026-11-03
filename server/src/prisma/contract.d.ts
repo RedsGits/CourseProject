@@ -34,7 +34,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'09ab0b15abb520edf6849f398742f9e4952a36cdd36f44404b4abfa11070796f'>;
+  StorageHashBase<'4d4f326e1cde9f83a7eb80c62e0f8c2ad238f82bc3b1d63be086146d5f94d54e'>;
 export type ExecutionHash =
   ExecutionHashBase<'72d477c118df8adf639abd48920f502cca4a9c16de2e37e606b10fc765075b2a'>;
 export type ProfileHash =
@@ -299,7 +299,9 @@ export type FieldOutputTypes = {
       readonly id: CodecTypes['pg/int4@1']['output'];
       readonly labelId: CodecTypes['pg/int4@1']['output'];
       readonly likeCount: CodecTypes['pg/int4@1']['output'];
+      readonly lyrics: CodecTypes['pg/text@1']['output'] | null;
       readonly playCount: CodecTypes['pg/int4@1']['output'];
+      readonly syncedLyrics: CodecTypes['pg/text@1']['output'] | null;
       readonly title: CodecTypes['pg/text@1']['output'];
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     };
@@ -380,7 +382,9 @@ export type FieldInputTypes = {
       readonly id: CodecTypes['pg/int4@1']['input'];
       readonly labelId: CodecTypes['pg/int4@1']['input'];
       readonly likeCount: CodecTypes['pg/int4@1']['input'];
+      readonly lyrics: CodecTypes['pg/text@1']['input'] | null;
       readonly playCount: CodecTypes['pg/int4@1']['input'];
+      readonly syncedLyrics: CodecTypes['pg/text@1']['input'] | null;
       readonly title: CodecTypes['pg/text@1']['input'];
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
     };
@@ -461,7 +465,9 @@ export type StorageColumnTypes = {
       readonly id: CodecTypes['pg/int4@1']['output'];
       readonly labelId: CodecTypes['pg/int4@1']['output'];
       readonly likeCount: CodecTypes['pg/int4@1']['output'];
+      readonly lyrics: CodecTypes['pg/text@1']['output'] | null;
       readonly playCount: CodecTypes['pg/int4@1']['output'];
+      readonly syncedLyrics: CodecTypes['pg/text@1']['output'] | null;
       readonly title: CodecTypes['pg/text@1']['output'];
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     };
@@ -542,7 +548,9 @@ export type StorageColumnInputTypes = {
       readonly id: CodecTypes['pg/int4@1']['input'];
       readonly labelId: CodecTypes['pg/int4@1']['input'];
       readonly likeCount: CodecTypes['pg/int4@1']['input'];
+      readonly lyrics: CodecTypes['pg/text@1']['input'] | null;
       readonly playCount: CodecTypes['pg/int4@1']['input'];
+      readonly syncedLyrics: CodecTypes['pg/text@1']['input'] | null;
       readonly title: CodecTypes['pg/text@1']['input'];
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
     };
@@ -638,7 +646,9 @@ export namespace Models {
     id: CodecTypes['pg/int4@1']['output'];
     labelId: CodecTypes['pg/int4@1']['output'];
     likeCount: CodecTypes['pg/int4@1']['output'];
+    lyrics: CodecTypes['pg/text@1']['output'] | null;
     playCount: CodecTypes['pg/int4@1']['output'];
+    syncedLyrics: CodecTypes['pg/text@1']['output'] | null;
     title: CodecTypes['pg/text@1']['output'];
     updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     album: public_Album | null;
@@ -1129,6 +1139,11 @@ type ContractBase = Omit<
                     readonly value: DefaultLiteralValue<'pg/int4@1', 0>;
                   };
                 };
+                readonly lyrics: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
                 readonly playCount: {
                   readonly nativeType: 'int4';
                   readonly codecId: 'pg/int4@1';
@@ -1137,6 +1152,11 @@ type ContractBase = Omit<
                     readonly kind: 'literal';
                     readonly value: DefaultLiteralValue<'pg/int4@1', 0>;
                   };
+                };
+                readonly syncedLyrics: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
                 };
                 readonly title: {
                   readonly nativeType: 'text';
@@ -1824,9 +1844,17 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
               };
+              readonly lyrics: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
               readonly playCount: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly syncedLyrics: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
               readonly title: {
                 readonly nullable: false;
@@ -1922,7 +1950,9 @@ type ContractBase = Omit<
                 readonly id: { readonly column: 'id' };
                 readonly labelId: { readonly column: 'labelId' };
                 readonly likeCount: { readonly column: 'likeCount' };
+                readonly lyrics: { readonly column: 'lyrics' };
                 readonly playCount: { readonly column: 'playCount' };
+                readonly syncedLyrics: { readonly column: 'syncedLyrics' };
                 readonly title: { readonly column: 'title' };
                 readonly updatedAt: { readonly column: 'updatedAt' };
               };
