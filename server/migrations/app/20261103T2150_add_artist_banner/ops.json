@@ -1,0 +1,44 @@
+[
+  {
+    "id": "column.public.Artist.bannerUrl",
+    "label": "Add column \"bannerUrl\" to \"Artist\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "bannerUrl",
+        "table": "Artist"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"bannerUrl\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Artist",
+          "bannerUrl"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"bannerUrl\"",
+        "sql": "ALTER TABLE \"public\".\"Artist\" ADD COLUMN \"bannerUrl\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"bannerUrl\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Artist",
+          "bannerUrl"
+        ]
+      }
+    ]
+  }
+]

@@ -11,6 +11,25 @@ enum ReactionType {
   DISLIKE
 }
 
+enum Genre {
+  POP ROCK HIPHOP RNB ELECTRONIC HOUSE TECHNO TRANCE DUBSTEP DRUM_AND_BASS RAP
+  JAZZ BLUES CLASSICAL ORCHESTRAL OPERA COUNTRY FOLK FOLK_ROCK INDIE ALTERNATIVE
+  METAL HEAVY_METAL PUNK HARDCORE REGGAE SKA SOUL FUNK DISCO LATIN PHONK
+  SALSA BOSSA_NOVA SAMBA AFROBEAT K_POP J_POP ANIME SOUNDTRACK AMBIENT CHILLOUT
+  LO_FI NEW_AGE GOSPEL SPIRITUAL WORLD CELTIC GUITAR PIANO EXPERIMENTAL SPOKEN_WORD
+}
+
+enum AlbumType {
+  SINGLE
+  EP
+  ALBUM
+}
+
+enum TrackArtistRole {
+  PRIMARY
+  FEATURED
+}
+
 model User {
   id          Int      @id @default(autoincrement())
   email       String   @unique
@@ -30,6 +49,7 @@ model User {
   playlists   Playlist[]
   history     ListeningHistory[]
   ownedTracks Track[]  @relation("LabelTracks")
+  ownedAlbums Album[]  @relation("LabelAlbums")
 
   reactions   TrackReaction[]
 
@@ -43,10 +63,11 @@ model Artist {
   nameNormalized String   @unique
   bio            String?
   imageUrl       String?
-  country        String?
+  bannerUrl      String?
+  countryCode    String?
 
   albums   Album[]
-  tracks   Track[]
+  tracks   TrackArtist[]
 
   createdAt DateTime @default(now())
   updatedAt temporal.updatedAt()
@@ -55,17 +76,23 @@ model Artist {
 }
 
 model Album {
-  id       Int     @id @default(autoincrement())
+  id       Int       @id @default(autoincrement())
   title    String
   artistId Int
-  artist   Artist  @relation(fields: [artistId], references: [id], onDelete: Cascade)
+  artist   Artist    @relation(fields: [artistId], references: [id], onDelete: Cascade)
   year     Int?
   coverUrl String?
+  type     AlbumType @default(ALBUM)
+
+  labelId  Int
+  label    User      @relation("LabelAlbums", fields: [labelId], references: [id], onDelete: Restrict)
+
   tracks   Track[]
 
   createdAt DateTime @default(now())
 
   @@index([artistId])
+  @@index([labelId])
 }
 
 model Track {
@@ -73,33 +100,48 @@ model Track {
   title     String
   duration  Int
   fileUrl   String
-  genre     String?
-  lyrics        String?
-  syncedLyrics  String?
+  genre     Genre
 
-  playCount Int @default(0)
+  playCount    Int      @default(0)
   likeCount    Int      @default(0)
   dislikeCount Int      @default(0)
   reactions    TrackReaction[]
 
-  artistId  Int
-  artist    Artist   @relation(fields: [artistId], references: [id], onDelete: Cascade)
-
-  albumId   Int?
-  album     Album?   @relation(fields: [albumId], references: [id], onDelete: SetNull)
+  albumId   Int
+  album     Album  @relation(fields: [albumId], references: [id], onDelete: Restrict)
 
   labelId   Int
-  label     User     @relation("LabelTracks", fields: [labelId], references: [id], onDelete: Restrict)
+  label     User   @relation("LabelTracks", fields: [labelId], references: [id], onDelete: Restrict)
+
+  artists   TrackArtist[]
 
   playlists PlaylistTrack[]
   history   ListeningHistory[]
 
+  lyrics        String?
+  syncedLyrics  String?
+
   createdAt DateTime @default(now())
   updatedAt temporal.updatedAt()
 
-  @@index([artistId])
   @@index([labelId])
   @@index([title])
+  @@index([albumId])
+}
+
+model TrackArtist {
+  id       Int              @id @default(autoincrement())
+  trackId  Int
+  artistId Int
+  role     TrackArtistRole  @default(PRIMARY)
+  order    Int              @default(0)
+
+  track    Track            @relation(fields: [trackId], references: [id], onDelete: Cascade)
+  artist   Artist           @relation(fields: [artistId], references: [id], onDelete: Cascade)
+
+  @@unique([trackId, artistId])
+  @@index([artistId])
+  @@index([trackId])
 }
 
 model Playlist {
@@ -145,10 +187,10 @@ model TrackReaction {
   trackId   Int
   type      ReactionType
   order     Int          @default(0)
-  
+
   user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   track     Track        @relation(fields: [trackId], references: [id], onDelete: Cascade)
-  
+
   createdAt temporal.createdAt()
   updatedAt temporal.updatedAt()
 

@@ -3,7 +3,6 @@ import { CSS } from '@dnd-kit/utilities';
 import { Link } from 'react-router-dom';
 import LikeButton from './LikeButton';
 import AddToPlaylistMenu from './AddToPlaylistMenu';
-import { useArtists } from '../store/artists';
 import type { Track } from '../types';
 
 const IconPlay = () => (
@@ -39,9 +38,10 @@ export default function SortableTrackRow({
   togglePlay 
 }: Props) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: track.id });
-  const { artistsMap } = useArtists();
-  
-  const artistName = artistsMap[track.artistId] || '...';
+
+  const primary = track.artists?.find((a) => a.role === 'PRIMARY');
+  const featured = track.artists?.filter((a) => a.role === 'FEATURED') ?? [];
+  const allArtists = primary ? [primary, ...featured] : featured;
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -74,14 +74,21 @@ export default function SortableTrackRow({
           
           <div className="track-row-info">
             <span className="track-row-title">{track.title}</span>
-            <Link 
-              to={`/artist/${track.artistId}`} 
-              className="track-row-artist"
-              onClick={(e) => e.stopPropagation()}
-              onPointerDown={(e) => e.stopPropagation()}
-            >
-              {artistName}
-            </Link>
+            <div className="track-row-artist-line">
+              {allArtists.map((a, i) => (
+                <span key={a.id}>
+                  {i > 0 && ', '}
+                  <Link
+                    to={`/artist/${a.id}`}
+                    className="track-row-artist"
+                    onClick={(e) => e.stopPropagation()}
+                    onPointerDown={(e) => e.stopPropagation()}
+                  >
+                    {a.name}
+                  </Link>
+                </span>
+              ))}
+            </div>
           </div>
         </div>
         

@@ -4,6 +4,7 @@ import { authenticate, type AuthRequest } from '../middleware/auth';
 import { uploadImage } from '../config/multer';
 import fs from 'fs';
 import path from 'path';
+import { withArtistsBatch } from '../utils/track';
 
 const router = Router();
 
@@ -61,15 +62,24 @@ router.get('/:id', async (req: AuthRequest, res) => {
 
   const trackMap = new Map(tracks.map((t) => [t.id, t]));
 
+  const orderedLinks = playlistTracks.sort((a, b) => a.order - b.order);
+
+  const validPairs = orderedLinks
+    .map((pt) => {
+      const track = trackMap.get(pt.trackId);
+      return track ? { order: pt.order, track } : null;
+    })
+    .filter((x): x is NonNullable<typeof x> => x !== null);
+
+  const enriched = await withArtistsBatch(validPairs.map((x) => x.track));
+
   res.json({
     ...playlist,
     owner: owner ? { name: owner.name, email: owner.email } : null,
-    tracks: playlistTracks
-      .sort((a, b) => a.order - b.order)
-      .map((pt) => ({
-        order: pt.order,
-        ...trackMap.get(pt.trackId),
-      })),
+    tracks: validPairs.map((x, i) => ({
+      order: x.order,
+      ...enriched[i],
+    })),
   });
 });
 

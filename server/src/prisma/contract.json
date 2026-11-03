@@ -28,6 +28,10 @@
       "model": "Track",
       "namespace": "public"
     },
+    "TrackArtist": {
+      "model": "TrackArtist",
+      "namespace": "public"
+    },
     "TrackReaction": {
       "model": "TrackReaction",
       "namespace": "public"
@@ -41,6 +45,236 @@
     "namespaces": {
       "public": {
         "enum": {
+          "AlbumType": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "SINGLE",
+                "value": "SINGLE"
+              },
+              {
+                "name": "EP",
+                "value": "EP"
+              },
+              {
+                "name": "ALBUM",
+                "value": "ALBUM"
+              }
+            ]
+          },
+          "Genre": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "POP",
+                "value": "POP"
+              },
+              {
+                "name": "ROCK",
+                "value": "ROCK"
+              },
+              {
+                "name": "HIPHOP",
+                "value": "HIPHOP"
+              },
+              {
+                "name": "RNB",
+                "value": "RNB"
+              },
+              {
+                "name": "ELECTRONIC",
+                "value": "ELECTRONIC"
+              },
+              {
+                "name": "HOUSE",
+                "value": "HOUSE"
+              },
+              {
+                "name": "TECHNO",
+                "value": "TECHNO"
+              },
+              {
+                "name": "TRANCE",
+                "value": "TRANCE"
+              },
+              {
+                "name": "DUBSTEP",
+                "value": "DUBSTEP"
+              },
+              {
+                "name": "DRUM_AND_BASS",
+                "value": "DRUM_AND_BASS"
+              },
+              {
+                "name": "RAP",
+                "value": "RAP"
+              },
+              {
+                "name": "JAZZ",
+                "value": "JAZZ"
+              },
+              {
+                "name": "BLUES",
+                "value": "BLUES"
+              },
+              {
+                "name": "CLASSICAL",
+                "value": "CLASSICAL"
+              },
+              {
+                "name": "ORCHESTRAL",
+                "value": "ORCHESTRAL"
+              },
+              {
+                "name": "OPERA",
+                "value": "OPERA"
+              },
+              {
+                "name": "COUNTRY",
+                "value": "COUNTRY"
+              },
+              {
+                "name": "FOLK",
+                "value": "FOLK"
+              },
+              {
+                "name": "FOLK_ROCK",
+                "value": "FOLK_ROCK"
+              },
+              {
+                "name": "INDIE",
+                "value": "INDIE"
+              },
+              {
+                "name": "ALTERNATIVE",
+                "value": "ALTERNATIVE"
+              },
+              {
+                "name": "METAL",
+                "value": "METAL"
+              },
+              {
+                "name": "HEAVY_METAL",
+                "value": "HEAVY_METAL"
+              },
+              {
+                "name": "PUNK",
+                "value": "PUNK"
+              },
+              {
+                "name": "HARDCORE",
+                "value": "HARDCORE"
+              },
+              {
+                "name": "REGGAE",
+                "value": "REGGAE"
+              },
+              {
+                "name": "SKA",
+                "value": "SKA"
+              },
+              {
+                "name": "SOUL",
+                "value": "SOUL"
+              },
+              {
+                "name": "FUNK",
+                "value": "FUNK"
+              },
+              {
+                "name": "DISCO",
+                "value": "DISCO"
+              },
+              {
+                "name": "LATIN",
+                "value": "LATIN"
+              },
+              {
+                "name": "PHONK",
+                "value": "PHONK"
+              },
+              {
+                "name": "SALSA",
+                "value": "SALSA"
+              },
+              {
+                "name": "BOSSA_NOVA",
+                "value": "BOSSA_NOVA"
+              },
+              {
+                "name": "SAMBA",
+                "value": "SAMBA"
+              },
+              {
+                "name": "AFROBEAT",
+                "value": "AFROBEAT"
+              },
+              {
+                "name": "K_POP",
+                "value": "K_POP"
+              },
+              {
+                "name": "J_POP",
+                "value": "J_POP"
+              },
+              {
+                "name": "ANIME",
+                "value": "ANIME"
+              },
+              {
+                "name": "SOUNDTRACK",
+                "value": "SOUNDTRACK"
+              },
+              {
+                "name": "AMBIENT",
+                "value": "AMBIENT"
+              },
+              {
+                "name": "CHILLOUT",
+                "value": "CHILLOUT"
+              },
+              {
+                "name": "LO_FI",
+                "value": "LO_FI"
+              },
+              {
+                "name": "NEW_AGE",
+                "value": "NEW_AGE"
+              },
+              {
+                "name": "GOSPEL",
+                "value": "GOSPEL"
+              },
+              {
+                "name": "SPIRITUAL",
+                "value": "SPIRITUAL"
+              },
+              {
+                "name": "WORLD",
+                "value": "WORLD"
+              },
+              {
+                "name": "CELTIC",
+                "value": "CELTIC"
+              },
+              {
+                "name": "GUITAR",
+                "value": "GUITAR"
+              },
+              {
+                "name": "PIANO",
+                "value": "PIANO"
+              },
+              {
+                "name": "EXPERIMENTAL",
+                "value": "EXPERIMENTAL"
+              },
+              {
+                "name": "SPOKEN_WORD",
+                "value": "SPOKEN_WORD"
+              }
+            ]
+          },
           "ReactionType": {
             "codecId": "pg/text@1",
             "members": [
@@ -68,6 +302,19 @@
               {
                 "name": "ADMIN",
                 "value": "ADMIN"
+              }
+            ]
+          },
+          "TrackArtistRole": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "PRIMARY",
+                "value": "PRIMARY"
+              },
+              {
+                "name": "FEATURED",
+                "value": "FEATURED"
               }
             ]
           }
@@ -103,11 +350,31 @@
                   "kind": "scalar"
                 }
               },
+              "labelId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
               "title": {
                 "nullable": false,
                 "type": {
                   "codecId": "pg/text@1",
                   "kind": "scalar"
+                }
+              },
+              "type": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "AlbumType",
+                  "namespaceId": "public",
+                  "plane": "domain"
                 }
               },
               "year": {
@@ -132,6 +399,22 @@
                 },
                 "to": {
                   "model": "Artist",
+                  "namespace": "public"
+                }
+              },
+              "label": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "labelId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "User",
                   "namespace": "public"
                 }
               },
@@ -165,8 +448,14 @@
                 "id": {
                   "column": "id"
                 },
+                "labelId": {
+                  "column": "labelId"
+                },
                 "title": {
                   "column": "title"
+                },
+                "type": {
+                  "column": "type"
                 },
                 "year": {
                   "column": "year"
@@ -178,6 +467,13 @@
           },
           "Artist": {
             "fields": {
+              "bannerUrl": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "bio": {
                 "nullable": true,
                 "type": {
@@ -185,7 +481,7 @@
                   "kind": "scalar"
                 }
               },
-              "country": {
+              "countryCode": {
                 "nullable": true,
                 "type": {
                   "codecId": "pg/text@1",
@@ -262,18 +558,21 @@
                   ]
                 },
                 "to": {
-                  "model": "Track",
+                  "model": "TrackArtist",
                   "namespace": "public"
                 }
               }
             },
             "storage": {
               "fields": {
+                "bannerUrl": {
+                  "column": "bannerUrl"
+                },
                 "bio": {
                   "column": "bio"
                 },
-                "country": {
-                  "column": "country"
+                "countryCode": {
+                  "column": "countryCode"
                 },
                 "createdAt": {
                   "column": "createdAt"
@@ -572,13 +871,6 @@
           "Track": {
             "fields": {
               "albumId": {
-                "nullable": true,
-                "type": {
-                  "codecId": "pg/int4@1",
-                  "kind": "scalar"
-                }
-              },
-              "artistId": {
                 "nullable": false,
                 "type": {
                   "codecId": "pg/int4@1",
@@ -614,10 +906,16 @@
                 }
               },
               "genre": {
-                "nullable": true,
+                "nullable": false,
                 "type": {
                   "codecId": "pg/text@1",
                   "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "Genre",
+                  "namespaceId": "public",
+                  "plane": "domain"
                 }
               },
               "id": {
@@ -680,7 +978,7 @@
             "relations": {
               "album": {
                 "cardinality": "N:1",
-                "nullable": true,
+                "nullable": false,
                 "on": {
                   "localFields": [
                     "albumId"
@@ -694,19 +992,18 @@
                   "namespace": "public"
                 }
               },
-              "artist": {
-                "cardinality": "N:1",
-                "nullable": false,
+              "artists": {
+                "cardinality": "1:N",
                 "on": {
                   "localFields": [
-                    "artistId"
+                    "id"
                   ],
                   "targetFields": [
-                    "id"
+                    "trackId"
                   ]
                 },
                 "to": {
-                  "model": "Artist",
+                  "model": "TrackArtist",
                   "namespace": "public"
                 }
               },
@@ -777,9 +1074,6 @@
                 "albumId": {
                   "column": "albumId"
                 },
-                "artistId": {
-                  "column": "artistId"
-                },
                 "createdAt": {
                   "column": "createdAt"
                 },
@@ -822,6 +1116,106 @@
               },
               "namespaceId": "public",
               "table": "Track"
+            }
+          },
+          "TrackArtist": {
+            "fields": {
+              "artistId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "order": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "role": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "TrackArtistRole",
+                  "namespaceId": "public",
+                  "plane": "domain"
+                }
+              },
+              "trackId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "artist": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "artistId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Artist",
+                  "namespace": "public"
+                }
+              },
+              "track": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "trackId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Track",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "artistId": {
+                  "column": "artistId"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "order": {
+                  "column": "order"
+                },
+                "role": {
+                  "column": "role"
+                },
+                "trackId": {
+                  "column": "trackId"
+                }
+              },
+              "namespaceId": "public",
+              "table": "TrackArtist"
             }
           },
           "TrackReaction": {
@@ -1091,6 +1485,21 @@
                   "namespace": "public"
                 }
               },
+              "ownedAlbums": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "labelId"
+                  ]
+                },
+                "to": {
+                  "model": "Album",
+                  "namespace": "public"
+                }
+              },
               "ownedTracks": {
                 "cardinality": "1:N",
                 "on": {
@@ -1193,6 +1602,13 @@
         "entries": {
           "table": {
             "Album": {
+              "checks": [
+                {
+                  "expression": "\"type\" IN ('SINGLE', 'EP', 'ALBUM')",
+                  "name": "Album_type_check_8ff77fae",
+                  "prefix": "Album_type_check"
+                }
+              ],
               "columns": {
                 "artistId": {
                   "codecId": "pg/int4@1",
@@ -1222,10 +1638,30 @@
                   "nativeType": "int4",
                   "nullable": false
                 },
+                "labelId": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": false
+                },
                 "title": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
                   "nullable": false
+                },
+                "type": {
+                  "codecId": "pg/text@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": "ALBUM"
+                  },
+                  "nativeType": "text",
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "AlbumType",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
                 },
                 "year": {
                   "codecId": "pg/int4@1",
@@ -1250,6 +1686,23 @@
                     "namespaceId": "public",
                     "tableName": "Artist"
                   }
+                },
+                {
+                  "onDelete": "restrict",
+                  "source": {
+                    "columns": [
+                      "labelId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "Album"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "User"
+                  }
                 }
               ],
               "indexes": [
@@ -1259,6 +1712,14 @@
                   ],
                   "name": "Album_artistId_idx_5a004db6",
                   "prefix": "Album_artistId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "labelId"
+                  ],
+                  "name": "Album_labelId_idx_e2585939",
+                  "prefix": "Album_labelId_idx",
                   "unique": false
                 }
               ],
@@ -1271,12 +1732,17 @@
             },
             "Artist": {
               "columns": {
+                "bannerUrl": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
                 "bio": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
                   "nullable": true
                 },
-                "country": {
+                "countryCode": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
                   "nullable": true
@@ -1634,13 +2100,15 @@
               ]
             },
             "Track": {
+              "checks": [
+                {
+                  "expression": "\"genre\" IN ('POP', 'ROCK', 'HIPHOP', 'RNB', 'ELECTRONIC', 'HOUSE', 'TECHNO', 'TRANCE', 'DUBSTEP', 'DRUM_AND_BASS', 'RAP', 'JAZZ', 'BLUES', 'CLASSICAL', 'ORCHESTRAL', 'OPERA', 'COUNTRY', 'FOLK', 'FOLK_ROCK', 'INDIE', 'ALTERNATIVE', 'METAL', 'HEAVY_METAL', 'PUNK', 'HARDCORE', 'REGGAE', 'SKA', 'SOUL', 'FUNK', 'DISCO', 'LATIN', 'PHONK', 'SALSA', 'BOSSA_NOVA', 'SAMBA', 'AFROBEAT', 'K_POP', 'J_POP', 'ANIME', 'SOUNDTRACK', 'AMBIENT', 'CHILLOUT', 'LO_FI', 'NEW_AGE', 'GOSPEL', 'SPIRITUAL', 'WORLD', 'CELTIC', 'GUITAR', 'PIANO', 'EXPERIMENTAL', 'SPOKEN_WORD')",
+                  "name": "Track_genre_check_7ea8c6b1",
+                  "prefix": "Track_genre_check"
+                }
+              ],
               "columns": {
                 "albumId": {
-                  "codecId": "pg/int4@1",
-                  "nativeType": "int4",
-                  "nullable": true
-                },
-                "artistId": {
                   "codecId": "pg/int4@1",
                   "nativeType": "int4",
                   "nullable": false
@@ -1676,7 +2144,13 @@
                 "genre": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
-                  "nullable": true
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "Genre",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
                 },
                 "id": {
                   "codecId": "pg/int4@1",
@@ -1733,24 +2207,7 @@
               },
               "foreignKeys": [
                 {
-                  "onDelete": "cascade",
-                  "source": {
-                    "columns": [
-                      "artistId"
-                    ],
-                    "namespaceId": "public",
-                    "tableName": "Track"
-                  },
-                  "target": {
-                    "columns": [
-                      "id"
-                    ],
-                    "namespaceId": "public",
-                    "tableName": "Artist"
-                  }
-                },
-                {
-                  "onDelete": "setNull",
+                  "onDelete": "restrict",
                   "source": {
                     "columns": [
                       "albumId"
@@ -1795,14 +2252,6 @@
                 },
                 {
                   "columns": [
-                    "artistId"
-                  ],
-                  "name": "Track_artistId_idx_5a004db6",
-                  "prefix": "Track_artistId_idx",
-                  "unique": false
-                },
-                {
-                  "columns": [
                     "labelId"
                   ],
                   "name": "Track_labelId_idx_e2585939",
@@ -1824,6 +2273,127 @@
                 ]
               },
               "uniques": []
+            },
+            "TrackArtist": {
+              "checks": [
+                {
+                  "expression": "\"role\" IN ('PRIMARY', 'FEATURED')",
+                  "name": "TrackArtist_role_check_575ffdfc",
+                  "prefix": "TrackArtist_role_check"
+                }
+              ],
+              "columns": {
+                "artistId": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "expression": "autoincrement()",
+                    "kind": "function"
+                  },
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "order": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": 0
+                  },
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "role": {
+                  "codecId": "pg/text@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": "PRIMARY"
+                  },
+                  "nativeType": "text",
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "TrackArtistRole",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
+                },
+                "trackId": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "trackId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "TrackArtist"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "Track"
+                  }
+                },
+                {
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "artistId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "TrackArtist"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "Artist"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "artistId"
+                  ],
+                  "name": "TrackArtist_artistId_idx_5a004db6",
+                  "prefix": "TrackArtist_artistId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "trackId"
+                  ],
+                  "name": "TrackArtist_trackId_idx_8b560769",
+                  "prefix": "TrackArtist_trackId_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "trackId",
+                    "artistId"
+                  ]
+                }
+              ]
             },
             "TrackReaction": {
               "checks": [
@@ -2093,6 +2663,71 @@
             }
           },
           "valueSet": {
+            "AlbumType": {
+              "kind": "valueSet",
+              "values": [
+                "SINGLE",
+                "EP",
+                "ALBUM"
+              ]
+            },
+            "Genre": {
+              "kind": "valueSet",
+              "values": [
+                "POP",
+                "ROCK",
+                "HIPHOP",
+                "RNB",
+                "ELECTRONIC",
+                "HOUSE",
+                "TECHNO",
+                "TRANCE",
+                "DUBSTEP",
+                "DRUM_AND_BASS",
+                "RAP",
+                "JAZZ",
+                "BLUES",
+                "CLASSICAL",
+                "ORCHESTRAL",
+                "OPERA",
+                "COUNTRY",
+                "FOLK",
+                "FOLK_ROCK",
+                "INDIE",
+                "ALTERNATIVE",
+                "METAL",
+                "HEAVY_METAL",
+                "PUNK",
+                "HARDCORE",
+                "REGGAE",
+                "SKA",
+                "SOUL",
+                "FUNK",
+                "DISCO",
+                "LATIN",
+                "PHONK",
+                "SALSA",
+                "BOSSA_NOVA",
+                "SAMBA",
+                "AFROBEAT",
+                "K_POP",
+                "J_POP",
+                "ANIME",
+                "SOUNDTRACK",
+                "AMBIENT",
+                "CHILLOUT",
+                "LO_FI",
+                "NEW_AGE",
+                "GOSPEL",
+                "SPIRITUAL",
+                "WORLD",
+                "CELTIC",
+                "GUITAR",
+                "PIANO",
+                "EXPERIMENTAL",
+                "SPOKEN_WORD"
+              ]
+            },
             "ReactionType": {
               "kind": "valueSet",
               "values": [
@@ -2107,6 +2742,13 @@
                 "LABEL",
                 "ADMIN"
               ]
+            },
+            "TrackArtistRole": {
+              "kind": "valueSet",
+              "values": [
+                "PRIMARY",
+                "FEATURED"
+              ]
             }
           }
         },
@@ -2114,7 +2756,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "4d4f326e1cde9f83a7eb80c62e0f8c2ad238f82bc3b1d63be086146d5f94d54e"
+    "storageHash": "1fe58ae628dcb44980ec54db454e584a22132bede851f0a927b5497a677a83d5"
   },
   "execution": {
     "executionHash": "72d477c118df8adf639abd48920f502cca4a9c16de2e37e606b10fc765075b2a",

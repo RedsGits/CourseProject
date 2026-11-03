@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import LyricsPanel from './LyricsPanel';
 import type { LyricsResponse } from '../types';
 import KaraokeLyrics from './KaraokeLyrics';
+import { getArtistLine, getPrimaryArtistLink } from '../api/track';
 
 function formatTime(sec: number) {
   if (!Number.isFinite(sec) || sec < 0) return '0:00';
@@ -114,7 +115,6 @@ export default function Player() {
   const fadeInRef = useRef(fadeIn);
   const isSwitchingTrackRef = useRef(false);
   fadeInRef.current = fadeIn;
-  const [artistName, setArtistName] = useState<string | null>(null);
   const [lyricsData, setLyricsData] = useState<LyricsResponse | null>(null);
   const [lyricsLoading, setLyricsLoading] = useState(false);
   const colorCacheRef = useRef<Record<string, string>>({});
@@ -171,22 +171,13 @@ export default function Player() {
 
   useEffect(() => {
     if (!current) {
-      setArtistName(null);
       setAlbumCover(null);
       return;
     }
 
-    api.get<{ name: string }>(`/artists/${current.artistId}`)
-      .then((r) => setArtistName(r.data.name))
-      .catch(() => setArtistName('Неизвестный артист'));
-
-    if (current.albumId) {
-      api.get<{ coverUrl: string | null }>(`/albums/${current.albumId}`)
-        .then((r) => setAlbumCover(r.data.coverUrl))
-        .catch(() => setAlbumCover(null));
-    } else {
-      setAlbumCover(null);
-    }
+    api.get<{ coverUrl: string | null }>(`/albums/${current.albumId}`)
+      .then((r) => setAlbumCover(r.data.coverUrl))
+      .catch(() => setAlbumCover(null));
   }, [current]);
   
   useEffect(() => {
@@ -314,6 +305,11 @@ export default function Player() {
   if (!current) return null;
 
   const streamUrl = `http://localhost:5000/api/tracks/${current.id}/stream`;
+  const allArtists = (() => {
+    const primary = current.artists?.find((a) => a.role === 'PRIMARY');
+    const featured = current.artists?.filter((a) => a.role === 'FEATURED') ?? [];
+    return primary ? [primary, ...featured] : featured;
+  })();
 
   const isFirstInQueue = currentIndex <= 0;
   const canGoPrevByTrack = !isFirstInQueue;
@@ -509,15 +505,22 @@ export default function Player() {
                 <div className="fullscreen-title-wrapper">
                   <h1 className="fullscreen-title">{current.title}</h1>
                 </div>
-                <div className="fullscreen-artist-wrapper">
-                  <Link
-                    to={`/artist/${current.artistId}`}
-                    className="fullscreen-artist"
-                    onClick={() => setIsFullScreen(false)}
-                  >
-                    {artistName ?? '...'}
-                  </Link>
-                </div>
+                  <div className="fullscreen-artist-wrapper">
+                    <div className="fullscreen-artist-line">
+                      {allArtists.map((a, i) => (
+                        <span key={a.id}>
+                          {i > 0 && ', '}
+                          <Link
+                            to={`/artist/${a.id}`}
+                            className="fullscreen-artist"
+                            onClick={() => setIsFullScreen(false)}
+                          >
+                            {a.name}
+                          </Link>
+                        </span>
+                      ))}
+                    </div>
+                  </div>
               </div>
             </motion.div>
 
@@ -660,9 +663,16 @@ export default function Player() {
             </motion.div>
             <div className="player-info">
               <div className="player-title">{current.title}</div>
-              <Link to={`/artist/${current.artistId}`} className="player-artist">
-                {artistName ?? '...'}
-              </Link>
+                <div className="player-artist-line">
+                  {allArtists.map((a, i) => (
+                    <span key={a.id}>
+                      {i > 0 && ', '}
+                      <Link to={`/artist/${a.id}`} className="player-artist">
+                        {a.name}
+                      </Link>
+                    </span>
+                  ))}
+                </div>
             </div>
           </div>
 

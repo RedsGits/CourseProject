@@ -12,6 +12,15 @@ function formatPlayCount(count: number): string {
   return count.toString();
 }
 
+function countryName(code: string | null): string | null {
+  if (!code) return null;
+  try {
+    return new Intl.DisplayNames(['ru'], { type: 'region' }).of(code) ?? null;
+  } catch {
+    return null;
+  }
+}
+
 const IconPlay = () => (
   <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
     <path d="M8,17.18V6.82Q8,6.4 8.3,6.11Q8.6,5.82 9,5.82q0.13,0 0.26,0.04T9.53,5.97l8.15,5.18q0.23,0.15 0.34,0.38q0.11,0.23 0.11,0.48t-0.11,0.47t-0.34,0.38L9.53,18.02Q9.4,18.1 9.26,18.14Q9.13,18.18 9,18.18q-0.4,0-0.7-0.29T8,17.18Z" />
@@ -55,9 +64,18 @@ export default function ArtistDetail() {
     else if (tracks.length > 0) setTrack(tracks[0], tracks, contextId);
   };
 
+  const country = countryName(artist.countryCode);
+  const bannerStyle = artist.bannerUrl
+    ? {
+        backgroundImage: `linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, var(--bg) 90%), url(http://localhost:5000/uploads/${artist.bannerUrl})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+      }
+    : { background: `linear-gradient(to bottom, rgba(255, 255, 255, 0.4) 0%, var(--bg) 80%)` };
+
   return (
     <div className="playlist-page">
-      <div className="playlist-gradient-bg" style={{ background: `linear-gradient(to bottom, rgba(255, 255, 255, 0.4) 0%, var(--bg) 80%)` }} />
+      <div className="playlist-gradient-bg" style={bannerStyle} />
 
       <header className="playlist-header" style={{ position: 'relative', zIndex: 1 }}>
         <div className="playlist-cover-large playlist-cover-interactive" onClick={() => setIsImageOpen(true)}>
@@ -70,7 +88,12 @@ export default function ArtistDetail() {
             <h1 className="playlist-name" title={artist.name} style={{ fontSize: '56px' }}>
               {artist.name}
             </h1>
-            {artist.country && <div className="playlist-meta" style={{ marginTop: '8px' }}><span>{artist.country}</span></div>}
+            {artist.countryCode && country && (
+              <div className="playlist-meta" style={{ marginTop: '8px' }}>
+                <span className={`fi fi-${artist.countryCode.toLowerCase()}`} style={{ marginRight: '3px', borderRadius: '2px' }} />
+                <span>{country}</span>
+              </div>
+            )}
           </div>
 
           <div className="playlist-actions-inline">
@@ -95,6 +118,10 @@ export default function ArtistDetail() {
                 const isCurrent = current?.id === track.id;
                 const isActuallyPlaying = isCurrent && isPlaying;
 
+                const primary = track.artists?.find((a) => a.role === 'PRIMARY');
+                const featured = track.artists?.filter((a) => a.role === 'FEATURED') ?? [];
+                const allArtists = primary ? [primary, ...featured] : featured;
+
                 return (
                   <div key={track.id} className={`track-row ${isCurrent ? 'track-row-active' : ''}`} onClick={() => { if (isCurrent) togglePlay(); else setTrack(track, tracks, contextId); }}>
                     <div className="track-row-left">
@@ -104,6 +131,21 @@ export default function ArtistDetail() {
                       </div>
                       <div className="track-row-info">
                         <span className="track-row-title">{track.title}</span>
+                        <div className="track-row-artist-line">
+                          {allArtists.map((a, i) => (
+                            <span key={a.id}>
+                              {i > 0 && ', '}
+                              <Link
+                                to={`/artist/${a.id}`}
+                                className="track-row-artist"
+                                onClick={(e) => e.stopPropagation()}
+                                onPointerDown={(e) => e.stopPropagation()}
+                              >
+                                {a.name}
+                              </Link>
+                            </span>
+                          ))}
+                        </div>
                       </div>
                     </div>
                     

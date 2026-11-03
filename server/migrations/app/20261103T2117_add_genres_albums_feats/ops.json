@@ -1,0 +1,110 @@
+[
+  {
+    "id": "add_columns",
+    "label": "Add countryCode, Album.type+check, Album.labelId, Track.genre_new",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres"
+    },
+    "precheck": [],
+    "postcheck": [],
+    "execute": [
+      {
+        "description": "Artist.countryCode",
+        "sql": "ALTER TABLE \"Artist\" ADD COLUMN \"countryCode\" TEXT;"
+      },
+      {
+        "description": "Album.type + check",
+        "sql": "\n            ALTER TABLE \"Album\" ADD COLUMN \"type\" TEXT NOT NULL DEFAULT 'ALBUM';\n            ALTER TABLE \"Album\" ADD CONSTRAINT \"Album_type_check_8ff77fae\" CHECK (\"type\" IN ('SINGLE', 'EP', 'ALBUM'));\n          "
+      },
+      {
+        "description": "Album.labelId",
+        "sql": "ALTER TABLE \"Album\" ADD COLUMN \"labelId\" INTEGER;"
+      },
+      {
+        "description": "Track.genre_new",
+        "sql": "ALTER TABLE \"Track\" ADD COLUMN \"genre_new\" TEXT;"
+      }
+    ]
+  },
+  {
+    "id": "create_track_artist",
+    "label": "Create TrackArtist table with check and indexes",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres"
+    },
+    "precheck": [],
+    "postcheck": [],
+    "execute": [
+      {
+        "description": "Create TrackArtist",
+        "sql": "\n            CREATE TABLE \"TrackArtist\" (\n              \"id\" SERIAL PRIMARY KEY,\n              \"trackId\" INTEGER NOT NULL,\n              \"artistId\" INTEGER NOT NULL,\n              \"role\" TEXT NOT NULL DEFAULT 'PRIMARY',\n              \"order\" INTEGER NOT NULL DEFAULT 0,\n              CONSTRAINT \"TrackArtist_trackId_artistId_key\" UNIQUE (\"trackId\", \"artistId\"),\n              CONSTRAINT \"TrackArtist_trackId_fkey\" FOREIGN KEY (\"trackId\") REFERENCES \"Track\"(\"id\") ON DELETE CASCADE,\n              CONSTRAINT \"TrackArtist_artistId_fkey\" FOREIGN KEY (\"artistId\") REFERENCES \"Artist\"(\"id\") ON DELETE CASCADE,\n              CONSTRAINT \"TrackArtist_role_check_575ffdfc\" CHECK (\"role\" IN ('PRIMARY', 'FEATURED'))\n            );\n            CREATE INDEX \"TrackArtist_artistId_idx_5a004db6\" ON \"TrackArtist\"(\"artistId\");\n            CREATE INDEX \"TrackArtist_trackId_idx_8b560769\" ON \"TrackArtist\"(\"trackId\");\n          "
+      }
+    ]
+  },
+  {
+    "id": "migrate_data",
+    "label": "Backfill countryCode, genre_new, Unknown Albums, TrackArtist",
+    "operationClass": "data",
+    "target": {
+      "id": "postgres"
+    },
+    "precheck": [],
+    "postcheck": [],
+    "execute": [
+      {
+        "description": "countryCode backfill",
+        "sql": "\n            UPDATE \"Artist\" SET \"countryCode\" = 'RU' WHERE country ILIKE 'россия' OR country ILIKE 'russia';\n            UPDATE \"Artist\" SET \"countryCode\" = 'EE' WHERE country ILIKE 'estonia';\n          "
+      },
+      {
+        "description": "genre_new backfill",
+        "sql": "\n            UPDATE \"Track\" SET \"genre_new\" =\n              CASE LOWER(TRIM(genre))\n                WHEN 'trap'       THEN 'HIPHOP'\n                WHEN 'electronic' THEN 'ELECTRONIC'\n                WHEN 'hiphop'     THEN 'HIPHOP'\n                WHEN 'guitar'     THEN 'GUITAR'\n                WHEN 'pop'        THEN 'POP'\n                WHEN 'rock'       THEN 'ROCK'\n                WHEN 'rnb'        THEN 'RNB'\n                WHEN 'jazz'       THEN 'JAZZ'\n                ELSE 'POP'\n              END;\n          "
+      },
+      {
+        "description": "Create Unknown Albums and backfill albumId",
+        "sql": "\n            INSERT INTO \"Album\" (title, \"artistId\", \"type\", \"labelId\", \"createdAt\")\n            SELECT 'Unknown Album', t.\"artistId\", 'ALBUM',\n              COALESCE((SELECT MIN(t2.\"labelId\") FROM \"Track\" t2 WHERE t2.\"artistId\" = t.\"artistId\"), 3),\n              NOW()\n            FROM (SELECT DISTINCT \"artistId\" FROM \"Track\" WHERE \"albumId\" IS NULL) t;\n            \n            UPDATE \"Track\" t SET \"albumId\" = a.id FROM \"Album\" a\n            WHERE t.\"albumId\" IS NULL AND a.\"artistId\" = t.\"artistId\" AND a.title = 'Unknown Album';\n          "
+      },
+      {
+        "description": "Album.labelId backfill",
+        "sql": "\n            UPDATE \"Album\" a SET \"labelId\" = COALESCE(\n              (SELECT MIN(t.\"labelId\") FROM \"Track\" t WHERE t.\"albumId\" = a.id),\n              (SELECT MIN(t.\"labelId\") FROM \"Track\" t WHERE t.\"artistId\" = a.\"artistId\"),\n              3\n            ) WHERE a.\"labelId\" IS NULL;\n          "
+      },
+      {
+        "description": "TrackArtist backfill",
+        "sql": "\n            INSERT INTO \"TrackArtist\" (\"trackId\", \"artistId\", \"role\", \"order\")\n            SELECT id, \"artistId\", 'PRIMARY', 0 FROM \"Track\" WHERE \"artistId\" IS NOT NULL;\n          "
+      }
+    ]
+  },
+  {
+    "id": "finalize_constraints",
+    "label": "Replace genre, drop artistId/country, add NOT NULLs, FKs, indexes",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres"
+    },
+    "precheck": [],
+    "postcheck": [],
+    "execute": [
+      {
+        "description": "Replace genre + check",
+        "sql": "\n            ALTER TABLE \"Track\" DROP COLUMN genre;\n            ALTER TABLE \"Track\" RENAME COLUMN \"genre_new\" TO genre;\n            ALTER TABLE \"Track\" ALTER COLUMN genre SET NOT NULL;\n            ALTER TABLE \"Track\" ADD CONSTRAINT \"Track_genre_check_7ea8c6b1\" CHECK (\"genre\" IN (\n              'POP','ROCK','HIPHOP','RNB','ELECTRONIC','HOUSE','TECHNO','TRANCE','DUBSTEP','DRUM_AND_BASS',\n              'RAP','JAZZ','BLUES','CLASSICAL','ORCHESTRAL','OPERA','COUNTRY','FOLK','FOLK_ROCK','INDIE',\n              'ALTERNATIVE','METAL','HEAVY_METAL','PUNK','HARDCORE','REGGAE','SKA','SOUL','FUNK','DISCO',\n              'LATIN','PHONK','SALSA','BOSSA_NOVA','SAMBA','AFROBEAT','K_POP','J_POP','ANIME','SOUNDTRACK',\n              'AMBIENT','CHILLOUT','LO_FI','NEW_AGE','GOSPEL','SPIRITUAL','WORLD','CELTIC','GUITAR','PIANO',\n              'EXPERIMENTAL','SPOKEN_WORD'\n            ));\n          "
+      },
+      {
+        "description": "Drop Track.artistId",
+        "sql": "ALTER TABLE \"Track\" DROP COLUMN \"artistId\";"
+      },
+      {
+        "description": "Track.albumId NOT NULL + FK",
+        "sql": "\n            ALTER TABLE \"Track\" DROP CONSTRAINT IF EXISTS \"Track_albumId_fkey\";\n            ALTER TABLE \"Track\" ALTER COLUMN \"albumId\" SET NOT NULL;\n            ALTER TABLE \"Track\" ADD CONSTRAINT \"Track_albumId_fkey\"\n              FOREIGN KEY (\"albumId\") REFERENCES \"Album\"(\"id\") ON DELETE RESTRICT;\n          "
+      },
+      {
+        "description": "Album.labelId NOT NULL + FK + index",
+        "sql": "\n            ALTER TABLE \"Album\" ALTER COLUMN \"labelId\" SET NOT NULL;\n            ALTER TABLE \"Album\" ADD CONSTRAINT \"Album_labelId_fkey\"\n              FOREIGN KEY (\"labelId\") REFERENCES \"User\"(\"id\") ON DELETE RESTRICT;\n            CREATE INDEX \"Album_labelId_idx_e2585939\" ON \"Album\"(\"labelId\");\n          "
+      },
+      {
+        "description": "Drop Artist.country",
+        "sql": "ALTER TABLE \"Artist\" DROP COLUMN country;"
+      }
+    ]
+  }
+]

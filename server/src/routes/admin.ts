@@ -72,4 +72,30 @@ router.get('/labels', async (_req, res) => {
   })));
 });
 
+router.delete('/labels/:id', async (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id)) {
+    return res.status(400).json({ error: 'Неверный id' });
+  }
+
+  const label = await db.orm.public.User.where({ id }).first();
+  if (!label || label.role !== 'LABEL') {
+    return res.status(404).json({ error: 'Лейбл не найден' });
+  }
+
+  const tracks = await db.orm.public.Track.where({ labelId: id }).all();
+  const albums = await db.orm.public.Album.where({ labelId: id }).all();
+
+  if (tracks.length > 0 || albums.length > 0) {
+    return res.status(400).json({
+      error: `Нельзя удалить лейбл: у него ${tracks.length} трек(ов) и ${albums.length} альбом(ов). Сначала передайте или удалите их.`,
+      trackCount: tracks.length,
+      albumCount: albums.length,
+    });
+  }
+
+  await db.orm.public.User.where({ id }).delete();
+  res.status(204).send();
+});
+
 export default router;

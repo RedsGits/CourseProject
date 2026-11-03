@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { db } from '../prisma/db';
 import { authenticate, type AuthRequest } from '../middleware/auth';
+import { withArtistsBatch } from '../utils/track';
 
 const router = Router();
 router.use(authenticate);
@@ -57,11 +58,11 @@ router.get('/me', async (req: AuthRequest, res) => {
 
     reactions.sort((a, b) => a.order - b.order);
 
-  const result = reactions
+  const trackObjects = reactions
     .map((r) => trackMap.get(r.trackId))
     .filter((t): t is NonNullable<typeof t> => t !== undefined);
 
-  res.json(result);
+  res.json(await withArtistsBatch(trackObjects));
 });
 
 router.get('/:trackId', async (req: AuthRequest, res) => {

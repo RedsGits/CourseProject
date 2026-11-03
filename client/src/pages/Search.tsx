@@ -5,7 +5,6 @@ import { usePlayer } from '../store/player';
 import type { Track, Artist } from '../types';
 import LikeButton from '../components/LikeButton';
 import AddToPlaylistMenu from '../components/AddToPlaylistMenu';
-import { useArtists } from '../store/artists';
 
 interface Album { id: number; title: string; artistId: number; }
 interface Playlist { id: number; name: string; isPublic: boolean; coverUrl?: string | null; }
@@ -113,8 +112,6 @@ export default function Search() {
   const [activeTab, setActiveTab] = useState<'all' | 'artists' | 'tracks' | 'albums' | 'playlists'>('all');
   
   const { setTrack, current, isPlaying, togglePlay } = usePlayer();
-
-  const { artistsMap } = useArtists();
 
   const isActive = isFocused || query.length > 0;
 
@@ -255,13 +252,25 @@ export default function Search() {
 
                                   <div className="track-row-info">
                                     <span className="track-row-title">{track.title}</span>
-                                    <Link 
-                                      to={`/artist/${track.artistId}`} 
-                                      className="track-row-artist"
-                                      onClick={(e) => e.stopPropagation()}
-                                    >
-                                      {artistsMap[track.artistId] || '...'}
-                                    </Link>
+                                    <div className="track-row-artist-line">
+                                      {(() => {
+                                        const primary = track.artists?.find((a) => a.role === 'PRIMARY');
+                                        const featured = track.artists?.filter((a) => a.role === 'FEATURED') ?? [];
+                                        const allArtists = primary ? [primary, ...featured] : featured;
+                                        return allArtists.map((a, i) => (
+                                          <span key={a.id}>
+                                            {i > 0 && ', '}
+                                            <Link
+                                              to={`/artist/${a.id}`}
+                                              className="track-row-artist"
+                                              onClick={(e) => e.stopPropagation()}
+                                            >
+                                              {a.name}
+                                            </Link>
+                                          </span>
+                                        ));
+                                      })()}
+                                    </div>
                                   </div>
                                 </div>
                                 <div className="track-row-right">
@@ -385,13 +394,25 @@ export default function Search() {
 
                             <div className="track-row-info">
                               <span className="track-row-title">{track.title}</span>
-                              <Link 
-                                to={`/artist/${track.artistId}`} 
-                                className="track-row-artist"
-                                onClick={(e) => e.stopPropagation()}
-                              >
-                                {artistsMap[track.artistId] || '...'}
-                              </Link>
+                              <div className="track-row-artist-line">
+                                {(() => {
+                                  const primary = track.artists?.find((a) => a.role === 'PRIMARY');
+                                  const featured = track.artists?.filter((a) => a.role === 'FEATURED') ?? [];
+                                  const allArtists = primary ? [primary, ...featured] : featured;
+                                  return allArtists.map((a, i) => (
+                                    <span key={a.id}>
+                                      {i > 0 && ', '}
+                                      <Link
+                                        to={`/artist/${a.id}`}
+                                        className="track-row-artist"
+                                        onClick={(e) => e.stopPropagation()}
+                                      >
+                                        {a.name}
+                                      </Link>
+                                    </span>
+                                  ));
+                                })()}
+                              </div>
                             </div>
                           </div>
                           <div className="track-row-right">

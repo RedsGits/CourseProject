@@ -34,7 +34,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'4d4f326e1cde9f83a7eb80c62e0f8c2ad238f82bc3b1d63be086146d5f94d54e'>;
+  StorageHashBase<'1fe58ae628dcb44980ec54db454e584a22132bede851f0a927b5497a677a83d5'>;
 export type ExecutionHash =
   ExecutionHashBase<'72d477c118df8adf639abd48920f502cca4a9c16de2e37e606b10fc765075b2a'>;
 export type ProfileHash =
@@ -255,12 +255,15 @@ export type FieldOutputTypes = {
       readonly coverUrl: CodecTypes['pg/text@1']['output'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly id: CodecTypes['pg/int4@1']['output'];
+      readonly labelId: CodecTypes['pg/int4@1']['output'];
       readonly title: CodecTypes['pg/text@1']['output'];
+      readonly type: 'SINGLE' | 'EP' | 'ALBUM';
       readonly year: CodecTypes['pg/int4@1']['output'] | null;
     };
     readonly Artist: {
+      readonly bannerUrl: CodecTypes['pg/text@1']['output'] | null;
       readonly bio: CodecTypes['pg/text@1']['output'] | null;
-      readonly country: CodecTypes['pg/text@1']['output'] | null;
+      readonly countryCode: CodecTypes['pg/text@1']['output'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly id: CodecTypes['pg/int4@1']['output'];
       readonly imageUrl: CodecTypes['pg/text@1']['output'] | null;
@@ -289,13 +292,64 @@ export type FieldOutputTypes = {
       readonly trackId: CodecTypes['pg/int4@1']['output'];
     };
     readonly Track: {
-      readonly albumId: CodecTypes['pg/int4@1']['output'] | null;
-      readonly artistId: CodecTypes['pg/int4@1']['output'];
+      readonly albumId: CodecTypes['pg/int4@1']['output'];
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly dislikeCount: CodecTypes['pg/int4@1']['output'];
       readonly duration: CodecTypes['pg/int4@1']['output'];
       readonly fileUrl: CodecTypes['pg/text@1']['output'];
-      readonly genre: CodecTypes['pg/text@1']['output'] | null;
+      readonly genre:
+        | 'POP'
+        | 'ROCK'
+        | 'HIPHOP'
+        | 'RNB'
+        | 'ELECTRONIC'
+        | 'HOUSE'
+        | 'TECHNO'
+        | 'TRANCE'
+        | 'DUBSTEP'
+        | 'DRUM_AND_BASS'
+        | 'RAP'
+        | 'JAZZ'
+        | 'BLUES'
+        | 'CLASSICAL'
+        | 'ORCHESTRAL'
+        | 'OPERA'
+        | 'COUNTRY'
+        | 'FOLK'
+        | 'FOLK_ROCK'
+        | 'INDIE'
+        | 'ALTERNATIVE'
+        | 'METAL'
+        | 'HEAVY_METAL'
+        | 'PUNK'
+        | 'HARDCORE'
+        | 'REGGAE'
+        | 'SKA'
+        | 'SOUL'
+        | 'FUNK'
+        | 'DISCO'
+        | 'LATIN'
+        | 'PHONK'
+        | 'SALSA'
+        | 'BOSSA_NOVA'
+        | 'SAMBA'
+        | 'AFROBEAT'
+        | 'K_POP'
+        | 'J_POP'
+        | 'ANIME'
+        | 'SOUNDTRACK'
+        | 'AMBIENT'
+        | 'CHILLOUT'
+        | 'LO_FI'
+        | 'NEW_AGE'
+        | 'GOSPEL'
+        | 'SPIRITUAL'
+        | 'WORLD'
+        | 'CELTIC'
+        | 'GUITAR'
+        | 'PIANO'
+        | 'EXPERIMENTAL'
+        | 'SPOKEN_WORD';
       readonly id: CodecTypes['pg/int4@1']['output'];
       readonly labelId: CodecTypes['pg/int4@1']['output'];
       readonly likeCount: CodecTypes['pg/int4@1']['output'];
@@ -304,6 +358,13 @@ export type FieldOutputTypes = {
       readonly syncedLyrics: CodecTypes['pg/text@1']['output'] | null;
       readonly title: CodecTypes['pg/text@1']['output'];
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    };
+    readonly TrackArtist: {
+      readonly artistId: CodecTypes['pg/int4@1']['output'];
+      readonly id: CodecTypes['pg/int4@1']['output'];
+      readonly order: CodecTypes['pg/int4@1']['output'];
+      readonly role: 'PRIMARY' | 'FEATURED';
+      readonly trackId: CodecTypes['pg/int4@1']['output'];
     };
     readonly TrackReaction: {
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
@@ -338,12 +399,15 @@ export type FieldInputTypes = {
       readonly coverUrl: CodecTypes['pg/text@1']['input'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly id: CodecTypes['pg/int4@1']['input'];
+      readonly labelId: CodecTypes['pg/int4@1']['input'];
       readonly title: CodecTypes['pg/text@1']['input'];
+      readonly type: 'SINGLE' | 'EP' | 'ALBUM';
       readonly year: CodecTypes['pg/int4@1']['input'] | null;
     };
     readonly Artist: {
+      readonly bannerUrl: CodecTypes['pg/text@1']['input'] | null;
       readonly bio: CodecTypes['pg/text@1']['input'] | null;
-      readonly country: CodecTypes['pg/text@1']['input'] | null;
+      readonly countryCode: CodecTypes['pg/text@1']['input'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly id: CodecTypes['pg/int4@1']['input'];
       readonly imageUrl: CodecTypes['pg/text@1']['input'] | null;
@@ -372,13 +436,64 @@ export type FieldInputTypes = {
       readonly trackId: CodecTypes['pg/int4@1']['input'];
     };
     readonly Track: {
-      readonly albumId: CodecTypes['pg/int4@1']['input'] | null;
-      readonly artistId: CodecTypes['pg/int4@1']['input'];
+      readonly albumId: CodecTypes['pg/int4@1']['input'];
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly dislikeCount: CodecTypes['pg/int4@1']['input'];
       readonly duration: CodecTypes['pg/int4@1']['input'];
       readonly fileUrl: CodecTypes['pg/text@1']['input'];
-      readonly genre: CodecTypes['pg/text@1']['input'] | null;
+      readonly genre:
+        | 'POP'
+        | 'ROCK'
+        | 'HIPHOP'
+        | 'RNB'
+        | 'ELECTRONIC'
+        | 'HOUSE'
+        | 'TECHNO'
+        | 'TRANCE'
+        | 'DUBSTEP'
+        | 'DRUM_AND_BASS'
+        | 'RAP'
+        | 'JAZZ'
+        | 'BLUES'
+        | 'CLASSICAL'
+        | 'ORCHESTRAL'
+        | 'OPERA'
+        | 'COUNTRY'
+        | 'FOLK'
+        | 'FOLK_ROCK'
+        | 'INDIE'
+        | 'ALTERNATIVE'
+        | 'METAL'
+        | 'HEAVY_METAL'
+        | 'PUNK'
+        | 'HARDCORE'
+        | 'REGGAE'
+        | 'SKA'
+        | 'SOUL'
+        | 'FUNK'
+        | 'DISCO'
+        | 'LATIN'
+        | 'PHONK'
+        | 'SALSA'
+        | 'BOSSA_NOVA'
+        | 'SAMBA'
+        | 'AFROBEAT'
+        | 'K_POP'
+        | 'J_POP'
+        | 'ANIME'
+        | 'SOUNDTRACK'
+        | 'AMBIENT'
+        | 'CHILLOUT'
+        | 'LO_FI'
+        | 'NEW_AGE'
+        | 'GOSPEL'
+        | 'SPIRITUAL'
+        | 'WORLD'
+        | 'CELTIC'
+        | 'GUITAR'
+        | 'PIANO'
+        | 'EXPERIMENTAL'
+        | 'SPOKEN_WORD';
       readonly id: CodecTypes['pg/int4@1']['input'];
       readonly labelId: CodecTypes['pg/int4@1']['input'];
       readonly likeCount: CodecTypes['pg/int4@1']['input'];
@@ -387,6 +502,13 @@ export type FieldInputTypes = {
       readonly syncedLyrics: CodecTypes['pg/text@1']['input'] | null;
       readonly title: CodecTypes['pg/text@1']['input'];
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+    };
+    readonly TrackArtist: {
+      readonly artistId: CodecTypes['pg/int4@1']['input'];
+      readonly id: CodecTypes['pg/int4@1']['input'];
+      readonly order: CodecTypes['pg/int4@1']['input'];
+      readonly role: 'PRIMARY' | 'FEATURED';
+      readonly trackId: CodecTypes['pg/int4@1']['input'];
     };
     readonly TrackReaction: {
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
@@ -421,12 +543,15 @@ export type StorageColumnTypes = {
       readonly coverUrl: CodecTypes['pg/text@1']['output'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly id: CodecTypes['pg/int4@1']['output'];
+      readonly labelId: CodecTypes['pg/int4@1']['output'];
       readonly title: CodecTypes['pg/text@1']['output'];
+      readonly type: 'SINGLE' | 'EP' | 'ALBUM';
       readonly year: CodecTypes['pg/int4@1']['output'] | null;
     };
     readonly Artist: {
+      readonly bannerUrl: CodecTypes['pg/text@1']['output'] | null;
       readonly bio: CodecTypes['pg/text@1']['output'] | null;
-      readonly country: CodecTypes['pg/text@1']['output'] | null;
+      readonly countryCode: CodecTypes['pg/text@1']['output'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly id: CodecTypes['pg/int4@1']['output'];
       readonly imageUrl: CodecTypes['pg/text@1']['output'] | null;
@@ -455,13 +580,64 @@ export type StorageColumnTypes = {
       readonly trackId: CodecTypes['pg/int4@1']['output'];
     };
     readonly Track: {
-      readonly albumId: CodecTypes['pg/int4@1']['output'] | null;
-      readonly artistId: CodecTypes['pg/int4@1']['output'];
+      readonly albumId: CodecTypes['pg/int4@1']['output'];
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly dislikeCount: CodecTypes['pg/int4@1']['output'];
       readonly duration: CodecTypes['pg/int4@1']['output'];
       readonly fileUrl: CodecTypes['pg/text@1']['output'];
-      readonly genre: CodecTypes['pg/text@1']['output'] | null;
+      readonly genre:
+        | 'POP'
+        | 'ROCK'
+        | 'HIPHOP'
+        | 'RNB'
+        | 'ELECTRONIC'
+        | 'HOUSE'
+        | 'TECHNO'
+        | 'TRANCE'
+        | 'DUBSTEP'
+        | 'DRUM_AND_BASS'
+        | 'RAP'
+        | 'JAZZ'
+        | 'BLUES'
+        | 'CLASSICAL'
+        | 'ORCHESTRAL'
+        | 'OPERA'
+        | 'COUNTRY'
+        | 'FOLK'
+        | 'FOLK_ROCK'
+        | 'INDIE'
+        | 'ALTERNATIVE'
+        | 'METAL'
+        | 'HEAVY_METAL'
+        | 'PUNK'
+        | 'HARDCORE'
+        | 'REGGAE'
+        | 'SKA'
+        | 'SOUL'
+        | 'FUNK'
+        | 'DISCO'
+        | 'LATIN'
+        | 'PHONK'
+        | 'SALSA'
+        | 'BOSSA_NOVA'
+        | 'SAMBA'
+        | 'AFROBEAT'
+        | 'K_POP'
+        | 'J_POP'
+        | 'ANIME'
+        | 'SOUNDTRACK'
+        | 'AMBIENT'
+        | 'CHILLOUT'
+        | 'LO_FI'
+        | 'NEW_AGE'
+        | 'GOSPEL'
+        | 'SPIRITUAL'
+        | 'WORLD'
+        | 'CELTIC'
+        | 'GUITAR'
+        | 'PIANO'
+        | 'EXPERIMENTAL'
+        | 'SPOKEN_WORD';
       readonly id: CodecTypes['pg/int4@1']['output'];
       readonly labelId: CodecTypes['pg/int4@1']['output'];
       readonly likeCount: CodecTypes['pg/int4@1']['output'];
@@ -470,6 +646,13 @@ export type StorageColumnTypes = {
       readonly syncedLyrics: CodecTypes['pg/text@1']['output'] | null;
       readonly title: CodecTypes['pg/text@1']['output'];
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    };
+    readonly TrackArtist: {
+      readonly artistId: CodecTypes['pg/int4@1']['output'];
+      readonly id: CodecTypes['pg/int4@1']['output'];
+      readonly order: CodecTypes['pg/int4@1']['output'];
+      readonly role: 'PRIMARY' | 'FEATURED';
+      readonly trackId: CodecTypes['pg/int4@1']['output'];
     };
     readonly TrackReaction: {
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
@@ -504,12 +687,15 @@ export type StorageColumnInputTypes = {
       readonly coverUrl: CodecTypes['pg/text@1']['input'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly id: CodecTypes['pg/int4@1']['input'];
+      readonly labelId: CodecTypes['pg/int4@1']['input'];
       readonly title: CodecTypes['pg/text@1']['input'];
+      readonly type: 'SINGLE' | 'EP' | 'ALBUM';
       readonly year: CodecTypes['pg/int4@1']['input'] | null;
     };
     readonly Artist: {
+      readonly bannerUrl: CodecTypes['pg/text@1']['input'] | null;
       readonly bio: CodecTypes['pg/text@1']['input'] | null;
-      readonly country: CodecTypes['pg/text@1']['input'] | null;
+      readonly countryCode: CodecTypes['pg/text@1']['input'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly id: CodecTypes['pg/int4@1']['input'];
       readonly imageUrl: CodecTypes['pg/text@1']['input'] | null;
@@ -538,13 +724,64 @@ export type StorageColumnInputTypes = {
       readonly trackId: CodecTypes['pg/int4@1']['input'];
     };
     readonly Track: {
-      readonly albumId: CodecTypes['pg/int4@1']['input'] | null;
-      readonly artistId: CodecTypes['pg/int4@1']['input'];
+      readonly albumId: CodecTypes['pg/int4@1']['input'];
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly dislikeCount: CodecTypes['pg/int4@1']['input'];
       readonly duration: CodecTypes['pg/int4@1']['input'];
       readonly fileUrl: CodecTypes['pg/text@1']['input'];
-      readonly genre: CodecTypes['pg/text@1']['input'] | null;
+      readonly genre:
+        | 'POP'
+        | 'ROCK'
+        | 'HIPHOP'
+        | 'RNB'
+        | 'ELECTRONIC'
+        | 'HOUSE'
+        | 'TECHNO'
+        | 'TRANCE'
+        | 'DUBSTEP'
+        | 'DRUM_AND_BASS'
+        | 'RAP'
+        | 'JAZZ'
+        | 'BLUES'
+        | 'CLASSICAL'
+        | 'ORCHESTRAL'
+        | 'OPERA'
+        | 'COUNTRY'
+        | 'FOLK'
+        | 'FOLK_ROCK'
+        | 'INDIE'
+        | 'ALTERNATIVE'
+        | 'METAL'
+        | 'HEAVY_METAL'
+        | 'PUNK'
+        | 'HARDCORE'
+        | 'REGGAE'
+        | 'SKA'
+        | 'SOUL'
+        | 'FUNK'
+        | 'DISCO'
+        | 'LATIN'
+        | 'PHONK'
+        | 'SALSA'
+        | 'BOSSA_NOVA'
+        | 'SAMBA'
+        | 'AFROBEAT'
+        | 'K_POP'
+        | 'J_POP'
+        | 'ANIME'
+        | 'SOUNDTRACK'
+        | 'AMBIENT'
+        | 'CHILLOUT'
+        | 'LO_FI'
+        | 'NEW_AGE'
+        | 'GOSPEL'
+        | 'SPIRITUAL'
+        | 'WORLD'
+        | 'CELTIC'
+        | 'GUITAR'
+        | 'PIANO'
+        | 'EXPERIMENTAL'
+        | 'SPOKEN_WORD';
       readonly id: CodecTypes['pg/int4@1']['input'];
       readonly labelId: CodecTypes['pg/int4@1']['input'];
       readonly likeCount: CodecTypes['pg/int4@1']['input'];
@@ -553,6 +790,13 @@ export type StorageColumnInputTypes = {
       readonly syncedLyrics: CodecTypes['pg/text@1']['input'] | null;
       readonly title: CodecTypes['pg/text@1']['input'];
       readonly updatedAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+    };
+    readonly TrackArtist: {
+      readonly artistId: CodecTypes['pg/int4@1']['input'];
+      readonly id: CodecTypes['pg/int4@1']['input'];
+      readonly order: CodecTypes['pg/int4@1']['input'];
+      readonly role: 'PRIMARY' | 'FEATURED';
+      readonly trackId: CodecTypes['pg/int4@1']['input'];
     };
     readonly TrackReaction: {
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
@@ -587,15 +831,19 @@ export namespace Models {
     coverUrl: CodecTypes['pg/text@1']['output'] | null;
     createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     id: CodecTypes['pg/int4@1']['output'];
+    labelId: CodecTypes['pg/int4@1']['output'];
     title: CodecTypes['pg/text@1']['output'];
+    type: 'SINGLE' | 'EP' | 'ALBUM';
     year: CodecTypes['pg/int4@1']['output'] | null;
     artist: public_Artist;
+    label: public_User;
     tracks: public_Track[];
-    readonly [RelationKeys]?: 'artist' | 'tracks';
+    readonly [RelationKeys]?: 'artist' | 'label' | 'tracks';
   };
   export type public_Artist = {
+    bannerUrl: CodecTypes['pg/text@1']['output'] | null;
     bio: CodecTypes['pg/text@1']['output'] | null;
-    country: CodecTypes['pg/text@1']['output'] | null;
+    countryCode: CodecTypes['pg/text@1']['output'] | null;
     createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     id: CodecTypes['pg/int4@1']['output'];
     imageUrl: CodecTypes['pg/text@1']['output'] | null;
@@ -603,7 +851,7 @@ export namespace Models {
     nameNormalized: CodecTypes['pg/text@1']['output'];
     updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     albums: public_Album[];
-    tracks: public_Track[];
+    tracks: public_TrackArtist[];
     readonly [RelationKeys]?: 'albums' | 'tracks';
   };
   export type public_ListeningHistory = {
@@ -636,13 +884,64 @@ export namespace Models {
     readonly [RelationKeys]?: 'playlist' | 'track';
   };
   export type public_Track = {
-    albumId: CodecTypes['pg/int4@1']['output'] | null;
-    artistId: CodecTypes['pg/int4@1']['output'];
+    albumId: CodecTypes['pg/int4@1']['output'];
     createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     dislikeCount: CodecTypes['pg/int4@1']['output'];
     duration: CodecTypes['pg/int4@1']['output'];
     fileUrl: CodecTypes['pg/text@1']['output'];
-    genre: CodecTypes['pg/text@1']['output'] | null;
+    genre:
+      | 'POP'
+      | 'ROCK'
+      | 'HIPHOP'
+      | 'RNB'
+      | 'ELECTRONIC'
+      | 'HOUSE'
+      | 'TECHNO'
+      | 'TRANCE'
+      | 'DUBSTEP'
+      | 'DRUM_AND_BASS'
+      | 'RAP'
+      | 'JAZZ'
+      | 'BLUES'
+      | 'CLASSICAL'
+      | 'ORCHESTRAL'
+      | 'OPERA'
+      | 'COUNTRY'
+      | 'FOLK'
+      | 'FOLK_ROCK'
+      | 'INDIE'
+      | 'ALTERNATIVE'
+      | 'METAL'
+      | 'HEAVY_METAL'
+      | 'PUNK'
+      | 'HARDCORE'
+      | 'REGGAE'
+      | 'SKA'
+      | 'SOUL'
+      | 'FUNK'
+      | 'DISCO'
+      | 'LATIN'
+      | 'PHONK'
+      | 'SALSA'
+      | 'BOSSA_NOVA'
+      | 'SAMBA'
+      | 'AFROBEAT'
+      | 'K_POP'
+      | 'J_POP'
+      | 'ANIME'
+      | 'SOUNDTRACK'
+      | 'AMBIENT'
+      | 'CHILLOUT'
+      | 'LO_FI'
+      | 'NEW_AGE'
+      | 'GOSPEL'
+      | 'SPIRITUAL'
+      | 'WORLD'
+      | 'CELTIC'
+      | 'GUITAR'
+      | 'PIANO'
+      | 'EXPERIMENTAL'
+      | 'SPOKEN_WORD';
     id: CodecTypes['pg/int4@1']['output'];
     labelId: CodecTypes['pg/int4@1']['output'];
     likeCount: CodecTypes['pg/int4@1']['output'];
@@ -651,13 +950,23 @@ export namespace Models {
     syncedLyrics: CodecTypes['pg/text@1']['output'] | null;
     title: CodecTypes['pg/text@1']['output'];
     updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
-    album: public_Album | null;
-    artist: public_Artist;
+    album: public_Album;
+    artists: public_TrackArtist[];
     history: public_ListeningHistory[];
     label: public_User;
     playlists: public_PlaylistTrack[];
     reactions: public_TrackReaction[];
-    readonly [RelationKeys]?: 'album' | 'artist' | 'history' | 'label' | 'playlists' | 'reactions';
+    readonly [RelationKeys]?: 'album' | 'artists' | 'history' | 'label' | 'playlists' | 'reactions';
+  };
+  export type public_TrackArtist = {
+    artistId: CodecTypes['pg/int4@1']['output'];
+    id: CodecTypes['pg/int4@1']['output'];
+    order: CodecTypes['pg/int4@1']['output'];
+    role: 'PRIMARY' | 'FEATURED';
+    trackId: CodecTypes['pg/int4@1']['output'];
+    artist: public_Artist;
+    track: public_Track;
+    readonly [RelationKeys]?: 'artist' | 'track';
   };
   export type public_TrackReaction = {
     createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
@@ -688,11 +997,18 @@ export namespace Models {
     createdBy: public_User | null;
     createdLabels: public_User[];
     history: public_ListeningHistory[];
+    ownedAlbums: public_Album[];
     ownedTracks: public_Track[];
     playlists: public_Playlist[];
     reactions: public_TrackReaction[];
     readonly [RelationKeys]?:
-      'createdBy' | 'createdLabels' | 'history' | 'ownedTracks' | 'playlists' | 'reactions';
+      | 'createdBy'
+      | 'createdLabels'
+      | 'history'
+      | 'ownedAlbums'
+      | 'ownedTracks'
+      | 'playlists'
+      | 'reactions';
   };
 }
 
@@ -704,6 +1020,7 @@ export declare const models: {
     Playlist: Models.public_Playlist;
     PlaylistTrack: Models.public_PlaylistTrack;
     Track: Models.public_Track;
+    TrackArtist: Models.public_TrackArtist;
     TrackReaction: Models.public_TrackReaction;
     User: Models.public_User;
   };
@@ -754,10 +1071,24 @@ type ContractBase = Omit<
                     readonly expression: 'autoincrement()';
                   };
                 };
+                readonly labelId: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                };
                 readonly title: {
                   readonly nativeType: 'text';
                   readonly codecId: 'pg/text@1';
                   readonly nullable: false;
+                };
+                readonly type: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', 'ALBUM'>;
+                  };
                 };
                 readonly year: {
                   readonly nativeType: 'int4';
@@ -774,6 +1105,12 @@ type ContractBase = Omit<
                   readonly columns: readonly ['artistId'];
                   readonly unique: false;
                 },
+                {
+                  readonly name: 'Album_labelId_idx_e2585939';
+                  readonly prefix: 'Album_labelId_idx';
+                  readonly columns: readonly ['labelId'];
+                  readonly unique: false;
+                },
               ];
               foreignKeys: readonly [
                 {
@@ -788,16 +1125,33 @@ type ContractBase = Omit<
                     readonly columns: readonly ['id'];
                   };
                 },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'Album';
+                    readonly columns: readonly ['labelId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'User';
+                    readonly columns: readonly ['id'];
+                  };
+                },
               ];
             };
             readonly Artist: {
               columns: {
+                readonly bannerUrl: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
                 readonly bio: {
                   readonly nativeType: 'text';
                   readonly codecId: 'pg/text@1';
                   readonly nullable: true;
                 };
-                readonly country: {
+                readonly countryCode: {
                   readonly nativeType: 'text';
                   readonly codecId: 'pg/text@1';
                   readonly nullable: true;
@@ -1079,11 +1433,6 @@ type ContractBase = Omit<
                 readonly albumId: {
                   readonly nativeType: 'int4';
                   readonly codecId: 'pg/int4@1';
-                  readonly nullable: true;
-                };
-                readonly artistId: {
-                  readonly nativeType: 'int4';
-                  readonly codecId: 'pg/int4@1';
                   readonly nullable: false;
                 };
                 readonly createdAt: {
@@ -1114,7 +1463,7 @@ type ContractBase = Omit<
                 readonly genre: {
                   readonly nativeType: 'text';
                   readonly codecId: 'pg/text@1';
-                  readonly nullable: true;
+                  readonly nullable: false;
                 };
                 readonly id: {
                   readonly nativeType: 'int4';
@@ -1179,12 +1528,6 @@ type ContractBase = Omit<
                   readonly unique: false;
                 },
                 {
-                  readonly name: 'Track_artistId_idx_5a004db6';
-                  readonly prefix: 'Track_artistId_idx';
-                  readonly columns: readonly ['artistId'];
-                  readonly unique: false;
-                },
-                {
                   readonly name: 'Track_labelId_idx_e2585939';
                   readonly prefix: 'Track_labelId_idx';
                   readonly columns: readonly ['labelId'];
@@ -1198,18 +1541,6 @@ type ContractBase = Omit<
                 },
               ];
               foreignKeys: readonly [
-                {
-                  readonly source: {
-                    readonly namespaceId: 'public' & NamespaceId;
-                    readonly tableName: 'Track';
-                    readonly columns: readonly ['artistId'];
-                  };
-                  readonly target: {
-                    readonly namespaceId: 'public' & NamespaceId;
-                    readonly tableName: 'Artist';
-                    readonly columns: readonly ['id'];
-                  };
-                },
                 {
                   readonly source: {
                     readonly namespaceId: 'public' & NamespaceId;
@@ -1231,6 +1562,89 @@ type ContractBase = Omit<
                   readonly target: {
                     readonly namespaceId: 'public' & NamespaceId;
                     readonly tableName: 'User';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+              ];
+            };
+            readonly TrackArtist: {
+              columns: {
+                readonly artistId: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                };
+                readonly id: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'function';
+                    readonly expression: 'autoincrement()';
+                  };
+                };
+                readonly order: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/int4@1', 0>;
+                  };
+                };
+                readonly role: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', 'PRIMARY'>;
+                  };
+                };
+                readonly trackId: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [{ readonly columns: readonly ['trackId', 'artistId'] }];
+              indexes: readonly [
+                {
+                  readonly name: 'TrackArtist_artistId_idx_5a004db6';
+                  readonly prefix: 'TrackArtist_artistId_idx';
+                  readonly columns: readonly ['artistId'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'TrackArtist_trackId_idx_8b560769';
+                  readonly prefix: 'TrackArtist_trackId_idx';
+                  readonly columns: readonly ['trackId'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'TrackArtist';
+                    readonly columns: readonly ['trackId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'Track';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'TrackArtist';
+                    readonly columns: readonly ['artistId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'Artist';
                     readonly columns: readonly ['id'];
                   };
                 },
@@ -1433,6 +1847,67 @@ type ContractBase = Omit<
             };
           };
           readonly valueSet: {
+            readonly AlbumType: {
+              readonly kind: 'valueSet';
+              readonly values: readonly ['SINGLE', 'EP', 'ALBUM'];
+            };
+            readonly Genre: {
+              readonly kind: 'valueSet';
+              readonly values: readonly [
+                'POP',
+                'ROCK',
+                'HIPHOP',
+                'RNB',
+                'ELECTRONIC',
+                'HOUSE',
+                'TECHNO',
+                'TRANCE',
+                'DUBSTEP',
+                'DRUM_AND_BASS',
+                'RAP',
+                'JAZZ',
+                'BLUES',
+                'CLASSICAL',
+                'ORCHESTRAL',
+                'OPERA',
+                'COUNTRY',
+                'FOLK',
+                'FOLK_ROCK',
+                'INDIE',
+                'ALTERNATIVE',
+                'METAL',
+                'HEAVY_METAL',
+                'PUNK',
+                'HARDCORE',
+                'REGGAE',
+                'SKA',
+                'SOUL',
+                'FUNK',
+                'DISCO',
+                'LATIN',
+                'PHONK',
+                'SALSA',
+                'BOSSA_NOVA',
+                'SAMBA',
+                'AFROBEAT',
+                'K_POP',
+                'J_POP',
+                'ANIME',
+                'SOUNDTRACK',
+                'AMBIENT',
+                'CHILLOUT',
+                'LO_FI',
+                'NEW_AGE',
+                'GOSPEL',
+                'SPIRITUAL',
+                'WORLD',
+                'CELTIC',
+                'GUITAR',
+                'PIANO',
+                'EXPERIMENTAL',
+                'SPOKEN_WORD',
+              ];
+            };
             readonly ReactionType: {
               readonly kind: 'valueSet';
               readonly values: readonly ['LIKE', 'DISLIKE'];
@@ -1440,6 +1915,10 @@ type ContractBase = Omit<
             readonly Role: {
               readonly kind: 'valueSet';
               readonly values: readonly ['USER', 'LABEL', 'ADMIN'];
+            };
+            readonly TrackArtistRole: {
+              readonly kind: 'valueSet';
+              readonly values: readonly ['PRIMARY', 'FEATURED'];
             };
           };
         };
@@ -1464,6 +1943,10 @@ type ContractBase = Omit<
       readonly model: 'PlaylistTrack';
     };
     readonly Track: { readonly namespace: 'public' & NamespaceId; readonly model: 'Track' };
+    readonly TrackArtist: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'TrackArtist';
+    };
     readonly TrackReaction: {
       readonly namespace: 'public' & NamespaceId;
       readonly model: 'TrackReaction';
@@ -1495,7 +1978,15 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
               };
+              readonly labelId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
               readonly title: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly type: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
@@ -1514,6 +2005,15 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly on: {
                   readonly localFields: readonly ['artistId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+              readonly label: {
+                readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'User' };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['labelId'];
                   readonly targetFields: readonly ['id'];
                 };
               };
@@ -1537,18 +2037,24 @@ type ContractBase = Omit<
                 readonly coverUrl: { readonly column: 'coverUrl' };
                 readonly createdAt: { readonly column: 'createdAt' };
                 readonly id: { readonly column: 'id' };
+                readonly labelId: { readonly column: 'labelId' };
                 readonly title: { readonly column: 'title' };
+                readonly type: { readonly column: 'type' };
                 readonly year: { readonly column: 'year' };
               };
             };
           };
           readonly Artist: {
             readonly fields: {
+              readonly bannerUrl: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
               readonly bio: {
                 readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
-              readonly country: {
+              readonly countryCode: {
                 readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
@@ -1598,7 +2104,7 @@ type ContractBase = Omit<
               readonly tracks: {
                 readonly to: {
                   readonly namespace: 'public' & NamespaceId;
-                  readonly model: 'Track';
+                  readonly model: 'TrackArtist';
                 };
                 readonly cardinality: '1:N';
                 readonly on: {
@@ -1611,8 +2117,9 @@ type ContractBase = Omit<
               readonly table: 'Artist';
               readonly namespaceId: 'public';
               readonly fields: {
+                readonly bannerUrl: { readonly column: 'bannerUrl' };
                 readonly bio: { readonly column: 'bio' };
-                readonly country: { readonly column: 'country' };
+                readonly countryCode: { readonly column: 'countryCode' };
                 readonly createdAt: { readonly column: 'createdAt' };
                 readonly id: { readonly column: 'id' };
                 readonly imageUrl: { readonly column: 'imageUrl' };
@@ -1802,10 +2309,6 @@ type ContractBase = Omit<
           readonly Track: {
             readonly fields: {
               readonly albumId: {
-                readonly nullable: true;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
-              };
-              readonly artistId: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
               };
@@ -1829,7 +2332,7 @@ type ContractBase = Omit<
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
               readonly genre: {
-                readonly nullable: true;
+                readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
               readonly id: {
@@ -1875,22 +2378,21 @@ type ContractBase = Omit<
                   readonly model: 'Album';
                 };
                 readonly cardinality: 'N:1';
-                readonly nullable: true;
+                readonly nullable: false;
                 readonly on: {
                   readonly localFields: readonly ['albumId'];
                   readonly targetFields: readonly ['id'];
                 };
               };
-              readonly artist: {
+              readonly artists: {
                 readonly to: {
                   readonly namespace: 'public' & NamespaceId;
-                  readonly model: 'Artist';
+                  readonly model: 'TrackArtist';
                 };
-                readonly cardinality: 'N:1';
-                readonly nullable: false;
+                readonly cardinality: '1:N';
                 readonly on: {
-                  readonly localFields: readonly ['artistId'];
-                  readonly targetFields: readonly ['id'];
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['trackId'];
                 };
               };
               readonly history: {
@@ -1941,7 +2443,6 @@ type ContractBase = Omit<
               readonly namespaceId: 'public';
               readonly fields: {
                 readonly albumId: { readonly column: 'albumId' };
-                readonly artistId: { readonly column: 'artistId' };
                 readonly createdAt: { readonly column: 'createdAt' };
                 readonly dislikeCount: { readonly column: 'dislikeCount' };
                 readonly duration: { readonly column: 'duration' };
@@ -1955,6 +2456,67 @@ type ContractBase = Omit<
                 readonly syncedLyrics: { readonly column: 'syncedLyrics' };
                 readonly title: { readonly column: 'title' };
                 readonly updatedAt: { readonly column: 'updatedAt' };
+              };
+            };
+          };
+          readonly TrackArtist: {
+            readonly fields: {
+              readonly artistId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly order: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly role: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly trackId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+            };
+            readonly relations: {
+              readonly artist: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Artist';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['artistId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+              readonly track: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Track';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['trackId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'TrackArtist';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly artistId: { readonly column: 'artistId' };
+                readonly id: { readonly column: 'id' };
+                readonly order: { readonly column: 'order' };
+                readonly role: { readonly column: 'role' };
+                readonly trackId: { readonly column: 'trackId' };
               };
             };
           };
@@ -2122,6 +2684,17 @@ type ContractBase = Omit<
                   readonly targetFields: readonly ['userId'];
                 };
               };
+              readonly ownedAlbums: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Album';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['labelId'];
+                };
+              };
               readonly ownedTracks: {
                 readonly to: {
                   readonly namespace: 'public' & NamespaceId;
@@ -2178,6 +2751,71 @@ type ContractBase = Omit<
           };
         };
         readonly enum: {
+          readonly AlbumType: {
+            readonly codecId: 'pg/text@1';
+            readonly members: readonly [
+              { readonly name: 'SINGLE'; readonly value: 'SINGLE' },
+              { readonly name: 'EP'; readonly value: 'EP' },
+              { readonly name: 'ALBUM'; readonly value: 'ALBUM' },
+            ];
+          };
+          readonly Genre: {
+            readonly codecId: 'pg/text@1';
+            readonly members: readonly [
+              { readonly name: 'POP'; readonly value: 'POP' },
+              { readonly name: 'ROCK'; readonly value: 'ROCK' },
+              { readonly name: 'HIPHOP'; readonly value: 'HIPHOP' },
+              { readonly name: 'RNB'; readonly value: 'RNB' },
+              { readonly name: 'ELECTRONIC'; readonly value: 'ELECTRONIC' },
+              { readonly name: 'HOUSE'; readonly value: 'HOUSE' },
+              { readonly name: 'TECHNO'; readonly value: 'TECHNO' },
+              { readonly name: 'TRANCE'; readonly value: 'TRANCE' },
+              { readonly name: 'DUBSTEP'; readonly value: 'DUBSTEP' },
+              { readonly name: 'DRUM_AND_BASS'; readonly value: 'DRUM_AND_BASS' },
+              { readonly name: 'RAP'; readonly value: 'RAP' },
+              { readonly name: 'JAZZ'; readonly value: 'JAZZ' },
+              { readonly name: 'BLUES'; readonly value: 'BLUES' },
+              { readonly name: 'CLASSICAL'; readonly value: 'CLASSICAL' },
+              { readonly name: 'ORCHESTRAL'; readonly value: 'ORCHESTRAL' },
+              { readonly name: 'OPERA'; readonly value: 'OPERA' },
+              { readonly name: 'COUNTRY'; readonly value: 'COUNTRY' },
+              { readonly name: 'FOLK'; readonly value: 'FOLK' },
+              { readonly name: 'FOLK_ROCK'; readonly value: 'FOLK_ROCK' },
+              { readonly name: 'INDIE'; readonly value: 'INDIE' },
+              { readonly name: 'ALTERNATIVE'; readonly value: 'ALTERNATIVE' },
+              { readonly name: 'METAL'; readonly value: 'METAL' },
+              { readonly name: 'HEAVY_METAL'; readonly value: 'HEAVY_METAL' },
+              { readonly name: 'PUNK'; readonly value: 'PUNK' },
+              { readonly name: 'HARDCORE'; readonly value: 'HARDCORE' },
+              { readonly name: 'REGGAE'; readonly value: 'REGGAE' },
+              { readonly name: 'SKA'; readonly value: 'SKA' },
+              { readonly name: 'SOUL'; readonly value: 'SOUL' },
+              { readonly name: 'FUNK'; readonly value: 'FUNK' },
+              { readonly name: 'DISCO'; readonly value: 'DISCO' },
+              { readonly name: 'LATIN'; readonly value: 'LATIN' },
+              { readonly name: 'PHONK'; readonly value: 'PHONK' },
+              { readonly name: 'SALSA'; readonly value: 'SALSA' },
+              { readonly name: 'BOSSA_NOVA'; readonly value: 'BOSSA_NOVA' },
+              { readonly name: 'SAMBA'; readonly value: 'SAMBA' },
+              { readonly name: 'AFROBEAT'; readonly value: 'AFROBEAT' },
+              { readonly name: 'K_POP'; readonly value: 'K_POP' },
+              { readonly name: 'J_POP'; readonly value: 'J_POP' },
+              { readonly name: 'ANIME'; readonly value: 'ANIME' },
+              { readonly name: 'SOUNDTRACK'; readonly value: 'SOUNDTRACK' },
+              { readonly name: 'AMBIENT'; readonly value: 'AMBIENT' },
+              { readonly name: 'CHILLOUT'; readonly value: 'CHILLOUT' },
+              { readonly name: 'LO_FI'; readonly value: 'LO_FI' },
+              { readonly name: 'NEW_AGE'; readonly value: 'NEW_AGE' },
+              { readonly name: 'GOSPEL'; readonly value: 'GOSPEL' },
+              { readonly name: 'SPIRITUAL'; readonly value: 'SPIRITUAL' },
+              { readonly name: 'WORLD'; readonly value: 'WORLD' },
+              { readonly name: 'CELTIC'; readonly value: 'CELTIC' },
+              { readonly name: 'GUITAR'; readonly value: 'GUITAR' },
+              { readonly name: 'PIANO'; readonly value: 'PIANO' },
+              { readonly name: 'EXPERIMENTAL'; readonly value: 'EXPERIMENTAL' },
+              { readonly name: 'SPOKEN_WORD'; readonly value: 'SPOKEN_WORD' },
+            ];
+          };
           readonly ReactionType: {
             readonly codecId: 'pg/text@1';
             readonly members: readonly [
@@ -2191,6 +2829,13 @@ type ContractBase = Omit<
               { readonly name: 'USER'; readonly value: 'USER' },
               { readonly name: 'LABEL'; readonly value: 'LABEL' },
               { readonly name: 'ADMIN'; readonly value: 'ADMIN' },
+            ];
+          };
+          readonly TrackArtistRole: {
+            readonly codecId: 'pg/text@1';
+            readonly members: readonly [
+              { readonly name: 'PRIMARY'; readonly value: 'PRIMARY' },
+              { readonly name: 'FEATURED'; readonly value: 'FEATURED' },
             ];
           };
         };

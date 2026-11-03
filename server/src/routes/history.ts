@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { db } from '../prisma/db';
 import { authenticate, type AuthRequest } from '../middleware/auth';
+import { withArtistsBatch } from '../utils/track';
 
 const router = Router();
 router.use(authenticate);
@@ -44,17 +45,22 @@ router.get('/', async (req: AuthRequest, res) => {
   const allTracks = trackIds.length ? await db.orm.public.Track.all() : [];
   const trackMap = new Map(allTracks.map((t) => [t.id, t]));
 
-  const items = page
+  const pageItems = page
     .map((e) => {
       const track = trackMap.get(e.trackId);
-      if (!track) return null;
-      return {
-        historyId: e.id,
-        listenedAt: e.listenedAt,
-        track,
-      };
+      return track
+        ? { historyId: e.id, listenedAt: e.listenedAt, track }
+        : null;
     })
     .filter((x): x is NonNullable<typeof x> => x !== null);
+
+  const enrichedTracks = await withArtistsBatch(pageItems.map((x) => x.track));
+
+  const items = pageItems.map((x, i) => ({
+    historyId: x.historyId,
+    listenedAt: x.listenedAt,
+    track: enrichedTracks[i],
+  }));
 
   res.json({ total, limit, offset, items });
 });
@@ -78,6 +84,14 @@ router.get('/stats', async (req: AuthRequest, res) => {
   const allTracks = await db.orm.public.Track.all();
   const trackMap = new Map(allTracks.map((t) => [t.id, t]));
 
+  const allLinks = await db.orm.public.TrackArtist.all();
+  const primaryArtistByTrack = new Map<number, number>();
+  for (const link of allLinks) {
+    if (link.role === 'PRIMARY' && !primaryArtistByTrack.has(link.trackId)) {
+      primaryArtistByTrack.set(link.trackId, link.artistId);
+    }
+  }
+
   const artistWeight = new Map<number, number>();
   const genreWeight = new Map<string, number>();
 
@@ -93,7 +107,10 @@ router.get('/stats', async (req: AuthRequest, res) => {
     if (ageDays <= 7) weight = 3;
     else if (ageDays <= 30) weight = 2;
 
-    artistWeight.set(track.artistId, (artistWeight.get(track.artistId) ?? 0) + weight);
+    const primaryId = primaryArtistByTrack.get(track.id);
+    if (primaryId !== undefined) {
+      artistWeight.set(primaryId, (artistWeight.get(primaryId) ?? 0) + weight);
+    }
     if (track.genre) {
       genreWeight.set(track.genre, (genreWeight.get(track.genre) ?? 0) + weight);
     }

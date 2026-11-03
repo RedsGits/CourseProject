@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { db } from '../prisma/db';
 import Fuse from 'fuse.js';
+import { withArtistsBatch } from '../utils/track';
 
 const router = Router();
 
@@ -38,7 +39,7 @@ router.get('/', async (req, res) => {
     const allTracks = await db.orm.public.Track.all();
     const fuse = new Fuse(allTracks, { ...FUSE_OPTIONS, keys: ['title', 'genre'], });
     const matched = fuse.search(q).slice(0, limit).map((r) => r.item);
-    result.tracks = matched;
+    result.tracks = await withArtistsBatch(matched);
   }
 
   if (type === 'all' || type === 'artists') {

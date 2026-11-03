@@ -1,8 +1,20 @@
 import { Router } from 'express';
 import { db } from '../prisma/db';
 import { authenticate, requireRole, type AuthRequest } from '../middleware/auth';
+import { uploadImage } from '../config/multer';
+import fs from 'fs';
+import path from 'path';
+import { withArtistsBatch } from '../utils/track';
 
 const router = Router();
+
+function cleanupFile(fileName: string | null | undefined) {
+  if (!fileName) return;
+  const filePath = path.resolve('uploads', fileName);
+  if (fs.existsSync(filePath)) {
+    try { fs.unlinkSync(filePath); } catch (err) { console.error('Не удалось удалить файл:', filePath, err); }
+  }
+}
 
 router.get('/', async (_req, res) => {
   const artists = await db.orm.public.Artist.all();
@@ -23,17 +35,24 @@ router.get('/:id', async (req, res) => {
   res.json(artist);
 });
 
+// GET /artists/:id/tracks — через TrackArtist (включая featured)
 router.get('/:id/tracks', async (req, res) => {
   const id = Number(req.params.id);
   if (!Number.isInteger(id)) return res.status(400).json({ error: 'Неверный id' });
 
-  const tracks = await db.orm.public.Track.all();
-  
-  const artistTracks = tracks
-    .filter(t => t.artistId === id)
+  const links = await db.orm.public.TrackArtist
+    .where({ artistId: id })
+    .all();
+
+  if (links.length === 0) return res.json([]);
+
+  const trackIds = links.map((l) => l.trackId);
+  const allTracks = await db.orm.public.Track.all();
+  const artistTracks = allTracks
+    .filter((t) => trackIds.includes(t.id))
     .sort((a, b) => (b.playCount ?? 0) - (a.playCount ?? 0));
 
-  res.json(artistTracks);
+  res.json(await withArtistsBatch(artistTracks));
 });
 
 router.post(
@@ -41,11 +60,12 @@ router.post(
   authenticate,
   requireRole('LABEL', 'ADMIN'),
   async (req: AuthRequest, res) => {
-    const { name, bio, imageUrl, country } = req.body as {
+    const { name, bio, imageUrl, bannerUrl, countryCode } = req.body as {
       name?: string;
       bio?: string;
       imageUrl?: string;
-      country?: string;
+      bannerUrl?: string;
+      countryCode?: string;
     };
 
     if (!name || !name.trim()) {
@@ -56,7 +76,6 @@ router.post(
     const nameNormalized = trimmed.toLowerCase();
 
     const existing = await db.orm.public.Artist.where({ nameNormalized }).first();
-
     if (existing) {
       return res.status(409).json({
         error: 'Артист с таким именем уже существует',
@@ -70,7 +89,8 @@ router.post(
       nameNormalized,
       bio: bio?.trim() || null,
       imageUrl: imageUrl?.trim() || null,
-      country: country?.trim() || null,
+      bannerUrl: bannerUrl?.trim() || null,
+      countryCode: countryCode?.trim().toUpperCase() || null,
     });
 
     res.status(201).json(artist);
@@ -83,30 +103,31 @@ router.patch(
   requireRole('LABEL', 'ADMIN'),
   async (req: AuthRequest, res) => {
     const id = Number(req.params.id);
-    if (!Number.isInteger(id)) {
-      return res.status(400).json({ error: 'Invalid id' });
-    }
+    if (!Number.isInteger(id)) return res.status(400).json({ error: 'Неверный id' });
 
     const artist = await db.orm.public.Artist.where({ id }).first();
-    if (!artist) {
-      return res.status(404).json({ error: 'Artist not found' });
-    }
+    if (!artist) return res.status(404).json({ error: 'Артист не найден' });
 
+    // LABEL может редактировать, если у него есть хоть один трек этого артиста
     if (req.user!.role === 'LABEL') {
-    const result = await db.orm.public.Track.where({ artistId: id, labelId: req.user!.id }).aggregate((a) => ({ total: a.count() }));
-
-    if (result.total === 0) {
-        return res.status(403).json({
-        error: 'Нет прав: у вас нет треков этого артиста',
-        });
+      const artistLinks = await db.orm.public.TrackArtist.where({ artistId: id }).all();
+      if (artistLinks.length === 0) {
+        return res.status(403).json({ error: 'Нет прав: у вас нет треков этого артиста' });
+      }
+      const trackIds = artistLinks.map((l) => l.trackId);
+      const labelTracks = await db.orm.public.Track.where({ labelId: req.user!.id }).all();
+      const hasTrack = labelTracks.some((t) => trackIds.includes(t.id));
+      if (!hasTrack) {
+        return res.status(403).json({ error: 'Нет прав: у вас нет треков этого артиста' });
+      }
     }
-    }
 
-    const { name, bio, imageUrl, country } = req.body as {
+    const { name, bio, imageUrl, bannerUrl, countryCode } = req.body as {
       name?: string;
       bio?: string;
       imageUrl?: string;
-      country?: string;
+      bannerUrl?: string;
+      countryCode?: string;
     };
 
     const updateData: Record<string, unknown> = {};
@@ -131,9 +152,11 @@ router.patch(
 
     if (bio !== undefined) updateData.bio = bio?.trim() || null;
     if (imageUrl !== undefined) updateData.imageUrl = imageUrl?.trim() || null;
-    if (country !== undefined) updateData.country = country?.trim() || null;
+    if (bannerUrl !== undefined) updateData.bannerUrl = bannerUrl?.trim() || null;
+    if (countryCode !== undefined) updateData.countryCode = countryCode?.trim().toUpperCase() || null;
 
     const updated = await db.orm.public.Artist.where({ id }).update(updateData);
+    if (!updated) return res.status(500).json({ error: 'Не удалось обновить артиста' });
 
     res.json(updated);
   }
@@ -145,17 +168,91 @@ router.delete(
   requireRole('ADMIN'),
   async (req, res) => {
     const id = Number(req.params.id);
-    if (!Number.isInteger(id)) {
-      return res.status(400).json({ error: 'Invalid id' });
+    if (!Number.isInteger(id)) return res.status(400).json({ error: 'Неверный id' });
+
+    const artist = await db.orm.public.Artist.where({ id }).first();
+    if (!artist) return res.status(404).json({ error: 'Артист не найден' });
+
+    await db.orm.public.Artist.where({ id }).delete();
+    res.status(204).send();
+  }
+);
+
+// POST /artists/:id/image — загрузка аватара
+router.post(
+  '/:id/image',
+  authenticate,
+  requireRole('LABEL', 'ADMIN'),
+  uploadImage.single('image'),
+  async (req: AuthRequest, res) => {
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id) || !req.file) {
+      return res.status(400).json({ error: 'Неверный id или файл' });
     }
 
     const artist = await db.orm.public.Artist.where({ id }).first();
     if (!artist) {
-      return res.status(404).json({ error: 'Artist not found' });
+      cleanupFile(req.file.filename);
+      return res.status(404).json({ error: 'Артист не найден' });
     }
 
-    await db.orm.public.Artist.where({ id }).delete();
-    res.status(204).send();
+    if (req.user!.role === 'LABEL') {
+      const artistLinks = await db.orm.public.TrackArtist.where({ artistId: id }).all();
+      const trackIds = artistLinks.map((l) => l.trackId);
+      const labelTracks = await db.orm.public.Track.where({ labelId: req.user!.id }).all();
+      const hasTrack = labelTracks.some((t) => trackIds.includes(t.id));
+      if (!hasTrack) {
+        cleanupFile(req.file.filename);
+        return res.status(403).json({ error: 'Нет прав: у вас нет треков этого артиста' });
+      }
+    }
+
+    const oldImageUrl = artist.imageUrl;
+    const newImageUrl = req.file.filename;
+
+    await db.orm.public.Artist.where({ id }).update({ imageUrl: newImageUrl });
+    cleanupFile(oldImageUrl);
+
+    res.json({ imageUrl: newImageUrl });
+  }
+);
+
+// POST /artists/:id/banner — загрузка баннера
+router.post(
+  '/:id/banner',
+  authenticate,
+  requireRole('LABEL', 'ADMIN'),
+  uploadImage.single('banner'),
+  async (req: AuthRequest, res) => {
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id) || !req.file) {
+      return res.status(400).json({ error: 'Неверный id или файл' });
+    }
+
+    const artist = await db.orm.public.Artist.where({ id }).first();
+    if (!artist) {
+      cleanupFile(req.file.filename);
+      return res.status(404).json({ error: 'Артист не найден' });
+    }
+
+    if (req.user!.role === 'LABEL') {
+      const artistLinks = await db.orm.public.TrackArtist.where({ artistId: id }).all();
+      const trackIds = artistLinks.map((l) => l.trackId);
+      const labelTracks = await db.orm.public.Track.where({ labelId: req.user!.id }).all();
+      const hasTrack = labelTracks.some((t) => trackIds.includes(t.id));
+      if (!hasTrack) {
+        cleanupFile(req.file.filename);
+        return res.status(403).json({ error: 'Нет прав: у вас нет треков этого артиста' });
+      }
+    }
+
+    const oldBannerUrl = artist.bannerUrl;
+    const newBannerUrl = req.file.filename;
+
+    await db.orm.public.Artist.where({ id }).update({ bannerUrl: newBannerUrl });
+    cleanupFile(oldBannerUrl);
+
+    res.json({ bannerUrl: newBannerUrl });
   }
 );
 

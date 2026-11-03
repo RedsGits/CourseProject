@@ -77,6 +77,10 @@ export default function ArtistTracks() {
             const isCurrent = current?.id === track.id;
             const isActuallyPlaying = isCurrent && isPlaying;
 
+            const primary = track.artists?.find((a) => a.role === 'PRIMARY');
+            const featured = track.artists?.filter((a) => a.role === 'FEATURED') ?? [];
+            const allArtists = primary ? [primary, ...featured] : featured;
+
             return (
               <div
                 key={track.id}
@@ -95,6 +99,21 @@ export default function ArtistTracks() {
                   </div>
                   <div className="track-row-info">
                     <span className="track-row-title">{track.title}</span>
+                    <div className="track-row-artist-line">
+                      {allArtists.map((a, i) => (
+                        <span key={a.id}>
+                          {i > 0 && ', '}
+                          <Link
+                            to={`/artist/${a.id}`}
+                            className="track-row-artist"
+                            onClick={(e) => e.stopPropagation()}
+                            onPointerDown={(e) => e.stopPropagation()}
+                          >
+                            {a.name}
+                          </Link>
+                        </span>
+                      ))}
+                    </div>
                   </div>
                 </div>
                 
