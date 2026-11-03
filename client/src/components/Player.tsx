@@ -8,6 +8,7 @@ import { FastAverageColor } from 'fast-average-color';
 import { motion, AnimatePresence } from 'framer-motion';
 import LyricsPanel from './LyricsPanel';
 import type { LyricsResponse } from '../types';
+import KaraokeLyrics from './KaraokeLyrics';
 
 function formatTime(sec: number) {
   if (!Number.isFinite(sec) || sec < 0) return '0:00';
@@ -102,6 +103,7 @@ export default function Player() {
   const [isMuted, setIsMuted] = useState(loadMuted);
   const [albumCover, setAlbumCover] = useState<string | null>(null);
   const [isFullScreen, setIsFullScreen] = useState(false);
+  const [fullscreenMode, setFullscreenMode] = useState<'cover' | 'lyrics'>('cover');
   const [dominantColor, setDominantColor] = useState<string>('#181818');
   const fsImgRef = useRef<HTMLImageElement>(null);
   const [isSeeking, setIsSeeking] = useState(false);
@@ -160,6 +162,12 @@ export default function Player() {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isPlaying, setIsPlaying]);
+
+  useEffect(() => {
+    if (fullscreenMode === 'lyrics' && lyricsData && !lyricsData.found) {
+      setFullscreenMode('cover');
+    }
+  }, [lyricsData, fullscreenMode]);
 
   useEffect(() => {
     if (!current) {
@@ -380,29 +388,92 @@ export default function Player() {
 
   const coverUrl = albumCover ? `http://localhost:5000/uploads/${albumCover}` : '/Defcover.png';
 
+  const hasSyncedLyrics = lyricsData?.hasSyncedLyrics ?? false;
+  const hasPlainLyrics = !!lyricsData?.lyrics;
+  const canShowLyrics = hasSyncedLyrics || hasPlainLyrics;
+  const lyricsDisabled = lyricsLoading || (lyricsData !== null && !lyricsData.found);
+
+  const fullscreenProgress = fullscreenMode === 'lyrics' ? (
+    <div className="player-progress-row">
+      <span className="player-time">{formatTime(currentTime)}</span>
+      <input
+        type="range" min="0" max={duration || 0} step="any" value={currentTime}
+        onChange={handleSeekChange}
+        onMouseDown={() => setIsSeeking(true)}
+        onMouseUp={commitSeek}
+        onTouchStart={() => setIsSeeking(true)}
+        onTouchEnd={commitSeek}
+        onKeyDown={handleSeekKeyDown}
+        className="player-progress-slider"
+        style={{
+          background: `linear-gradient(to right, var(--accent) 0%, var(--accent) ${
+            duration ? (currentTime / duration) * 100 : 0
+          }%, #404040 ${duration ? (currentTime / duration) * 100 : 0}%, #404040 100%)`,
+        }}
+      />
+      <span className="player-time">{formatTime(duration)}</span>
+    </div>
+  ) : (
+    <div className="fullscreen-progress">
+      <span className="time-left">{formatTime(currentTime)}</span>
+      <input
+        type="range" min="0" max={duration || 0} step="any" value={currentTime}
+        onChange={handleSeekChange}
+        onMouseDown={() => setIsSeeking(true)}
+        onMouseUp={commitSeek}
+        onTouchStart={() => setIsSeeking(true)}
+        onTouchEnd={commitSeek}
+        onKeyDown={handleSeekKeyDown}
+        className="player-progress-slider"
+        style={{
+          background: `linear-gradient(to right, var(--accent) 0%, var(--accent) ${
+            duration ? (currentTime / duration) * 100 : 0
+          }%, #404040 ${duration ? (currentTime / duration) * 100 : 0}%, #404040 100%)`,
+        }}
+      />
+      <span className="time-right">{formatTime(duration)}</span>
+    </div>
+  );
+
+  const fullscreenControls = (
+    <div className="fullscreen-controls-row">
+      <LikeButton trackId={current.id} type="dislike" className="fullscreen-action-btn" />
+      <AddToPlaylistMenu trackId={current.id} className="fullscreen-action-btn" />
+      <button className={`fullscreen-action-btn ${shuffle ? 'is-active' : ''}`} onClick={toggleShuffle}><IconShuffle /></button>
+      <button className={`fullscreen-action-btn ${isPrevDisabled ? 'is-disabled' : ''}`} onClick={handlePrev} disabled={isPrevDisabled}><IconPrev /></button>
+      <button className="fullscreen-action-btn" onClick={next}><IconNext /></button>
+      <button className={`fullscreen-action-btn ${repeat !== 'off' ? 'is-active' : ''}`} onClick={toggleRepeat}>
+        <IconRepeat />
+        {repeat === 'one' && <span className="player-btn-badge">1</span>}
+      </button>
+      <button
+        className={`fullscreen-action-btn ${fullscreenMode === 'lyrics' ? 'is-active' : ''}`}
+        onClick={() => {
+          if (lyricsDisabled) return;
+          setFullscreenMode((m) => (m === 'cover' ? 'lyrics' : 'cover'));
+        }}
+        disabled={lyricsDisabled}
+        title={lyricsDisabled ? 'Текст недоступен' : 'Текст песни'}
+      >
+        <IconLyrics />
+      </button>
+      <LikeButton trackId={current.id} type="like" className="fullscreen-action-btn" />
+    </div>
+  );
+
   const fullScreenPlayer = (
-    <motion.div 
+    <motion.div
       className="fullscreen-player"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
       exit={{ opacity: 0, transition: { duration: 0.4 } }}
     >
-
-      <motion.div 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.3 }}
-        className="fullscreen-bg"
-        style={{ backgroundColor: dominantColor }}
-      >
-        <div className="fullscreen-bg-gradient"/>
-      
+      <motion.div className="fullscreen-bg" style={{ backgroundColor: dominantColor }}>
+        <div className="fullscreen-bg-gradient" />
       </motion.div>
 
-      <motion.button 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.3 }}
-        className="fullscreen-close" 
+      <motion.button
+        className="fullscreen-close"
         onClick={() => setIsFullScreen(false)}
       >
         <IconClose />
@@ -410,80 +481,136 @@ export default function Player() {
 
       <div className="fullscreen-content">
         <div className="fullscreen-inner">
-          
-          <motion.div 
-            layoutId="album-cover" 
-            className="fullscreen-cover" 
-            onClick={() => togglePlay()}
-          >
-             <img 
-              ref={fsImgRef}
-              src={coverUrl} 
-              alt={current.title} 
-              crossOrigin="anonymous"
-              onLoad={() => {
-                if (fsImgRef.current) extractColor(fsImgRef.current);
+          <div className="fullscreen-stage">
+            <motion.div
+              className="fullscreen-cover-layout"
+              layoutId="album-cover"
+              style={{
+                opacity: fullscreenMode === 'cover' ? 1 : 0,
+                pointerEvents: fullscreenMode === 'cover' ? 'auto' : 'none',
+              }}
+              transition={{ duration: 0.3, ease: [0.2, 0.8, 0.2, 1] }}
+            >
+              <div className="fullscreen-cover" onClick={() => togglePlay()}>
+                <img
+                  ref={fsImgRef}
+                  src={coverUrl}
+                  alt={current.title}
+                  crossOrigin="anonymous"
+                  onLoad={() => { if (fsImgRef.current) extractColor(fsImgRef.current); }}
+                />
+                <div className="fullscreen-cover-overlay">
+                  <div className="fullscreen-cover-play-btn">
+                    {isPlaying ? <IconPause /> : <IconPlay />}
+                  </div>
+                </div>
+              </div>
+              <div className="fullscreen-info">
+                <div className="fullscreen-title-wrapper">
+                  <h1 className="fullscreen-title">{current.title}</h1>
+                </div>
+                <div className="fullscreen-artist-wrapper">
+                  <Link
+                    to={`/artist/${current.artistId}`}
+                    className="fullscreen-artist"
+                    onClick={() => setIsFullScreen(false)}
+                  >
+                    {artistName ?? '...'}
+                  </Link>
+                </div>
+              </div>
+            </motion.div>
+
+            <AnimatePresence>
+              {fullscreenMode === 'lyrics' && (
+                <motion.div
+                  key="lyrics"
+                  className="fullscreen-lyrics-layout"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.3, ease: [0.2, 0.8, 0.2, 1] }}
+                >
+                  {hasSyncedLyrics && lyricsData?.syncedLyrics ? (
+                    <KaraokeLyrics
+                      syncedLyrics={lyricsData.syncedLyrics}
+                      audioRef={audioRef}
+                      isPlaying={isPlaying}
+                    />
+                  ) : (
+                    <div className="fullscreen-lyrics-plain">{lyricsData?.lyrics}</div>
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          <div className="fullscreen-progress">
+            <span className="time-left">{formatTime(currentTime)}</span>
+            <input
+              type="range" min="0" max={duration || 0} step="any" value={currentTime}
+              onChange={handleSeekChange}
+              onMouseDown={() => setIsSeeking(true)}
+              onMouseUp={commitSeek}
+              onTouchStart={() => setIsSeeking(true)}
+              onTouchEnd={commitSeek}
+              onKeyDown={handleSeekKeyDown}
+              className="player-progress-slider"
+              style={{
+                background: `linear-gradient(to right, var(--accent) 0%, var(--accent) ${
+                  duration ? (currentTime / duration) * 100 : 0
+                }%, #404040 ${duration ? (currentTime / duration) * 100 : 0}%, #404040 100%)`,
               }}
             />
-            <div className="fullscreen-cover-overlay">
-              <div className="fullscreen-cover-play-btn">
-                {isPlaying ? <IconPause /> : <IconPlay />}
-              </div>
-            </div>
-          </motion.div>
+            <span className="time-right">{formatTime(duration)}</span>
+          </div>
 
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className="fullscreen-ui-elements"
-          >
-            <div className="fullscreen-info">
-              <div className="fullscreen-title-wrapper">
-                <h1 className="fullscreen-title">{current.title}</h1>
-              </div>
-              <div className="fullscreen-artist-wrapper">
-                <Link to={`/artist/${current.artistId}`} className="fullscreen-artist" onClick={() => setIsFullScreen(false)}>
-                  {artistName ?? '...'}
-                </Link>
-              </div>
-            </div>
+          <div className="fullscreen-controls-row">
+            <LikeButton trackId={current.id} type="dislike" className="fullscreen-action-btn" />
+            <AddToPlaylistMenu trackId={current.id} className="fullscreen-action-btn" />
+            <button className={`fullscreen-action-btn ${shuffle ? 'is-active' : ''}`} onClick={toggleShuffle}><IconShuffle /></button>
+            <button className={`fullscreen-action-btn ${isPrevDisabled ? 'is-disabled' : ''}`} onClick={handlePrev} disabled={isPrevDisabled}><IconPrev /></button>
 
-            <div className="fullscreen-progress">
-              <span className="time-left">{formatTime(currentTime)}</span>
-              <input
-                type="range" min="0" max={duration || 0} step="any" value={currentTime}
-                onChange={handleSeekChange}
-                onMouseDown={() => setIsSeeking(true)}
-                onMouseUp={commitSeek}
-                onTouchStart={() => setIsSeeking(true)}
-                onTouchEnd={commitSeek}
-                onKeyDown={handleSeekKeyDown}
-                className="player-progress-slider"
-                style={{
-                  background: `linear-gradient(to right, var(--accent) 0%, var(--accent) ${
-                    duration ? (currentTime / duration) * 100 : 0
-                  }%, #404040 ${duration ? (currentTime / duration) * 100 : 0}%, #404040 100%)`,
+            <AnimatePresence>
+              <motion.button
+                className="fullscreen-action-btn fullscreen-play-btn"
+                onClick={togglePlay}
+                animate={{
+                  width: fullscreenMode === 'lyrics' ? 40 : 0,
+                  opacity: fullscreenMode === 'lyrics' ? 1 : 0,
                 }}
-              />
-              <span className="time-right">{formatTime(duration)}</span>
-            </div>
+                transition={{ duration: 0.3, ease: [0.2, 0.8, 0.2, 1] }}
+                style={{
+                  overflow: 'hidden',
+                  flexShrink: 0,
+                  padding: 0,
+                  pointerEvents: fullscreenMode === 'lyrics' ? 'auto' : 'none',
+                }}
+              >
+                <span style={{ display: 'inline-flex', flexShrink: 0 }}>
+                  {isPlaying ? <IconPause /> : <IconPlay />}
+                </span>
+              </motion.button>
+            </AnimatePresence>
 
-            <div className="fullscreen-controls-row">
-              <LikeButton trackId={current.id} type="dislike" className="fullscreen-action-btn" />
-              <AddToPlaylistMenu trackId={current.id} className="fullscreen-action-btn" />
-              <button className={`fullscreen-action-btn ${shuffle ? 'is-active' : ''}`} onClick={toggleShuffle}><IconShuffle /></button>
-              <button className={`fullscreen-action-btn ${isPrevDisabled ? 'is-disabled' : ''}`} onClick={handlePrev} disabled={isPrevDisabled}><IconPrev /></button>
-              <button className="fullscreen-action-btn" onClick={next}><IconNext /></button>
-              <button className={`fullscreen-action-btn ${repeat !== 'off' ? 'is-active' : ''}`} onClick={toggleRepeat}>
-                <IconRepeat />
-                {repeat === 'one' && <span className="player-btn-badge">1</span>}
-              </button>
-              <button className="fullscreen-action-btn"><IconLyrics /></button>
-              <LikeButton trackId={current.id} type="like" className="fullscreen-action-btn" />
-            </div>
-          </motion.div>
+            <button className="fullscreen-action-btn" onClick={next}><IconNext /></button>
+            <button className={`fullscreen-action-btn ${repeat !== 'off' ? 'is-active' : ''}`} onClick={toggleRepeat}>
+              <IconRepeat />
+              {repeat === 'one' && <span className="player-btn-badge">1</span>}
+            </button>
+            <button
+              className={`fullscreen-action-btn ${fullscreenMode === 'lyrics' ? 'is-active' : ''}`}
+              onClick={() => {
+                if (lyricsDisabled) return;
+                setFullscreenMode((m) => (m === 'cover' ? 'lyrics' : 'cover'));
+              }}
+              disabled={lyricsDisabled}
+              title={lyricsDisabled ? 'Текст недоступен' : 'Текст песни'}
+            >
+              <IconLyrics />
+            </button>
+            <LikeButton trackId={current.id} type="like" className="fullscreen-action-btn" />
+          </div>
         </div>
       </div>
     </motion.div>
@@ -668,6 +795,8 @@ export default function Player() {
             onClose={() => setLyricsOpen(false)}
             onOpenKaraoke={() => {
               setLyricsOpen(false);
+              setFullscreenMode('lyrics');
+              setIsFullScreen(true);
             }}
           />
         )}
