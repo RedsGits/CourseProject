@@ -1,0 +1,125 @@
+[
+  {
+    "id": "column.public.Artist.createdById",
+    "label": "Add column \"createdById\" to \"Artist\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "createdById",
+        "table": "Artist"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"createdById\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Artist",
+          "createdById"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"createdById\"",
+        "sql": "ALTER TABLE \"public\".\"Artist\" ADD COLUMN \"createdById\" int4"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"createdById\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Artist",
+          "createdById"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.Artist.Artist_createdById_idx_8bf640ed",
+    "label": "Create index \"Artist_createdById_idx_8bf640ed\" on \"Artist\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "Artist_createdById_idx_8bf640ed",
+        "table": "Artist"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"Artist_createdById_idx_8bf640ed\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Artist_createdById_idx_8bf640ed\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"Artist_createdById_idx_8bf640ed\"",
+        "sql": "CREATE INDEX \"Artist_createdById_idx_8bf640ed\" ON \"public\".\"Artist\" (\"createdById\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"Artist_createdById_idx_8bf640ed\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Artist_createdById_idx_8bf640ed\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.Artist.Artist_createdById_fkey",
+    "label": "Add foreign key \"Artist_createdById_fkey\" on \"Artist\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "Artist_createdById_fkey",
+        "table": "Artist"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"Artist_createdById_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Artist_createdById_fkey",
+          "public",
+          "\"public\".\"Artist\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"Artist_createdById_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"Artist\"\nADD CONSTRAINT \"Artist_createdById_fkey\"\nFOREIGN KEY (\"createdById\")\nREFERENCES \"public\".\"User\" (\"id\")\nON DELETE SET NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"Artist_createdById_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Artist_createdById_fkey",
+          "public",
+          "\"public\".\"Artist\""
+        ]
+      }
+    ]
+  }
+]

@@ -3,12 +3,13 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../store/auth';
 import { api } from '../api/client';
 import LabelTrackRow from '../components/label/LabelTrackRow';
-import type { Track } from '../types';
 import AlbumsTab from '../components/label/AlbumsTab';
-import EditTrackModal from '../components/label/EditTrackModal';
 import ArtistsTab from '../components/label/ArtistsTab';
+import AdminTab from '../components/label/AdminTab';
+import EditTrackModal from '../components/label/EditTrackModal';
+import type { Track } from '../types';
 
-type Tab = 'tracks' | 'albums' | 'artists';
+type Tab = 'tracks' | 'albums' | 'artists' | 'admin';
 
 function TracksTab() {
   const { user } = useAuth();
@@ -17,6 +18,7 @@ function TracksTab() {
   const [error, setError] = useState<string | null>(null);
   const [fetchingId, setFetchingId] = useState<number | null>(null);
   const [editingTrack, setEditingTrack] = useState<Track | null>(null);
+  const [karaokeTrack, setKaraokeTrack] = useState<Track | null>(null);
 
   const loadTracks = async () => {
     setLoading(true);
@@ -70,14 +72,14 @@ function TracksTab() {
 
   return (
     <div>
-        <div className="label-tab-header">
-            <h2 className="label-tab-title">
-                {user?.role === 'LABEL' ? 'Мои треки' : 'Все треки'} ({tracks.length})
-            </h2>
-            <p className="muted" style={{ margin: 0, fontSize: '13px' }}>
-                Загрузка треков — во вкладке «Альбомы»
-            </p>
-        </div>
+      <div className="label-tab-header">
+        <h2 className="label-tab-title">
+          {user?.role === 'LABEL' ? 'Мои треки' : 'Все треки'} ({tracks.length})
+        </h2>
+        <p className="muted" style={{ margin: 0, fontSize: '13px' }}>
+          Загрузка треков — во вкладке «Альбомы»
+        </p>
+      </div>
 
       {tracks.length === 0 ? (
         <p className="muted">Пока нет треков. Загрузите первый.</p>
@@ -90,17 +92,26 @@ function TracksTab() {
               onFetchLyrics={() => handleFetch(track.id)}
               isFetching={fetchingId === track.id}
               onEdit={() => setEditingTrack(track)}
-              onKaraoke={() => alert('Караоке — следующий шаг')}
+              onKaraoke={() => setKaraokeTrack(track)}
               onDelete={() => handleDelete(track.id)}
             />
           ))}
         </div>
       )}
+
       {editingTrack && (
         <EditTrackModal
           track={editingTrack}
           onClose={() => setEditingTrack(null)}
           onSuccess={() => { setEditingTrack(null); loadTracks(); }}
+        />
+      )}
+      
+      {karaokeTrack && (
+        <KaraokeEditorModal
+          track={karaokeTrack}
+          onClose={() => setKaraokeTrack(null)}
+          onSuccess={() => { setKaraokeTrack(null); loadTracks(); }}
         />
       )}
     </div>
@@ -141,12 +152,20 @@ export default function LabelDashboard() {
           <button className={`label-tab ${activeTab === 'tracks' ? 'active' : ''}`} onClick={() => setActiveTab('tracks')}>Треки</button>
           <button className={`label-tab ${activeTab === 'albums' ? 'active' : ''}`} onClick={() => setActiveTab('albums')}>Альбомы</button>
           <button className={`label-tab ${activeTab === 'artists' ? 'active' : ''}`} onClick={() => setActiveTab('artists')}>Артисты</button>
+          
+          {user.role === 'ADMIN' && (
+            <button className={`label-tab ${activeTab === 'admin' ? 'active' : ''}`} onClick={() => setActiveTab('admin')}>
+              Админ
+            </button>
+          )}
         </div>
 
         <div className="label-tab-content">
           {activeTab === 'tracks' && <TracksTab />}
           {activeTab === 'albums' && <AlbumsTab />}
           {activeTab === 'artists' && <ArtistsTab />}
+          
+          {activeTab === 'admin' && <AdminTab />}
         </div>
       </main>
     </div>

@@ -64,6 +64,11 @@ export default function Layout() {
       <div className="main-area">
         <header className="header">
           <div className="header-right">
+            {user?.role === 'ADMIN' && (
+              <Link to="/label" className="btn-pill" style={{ marginRight: '12px' }}>
+                Админ-панель
+              </Link>
+            )}
             {user ? (
               <Link to="/profile" className="header-user-block">
                 <img

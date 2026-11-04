@@ -57,6 +57,14 @@ export default function ArtistsTab() {
 
   const canEdit = (artistId: number) => {
     if (user?.role === 'ADMIN') return true;
+    
+    const artist = artists.find(a => a.id === artistId);
+    if (!artist) return false;
+
+    if (artist.trackCount === 0) {
+      return artist.createdById === user?.id;
+    }
+
     return editableIds.has(artistId);
   };
 
@@ -67,9 +75,11 @@ export default function ArtistsTab() {
     <div>
       <div className="label-tab-header">
         <h2 className="label-tab-title">Артисты ({artists.length})</h2>
-        <button className="btn-pill" onClick={() => setCreateOpen(true)}>
-          + Создать артиста
-        </button>
+        {user?.role !== 'ADMIN' && (
+          <button className="btn-pill" onClick={() => setCreateOpen(true)}>
+            + Создать артиста
+          </button>
+        )}
       </div>
 
       {artists.length === 0 ? (

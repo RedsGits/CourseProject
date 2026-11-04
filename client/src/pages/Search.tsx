@@ -2,12 +2,12 @@ import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../api/client';
 import { usePlayer } from '../store/player';
-import type { Track, Artist } from '../types';
+import type { Track, Artist, Album } from '../types';
 import LikeButton from '../components/LikeButton';
 import AddToPlaylistMenu from '../components/AddToPlaylistMenu';
 import TrackCover from '../components/TrackCover';
+import { formatAlbumType } from '../api/format';
 
-interface Album { id: number; title: string; artistId: number; }
 interface Playlist { id: number; name: string; isPublic: boolean; coverUrl?: string | null; }
 
 const IconSearchBig = () => (
@@ -292,7 +292,12 @@ export default function Search() {
                         {results.artists.slice(0, 10).map((artist) => (
                           <Link key={artist.id} to={`/artist/${artist.id}`} className="library-card artist-card">
                             <div className="library-card-cover">
-                              <img src="/Defpfp.png" alt={artist.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                              <img
+                                src={artist.imageUrl ? `http://localhost:5000/uploads/${artist.imageUrl}` : '/Defpfp.png'}
+                                alt={artist.name}
+                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                onError={(e) => { if (!e.currentTarget.src.includes('Defpfp')) e.currentTarget.src = '/Defpfp.png'; }}
+                              />
                             </div>
                             <div className="library-card-info">
                               <div className="library-card-title">{artist.name}</div>
@@ -305,16 +310,20 @@ export default function Search() {
                     {results.albums && results.albums.length > 0 && (
                       <ScrollRow title="Альбомы" onTitleClick={() => setActiveTab('albums')}>
                         {results.albums.slice(0, 10).map((album) => (
-                          <div key={album.id} className="library-card">
+                          <Link key={album.id} to={`/album/${album.id}`} className="library-card">
                             <div className="library-card-cover">
-                              <svg viewBox="0 0 24 24" width="48" height="48" fill="#fff">
-                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 14.5c-2.49 0-4.5-2.01-4.5-4.5S9.51 7.5 12 7.5s4.5 2.01 4.5 4.5-2.01 4.5-4.5 4.5zm0-5.5c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1z" />
-                              </svg>
+                              {album.coverUrl ? (
+                                <img src={`http://localhost:5000/uploads/${album.coverUrl}`} alt={album.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                              ) : (
+                                <svg viewBox="0 0 24 24" width="48" height="48" fill="#fff">
+                                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 14.5c-2.49 0-4.5-2.01-4.5-4.5S9.51 7.5 12 7.5s4.5 2.01 4.5 4.5-2.01 4.5-4.5 4.5zm0-5.5c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1z" />
+                                </svg>
+                              )}
                             </div>
                             <div className="library-card-info">
                               <div className="library-card-title">{album.title}</div>
                             </div>
-                          </div>
+                          </Link>
                         ))}
                       </ScrollRow>
                     )}
@@ -351,7 +360,12 @@ export default function Search() {
                     {results.artists.map((artist) => (
                       <Link key={artist.id} to={`/artist/${artist.id}`} className="library-card artist-card">
                         <div className="library-card-cover">
-                          <img src="/Defpfp.png" alt={artist.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          <img
+                            src={artist.imageUrl ? `http://localhost:5000/uploads/${artist.imageUrl}` : '/Defpfp.png'}
+                            alt={artist.name}
+                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                            onError={(e) => { if (!e.currentTarget.src.includes('Defpfp')) e.currentTarget.src = '/Defpfp.png'; }}
+                          />
                         </div>
                         <div className="library-card-info">
                           <div className="library-card-title">{artist.name}</div>
@@ -430,16 +444,23 @@ export default function Search() {
                 {activeTab === 'albums' && results.albums && results.albums.length > 0 && (
                   <div className="library-grid">
                     {results.albums.map((album) => (
-                      <div key={album.id} className="library-card">
+                      <Link key={album.id} to={`/album/${album.id}`} className="library-card">
                         <div className="library-card-cover">
-                          <svg viewBox="0 0 24 24" width="48" height="48" fill="#fff">
-                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 14.5c-2.49 0-4.5-2.01-4.5-4.5S9.51 7.5 12 7.5s4.5 2.01 4.5 4.5-2.01 4.5-4.5 4.5zm0-5.5c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1z" />
-                          </svg>
+                          {album.coverUrl ? (
+                            <img src={`http://localhost:5000/uploads/${album.coverUrl}`} alt={album.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          ) : (
+                            <svg viewBox="0 0 24 24" width="48" height="48" fill="#fff">
+                              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 14.5c-2.49 0-4.5-2.01-4.5-4.5S9.51 7.5 12 7.5s4.5 2.01 4.5 4.5-2.01 4.5-4.5 4.5zm0-5.5c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1z" />
+                            </svg>
+                          )}
                         </div>
                         <div className="library-card-info">
                           <div className="library-card-title">{album.title}</div>
                         </div>
-                      </div>
+                        <div className="library-card-sub">
+                          {formatAlbumType(album.type)}{album.year ? ` • ${album.year}` : ''}
+                        </div>
+                      </Link>
                     ))}
                   </div>
                 )}

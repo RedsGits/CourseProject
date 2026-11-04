@@ -119,6 +119,7 @@ export default function Player() {
   const [lyricsData, setLyricsData] = useState<LyricsResponse | null>(null);
   const [lyricsLoading, setLyricsLoading] = useState(false);
   const colorCacheRef = useRef<Record<string, string>>({});
+  const [coverLayoutActive, setCoverLayoutActive] = useState(false);
 
   useEffect(() => {
     hasScrobbledRef.current = false;
@@ -369,6 +370,16 @@ export default function Player() {
     }
   };
 
+  const openFullscreen = () => {
+    setCoverLayoutActive(true);
+    setIsFullScreen(true);
+  };
+
+  const closeFullscreen = () => {
+    setIsFullScreen(false);
+    setTimeout(() => setCoverLayoutActive(false), 500);
+  };
+
   const coverUrl = albumCover ? `http://localhost:5000/uploads/${albumCover}` : '/Defcover.png';
 
   const hasSyncedLyrics = lyricsData?.hasSyncedLyrics ?? false;
@@ -457,7 +468,7 @@ export default function Player() {
 
       <motion.button
         className="fullscreen-close"
-        onClick={() => setIsFullScreen(false)}
+        onClick={closeFullscreen}
       >
         <IconClose />
       </motion.button>
@@ -467,7 +478,7 @@ export default function Player() {
           <div className="fullscreen-stage">
             <motion.div
               className="fullscreen-cover-layout"
-              layoutId="album-cover"
+              {...(coverLayoutActive ? { layoutId: 'album-cover' } : {})}
               style={{
                 opacity: fullscreenMode === 'cover' ? 1 : 0,
                 pointerEvents: fullscreenMode === 'cover' ? 'auto' : 'none',
@@ -663,9 +674,9 @@ export default function Player() {
         <div className="player-content">
           <div className="player-left">
             <motion.div 
-              layoutId="album-cover" 
+              {...(coverLayoutActive ? { layoutId: 'album-cover' } : {})}
               className="player-cover" 
-              onClick={() => setIsFullScreen(true)} 
+              onClick={openFullscreen}
               title="Открыть плеер"
             >
               <img 

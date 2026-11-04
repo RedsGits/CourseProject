@@ -11,51 +11,59 @@ interface Props {
 export default function KaraokeLyrics({ syncedLyrics, audioRef, isPlaying }: Props) {
   const [lines, setLines] = useState<LrcLine[]>([]);
   const [activeIndex, setActiveIndex] = useState(-1);
+  
   const containerRef = useRef<HTMLDivElement>(null);
   const lineRefs = useRef<Array<HTMLDivElement | null>>([]);
-  const lastScrollIndexRef = useRef(-1);
+  const lastIndexRef = useRef(-1);
   const wasPlayingRef = useRef(false);
 
   useEffect(() => {
     setLines(parseLrc(syncedLyrics));
-    lastScrollIndexRef.current = -1;
+    lastIndexRef.current = -1;
   }, [syncedLyrics]);
+
+  const scrollToLine = (index: number, behavior: ScrollBehavior) => {
+    const container = containerRef.current;
+    const line = lineRefs.current[index];
+    if (container && line) {
+      const scrollPos = line.offsetTop - container.clientHeight / 2 + line.clientHeight / 2;
+      container.scrollTo({ top: scrollPos, behavior });
+    }
+  };
 
   useEffect(() => {
     if (lines.length === 0) return;
     let raf = 0;
+
     const tick = () => {
       const audio = audioRef.current;
       if (audio) {
-        const idx = getActiveLineIndex(lines, audio.currentTime);
-        setActiveIndex((prev) => (prev !== idx ? idx : prev));
+        if (!audio.seeking && audio.readyState >= 3) {
+          const idx = getActiveLineIndex(lines, audio.currentTime);
+          
+          if (idx !== lastIndexRef.current) {
+            lastIndexRef.current = idx;
+            setActiveIndex(idx);
+            scrollToLine(idx, 'smooth');
+          }
+        }
       }
       raf = requestAnimationFrame(tick);
     };
+
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
   }, [lines, audioRef]);
 
   useEffect(() => {
-    if (!isPlaying) return;
-    if (activeIndex < 0) return;
-    if (lastScrollIndexRef.current === activeIndex) return;
-    lastScrollIndexRef.current = activeIndex;
-    lineRefs.current[activeIndex]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  }, [activeIndex, isPlaying]);
-
-  useEffect(() => {
     if (isPlaying && !wasPlayingRef.current && activeIndex >= 0) {
-      const line = lineRefs.current[activeIndex];
       const container = containerRef.current;
+      const line = lineRefs.current[activeIndex];
       if (line && container) {
-        const lr = line.getBoundingClientRect();
-        const cr = container.getBoundingClientRect();
-        const visible = lr.top >= cr.top && lr.bottom <= cr.bottom;
-        if (!visible) {
-          line.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        const scrollPos = line.offsetTop - container.clientHeight / 2 + line.clientHeight / 2;
+        if (Math.abs(container.scrollTop - scrollPos) > 100) {
+          container.scrollTo({ top: scrollPos, behavior: 'smooth' });
         }
-        lastScrollIndexRef.current = activeIndex;
       }
     }
     wasPlayingRef.current = isPlaying;
@@ -63,21 +71,23 @@ export default function KaraokeLyrics({ syncedLyrics, audioRef, isPlaying }: Pro
 
   const handleSeek = (time: number) => {
     const audio = audioRef.current;
-    if (audio) audio.currentTime = time;
+    if (audio) {
+      audio.currentTime = time; 
+    }
   };
 
-    return (
+  return (
     <div className="karaoke-lyrics" ref={containerRef}>
-        {lines.map((line, i) => (
+      {lines.map((line, i) => (
         <div
-            key={`${line.time}-${i}`}
-            ref={(el) => { lineRefs.current[i] = el; }}
-            className={`karaoke-line ${i === activeIndex ? 'karaoke-line-active' : ''}`}
-            onClick={() => handleSeek(line.time)}
+          key={`${line.time}-${i}`}
+          ref={(el) => { lineRefs.current[i] = el; }}
+          className={`karaoke-line ${i === activeIndex ? 'karaoke-line-active' : ''}`}
+          onClick={() => handleSeek(line.time)}
         >
-            {line.text || '♪'}
+          {line.text || '♪'}
         </div>
-        ))}
+      ))}
     </div>
-    );
+  );
 }

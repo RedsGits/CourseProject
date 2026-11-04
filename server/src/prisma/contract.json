@@ -588,6 +588,13 @@
                   "kind": "scalar"
                 }
               },
+              "createdById": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
               "id": {
                 "nullable": false,
                 "type": {
@@ -640,6 +647,22 @@
                   "namespace": "public"
                 }
               },
+              "createdBy": {
+                "cardinality": "N:1",
+                "nullable": true,
+                "on": {
+                  "localFields": [
+                    "createdById"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "User",
+                  "namespace": "public"
+                }
+              },
               "tracks": {
                 "cardinality": "1:N",
                 "on": {
@@ -669,6 +692,9 @@
                 },
                 "createdAt": {
                   "column": "createdAt"
+                },
+                "createdById": {
+                  "column": "createdById"
                 },
                 "id": {
                   "column": "id"
@@ -1542,6 +1568,21 @@
               }
             },
             "relations": {
+              "createdArtists": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "createdById"
+                  ]
+                },
+                "to": {
+                  "model": "Artist",
+                  "namespace": "public"
+                }
+              },
               "createdBy": {
                 "cardinality": "N:1",
                 "nullable": true,
@@ -1950,6 +1991,11 @@
                   "nativeType": "timestamptz",
                   "nullable": false
                 },
+                "createdById": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": true
+                },
                 "id": {
                   "codecId": "pg/int4@1",
                   "default": {
@@ -1980,8 +2026,34 @@
                   "nullable": false
                 }
               },
-              "foreignKeys": [],
+              "foreignKeys": [
+                {
+                  "onDelete": "setNull",
+                  "source": {
+                    "columns": [
+                      "createdById"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "Artist"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "User"
+                  }
+                }
+              ],
               "indexes": [
+                {
+                  "columns": [
+                    "createdById"
+                  ],
+                  "name": "Artist_createdById_idx_8bf640ed",
+                  "prefix": "Artist_createdById_idx",
+                  "unique": false
+                },
                 {
                   "columns": [
                     "name"
@@ -2959,7 +3031,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "cf30569df2d3711f7cfddf4b6e3486b8233e516e701690f95769074654d9a9e8"
+    "storageHash": "7f653a13f43173e76a44551b60e5525744272ce9ac50703e2acbc8621910f00c"
   },
   "execution": {
     "executionHash": "72d477c118df8adf639abd48920f502cca4a9c16de2e37e606b10fc765075b2a",

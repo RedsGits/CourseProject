@@ -13,6 +13,7 @@ import LikedTracks from './pages/LikedTracks';
 import PlaylistDetail from './pages/PlaylistDetail';
 import ArtistTracks from './pages/ArtistTracks';
 import LabelDashboard from './pages/LabelDashboard';
+import AlbumDetailPage from './pages/AlbumDetail';
 
 function App() {
   const { loadFromStorage } = useAuth();
@@ -31,6 +32,7 @@ function App() {
           <Route index element={<Home />} />
           <Route path="artist" element={<ArtistDetail />} />
           <Route path="artist/:id" element={<ArtistDetail />} />
+          <Route path="/album/:id" element={<AlbumDetailPage />} />
           <Route path="profile" element={<Profile />} />
           <Route path="search" element={<Search />} />
           <Route path="library" element={<Library />} />

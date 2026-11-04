@@ -1,6 +1,7 @@
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import type { Track } from '../../types';
+import { useAuth } from '../../store/auth';
 
 function formatTime(sec: number) {
   const m = Math.floor(sec / 60);
@@ -12,11 +13,14 @@ interface Props {
   track: Track;
   index: number;
   onEdit: () => void;
+  onKaraoke: () => void;
   onDelete: () => void;
 }
 
-export default function SortableAlbumTrackRow({ track, index, onEdit, onDelete }: Props) {
+export default function SortableAlbumTrackRow({ track, index, onEdit, onKaraoke, onDelete }: Props) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: track.id });
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'ADMIN';
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -47,18 +51,17 @@ export default function SortableAlbumTrackRow({ track, index, onEdit, onDelete }
       </div>
 
       <div className="album-detail-track-actions" onPointerDown={(e) => e.stopPropagation()}>
-        <button
-          className="label-track-btn"
-          onClick={(e) => { e.stopPropagation(); onEdit(); }}
-          title="Редактировать"
-        >
-          Редактировать
-        </button>
-        <button
-          className="label-track-btn label-track-btn-danger"
-          onClick={(e) => { e.stopPropagation(); onDelete(); }}
-          title="Удалить"
-        >
+        {!isAdmin && track.lyrics && (
+          <button className="label-track-btn" onClick={(e) => { e.stopPropagation(); onKaraoke(); }}>
+            🎤
+          </button>
+        )}
+        {!isAdmin && (
+          <button className="label-track-btn" onClick={(e) => { e.stopPropagation(); onEdit(); }}>
+            Редактировать
+          </button>
+        )}
+        <button className="label-track-btn label-track-btn-danger" onClick={(e) => { e.stopPropagation(); onDelete(); }}>
           ✕
         </button>
       </div>

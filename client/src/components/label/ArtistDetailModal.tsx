@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { api } from '../../api/client';
 import type { Artist } from '../../types';
+import { useAuth } from '../../store/auth';
 
 interface Props {
   artistId: number;
@@ -35,6 +36,9 @@ export default function ArtistDetailModal({ artistId, canEdit, canDelete, onClos
 
   const imageInputRef = useRef<HTMLInputElement>(null);
   const bannerInputRef = useRef<HTMLInputElement>(null);
+
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'ADMIN';
 
   const loadArtist = async () => {
     try {
@@ -157,8 +161,8 @@ export default function ArtistDetailModal({ artistId, canEdit, canDelete, onClos
             <div className="album-detail-header" style={{ marginTop: artist.bannerUrl ? '-60px' : 0, position: 'relative', zIndex: 1 }}>
               <div
                 className="artist-detail-avatar-wrap"
-                onClick={() => canEdit && imageInputRef.current?.click()}
-                title={canEdit ? 'Изменить аватар' : undefined}
+                onClick={() => canEdit && !isAdmin && imageInputRef.current?.click()}
+                title={canEdit && !isAdmin ? 'Изменить аватар' : undefined}
               >
                 <img
                   src={artist.imageUrl ? `http://localhost:5000/uploads/${artist.imageUrl}` : '/Defpfp.png'}
@@ -232,7 +236,7 @@ export default function ArtistDetailModal({ artistId, canEdit, canDelete, onClos
             </div>
 
             <div className="album-detail-actions">
-              {canEdit && (
+              {canEdit && !isAdmin && (
                 <>
                   {isEditing ? (
                     <>
@@ -254,6 +258,7 @@ export default function ArtistDetailModal({ artistId, canEdit, canDelete, onClos
                   <input ref={bannerInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleBannerUpload} />
                 </>
               )}
+              
               {canDelete && (
                 <button className="label-track-btn label-track-btn-danger" onClick={handleDelete}>
                   Удалить артиста

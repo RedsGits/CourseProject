@@ -35,6 +35,8 @@ export interface Artist {
   countryCode: string | null;
   createdAt: string;
   updatedAt: string;
+  createdById: number | null;
+  trackCount?: number;
 }
 
 export interface Album {

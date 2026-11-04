@@ -34,7 +34,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'cf30569df2d3711f7cfddf4b6e3486b8233e516e701690f95769074654d9a9e8'>;
+  StorageHashBase<'7f653a13f43173e76a44551b60e5525744272ce9ac50703e2acbc8621910f00c'>;
 export type ExecutionHash =
   ExecutionHashBase<'72d477c118df8adf639abd48920f502cca4a9c16de2e37e606b10fc765075b2a'>;
 export type ProfileHash =
@@ -271,6 +271,7 @@ export type FieldOutputTypes = {
       readonly bio: CodecTypes['pg/text@1']['output'] | null;
       readonly countryCode: CodecTypes['pg/text@1']['output'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly createdById: CodecTypes['pg/int4@1']['output'] | null;
       readonly id: CodecTypes['pg/int4@1']['output'];
       readonly imageUrl: CodecTypes['pg/text@1']['output'] | null;
       readonly name: CodecTypes['pg/text@1']['output'];
@@ -422,6 +423,7 @@ export type FieldInputTypes = {
       readonly bio: CodecTypes['pg/text@1']['input'] | null;
       readonly countryCode: CodecTypes['pg/text@1']['input'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly createdById: CodecTypes['pg/int4@1']['input'] | null;
       readonly id: CodecTypes['pg/int4@1']['input'];
       readonly imageUrl: CodecTypes['pg/text@1']['input'] | null;
       readonly name: CodecTypes['pg/text@1']['input'];
@@ -573,6 +575,7 @@ export type StorageColumnTypes = {
       readonly bio: CodecTypes['pg/text@1']['output'] | null;
       readonly countryCode: CodecTypes['pg/text@1']['output'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+      readonly createdById: CodecTypes['pg/int4@1']['output'] | null;
       readonly id: CodecTypes['pg/int4@1']['output'];
       readonly imageUrl: CodecTypes['pg/text@1']['output'] | null;
       readonly name: CodecTypes['pg/text@1']['output'];
@@ -724,6 +727,7 @@ export type StorageColumnInputTypes = {
       readonly bio: CodecTypes['pg/text@1']['input'] | null;
       readonly countryCode: CodecTypes['pg/text@1']['input'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
+      readonly createdById: CodecTypes['pg/int4@1']['input'] | null;
       readonly id: CodecTypes['pg/int4@1']['input'];
       readonly imageUrl: CodecTypes['pg/text@1']['input'] | null;
       readonly name: CodecTypes['pg/text@1']['input'];
@@ -882,14 +886,16 @@ export namespace Models {
     bio: CodecTypes['pg/text@1']['output'] | null;
     countryCode: CodecTypes['pg/text@1']['output'] | null;
     createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
+    createdById: CodecTypes['pg/int4@1']['output'] | null;
     id: CodecTypes['pg/int4@1']['output'];
     imageUrl: CodecTypes['pg/text@1']['output'] | null;
     name: CodecTypes['pg/text@1']['output'];
     nameNormalized: CodecTypes['pg/text@1']['output'];
     updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     albums: public_AlbumArtist[];
+    createdBy: public_User | null;
     tracks: public_TrackArtist[];
-    readonly [RelationKeys]?: 'albums' | 'tracks';
+    readonly [RelationKeys]?: 'albums' | 'createdBy' | 'tracks';
   };
   export type public_ListeningHistory = {
     id: CodecTypes['pg/int4@1']['output'];
@@ -1032,6 +1038,7 @@ export namespace Models {
     updatedAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     verified: CodecTypes['pg/bool@1']['output'];
     website: CodecTypes['pg/text@1']['output'] | null;
+    createdArtists: public_Artist[];
     createdBy: public_User | null;
     createdLabels: public_User[];
     history: public_ListeningHistory[];
@@ -1040,6 +1047,7 @@ export namespace Models {
     playlists: public_Playlist[];
     reactions: public_TrackReaction[];
     readonly [RelationKeys]?:
+      | 'createdArtists'
       | 'createdBy'
       | 'createdLabels'
       | 'history'
@@ -1261,6 +1269,11 @@ type ContractBase = Omit<
                   readonly nullable: false;
                   readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
                 };
+                readonly createdById: {
+                  readonly nativeType: 'int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: true;
+                };
                 readonly id: {
                   readonly nativeType: 'int4';
                   readonly codecId: 'pg/int4@1';
@@ -1295,13 +1308,32 @@ type ContractBase = Omit<
               uniques: readonly [{ readonly columns: readonly ['nameNormalized'] }];
               indexes: readonly [
                 {
+                  readonly name: 'Artist_createdById_idx_8bf640ed';
+                  readonly prefix: 'Artist_createdById_idx';
+                  readonly columns: readonly ['createdById'];
+                  readonly unique: false;
+                },
+                {
                   readonly name: 'Artist_name_idx_ce87e6ba';
                   readonly prefix: 'Artist_name_idx';
                   readonly columns: readonly ['name'];
                   readonly unique: false;
                 },
               ];
-              foreignKeys: readonly [];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'Artist';
+                    readonly columns: readonly ['createdById'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'User';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+              ];
             };
             readonly ListeningHistory: {
               columns: {
@@ -2232,6 +2264,10 @@ type ContractBase = Omit<
                   readonly codecId: 'pg/timestamptz-temporal@1';
                 };
               };
+              readonly createdById: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
               readonly id: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
@@ -2268,6 +2304,15 @@ type ContractBase = Omit<
                   readonly targetFields: readonly ['artistId'];
                 };
               };
+              readonly createdBy: {
+                readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'User' };
+                readonly cardinality: 'N:1';
+                readonly nullable: true;
+                readonly on: {
+                  readonly localFields: readonly ['createdById'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
               readonly tracks: {
                 readonly to: {
                   readonly namespace: 'public' & NamespaceId;
@@ -2288,6 +2333,7 @@ type ContractBase = Omit<
                 readonly bio: { readonly column: 'bio' };
                 readonly countryCode: { readonly column: 'countryCode' };
                 readonly createdAt: { readonly column: 'createdAt' };
+                readonly createdById: { readonly column: 'createdById' };
                 readonly id: { readonly column: 'id' };
                 readonly imageUrl: { readonly column: 'imageUrl' };
                 readonly name: { readonly column: 'name' };
@@ -2828,6 +2874,17 @@ type ContractBase = Omit<
               };
             };
             readonly relations: {
+              readonly createdArtists: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Artist';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['createdById'];
+                };
+              };
               readonly createdBy: {
                 readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'User' };
                 readonly cardinality: 'N:1';

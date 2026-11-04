@@ -50,6 +50,7 @@ model User {
   history     ListeningHistory[]
   ownedTracks Track[]  @relation("LabelTracks")
   ownedAlbums Album[]  @relation("LabelAlbums")
+  createdArtists Artist[] @relation("ArtistCreatedBy")
 
   reactions   TrackReaction[]
 
@@ -65,6 +66,9 @@ model Artist {
   imageUrl       String?
   bannerUrl      String?
   countryCode    String?
+
+  createdById    Int?
+  createdBy      User?    @relation("ArtistCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
 
   albums       AlbumArtist[]
   tracks       TrackArtist[]

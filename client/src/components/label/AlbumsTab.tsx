@@ -5,6 +5,7 @@ import TrackCover from '../TrackCover';
 import CreateAlbumModal from './CreateAlbumModal';
 import type { Album } from '../../types';
 import AlbumDetailModal from './AlbumDetailModal';
+import { formatAlbumType } from '../../api/format'
 
 export default function AlbumsTab() {
   const { user } = useAuth();
@@ -52,9 +53,11 @@ export default function AlbumsTab() {
         <h2 className="label-tab-title">
           {user?.role === 'LABEL' ? 'Мои альбомы' : 'Все альбомы'} ({albums.length})
         </h2>
-        <button className="btn-pill" onClick={() => setCreateOpen(true)}>
-          + Создать альбом
-        </button>
+        {user?.role !== 'ADMIN' && (
+          <button className="btn-pill" onClick={() => setCreateOpen(true)}>
+            + Создать альбом
+          </button>
+        )}
       </div>
 
       {albums.length === 0 ? (
@@ -82,7 +85,7 @@ export default function AlbumsTab() {
                     <div className="library-card-title">{album.title}</div>
                     <div className="library-card-sub">{artistLine}</div>
                     <div className="library-card-sub" style={{ marginTop: '4px', fontSize: '11px', opacity: 0.7 }}>
-                      {album.type} {album.year ? `• ${album.year}` : ''}
+                      {formatAlbumType(album.type)} {album.year ? `• ${album.year}` : ''}
                     </div>
                   </div>
                 </div>

@@ -4,8 +4,10 @@ import { api } from '../api/client';
 import { usePlayer } from '../store/player';
 import LikeButton from '../components/LikeButton';
 import AddToPlaylistMenu from '../components/AddToPlaylistMenu';
-import type { Artist, Track } from '../types';
+import type { Artist, Track, Album } from '../types';
 import TrackCover from '../components/TrackCover';
+import { formatAlbumType } from '../api/format';
+
 
 function formatPlayCount(count: number): string {
   if (count >= 1000000) return (count / 1000000).toFixed(1) + 'M';
@@ -40,6 +42,7 @@ export default function ArtistDetail() {
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [isImageOpen, setIsImageOpen] = useState(false);
+  const [albums, setAlbums] = useState<Album[]>([]);
 
   const { setTrack, current, isPlaying, togglePlay, playbackContext } = usePlayer();
   const contextId = `artist-${id}`;
@@ -48,10 +51,11 @@ export default function ArtistDetail() {
   useEffect(() => {
     if (!id) { setNotFound(true); setLoading(false); return; }
     setLoading(true);
-    Promise.all([ api.get<Artist>(`/artists/${id}`), api.get<Track[]>(`/artists/${id}/tracks`) ])
-      .then(([artistRes, tracksRes]) => {
+    Promise.all([ api.get<Artist>(`/artists/${id}`), api.get<Track[]>(`/artists/${id}/tracks`), api.get<Album[]>(`/albums?artistId=${id}`)])
+      .then(([artistRes, tracksRes, albumsRes]) => {
         setArtist(artistRes.data);
         setTracks(tracksRes.data);
+        setAlbums(albumsRes.data);
       })
       .catch(() => setNotFound(true))
       .finally(() => setLoading(false));
@@ -173,6 +177,38 @@ export default function ArtistDetail() {
                   </div>
                 );
               })}
+            </div>
+          )}
+        </section>
+        <section className="section" style={{ marginTop: '40px' }}>
+          <h2>Музыка</h2>
+          {albums.length === 0 ? (
+            <p className="muted">У этого артиста пока нет релизов</p>
+          ) : (
+            <div className="library-grid">
+              {albums.map((album) => (
+                <Link key={album.id} to={`/album/${album.id}`} className="library-card">
+                  <div className="library-card-cover">
+                    {album.coverUrl ? (
+                      <img
+                        src={`http://localhost:5000/uploads/${album.coverUrl}`}
+                        alt={album.title}
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      />
+                    ) : (
+                      <svg viewBox="0 0 24 24" width="48" height="48" fill="#fff">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 14.5c-2.49 0-4.5-2.01-4.5-4.5S9.51 7.5 12 7.5s4.5 2.01 4.5 4.5-2.01 4.5-4.5 4.5zm0-5.5c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1z" />
+                      </svg>
+                    )}
+                  </div>
+                  <div className="library-card-info">
+                    <div className="library-card-title">{album.title}</div>
+                    <div className="library-card-sub">
+                      {formatAlbumType(album.type)} {album.year ? `• ${album.year}` : ''}
+                    </div>
+                  </div>
+                </Link>
+              ))}
             </div>
           )}
         </section>

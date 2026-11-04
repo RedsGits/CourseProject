@@ -13,6 +13,9 @@ import {
 import { restrictToVerticalAxis, restrictToParentElement } from '@dnd-kit/modifiers';
 import SortableAlbumTrackRow from './SortableAlbumTrackRow';
 import TrackCover from '../TrackCover';
+import KaraokeEditorModal from './KaraokeEditorModal';
+import { formatAlbumType } from '../../api/format'
+import { useAuth } from '../../store/auth';
 
 interface AlbumWithTracks extends Album {
   tracks: Track[];
@@ -38,6 +41,10 @@ export default function AlbumDetailModal({ albumId, onClose, onChange }: Props) 
   const [editingTrack, setEditingTrack] = useState<Track | null>(null);
   const [editOpen, setEditOpen] = useState(false);
   const [uploadingCover, setUploadingCover] = useState(false);
+  const [karaokeTrack, setKaraokeTrack] = useState<Track | null>(null);
+
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'ADMIN';
 
   const coverInputRef = useRef<HTMLInputElement>(null);
 
@@ -145,8 +152,8 @@ export default function AlbumDetailModal({ albumId, onClose, onChange }: Props) 
             <div className="album-detail-header">
               <div
                 className="album-detail-cover-wrap"
-                onClick={() => coverInputRef.current?.click()}
-                title="Изменить обложку"
+                onClick={() => !isAdmin && coverInputRef.current?.click()}
+                title={!isAdmin ? "Изменить обложку" : undefined}
               >
                 <TrackCover
                   coverUrl={album.coverUrl}
@@ -166,7 +173,7 @@ export default function AlbumDetailModal({ albumId, onClose, onChange }: Props) 
               </div>
 
               <div className="album-detail-info">
-                <span className="label-form-label">{album.type}</span>
+                <span className="label-form-label">{formatAlbumType(album.type)}</span>
                 <h2 className="album-detail-title">{album.title}</h2>
                 <p className="album-detail-artists">
                   {primary?.name ?? '—'}
@@ -181,12 +188,16 @@ export default function AlbumDetailModal({ albumId, onClose, onChange }: Props) 
             </div>
 
             <div className="album-detail-actions">
-              <button className="label-track-btn" onClick={() => setUploadOpen(true)}>
-                + Загрузить треки
-              </button>
-              <button className="label-track-btn" onClick={() => setEditOpen(true)}>
-                ✎ Редактировать
-              </button>
+              {!isAdmin && (
+                <>
+                  <button className="label-track-btn" onClick={() => setUploadOpen(true)}>
+                    + Загрузить треки
+                  </button>
+                  <button className="label-track-btn" onClick={() => setEditOpen(true)}>
+                    ✎ Редактировать
+                  </button>
+                </>
+              )}
               <button
                 className="label-track-btn label-track-btn-danger"
                 onClick={handleDeleteAlbum}
@@ -214,11 +225,12 @@ export default function AlbumDetailModal({ albumId, onClose, onChange }: Props) 
                     >
                     {album.tracks.map((track, index) => (
                         <SortableAlbumTrackRow
-                        key={track.id}
-                        track={track}
-                        index={index}
-                        onEdit={() => setEditingTrack(track)}
-                        onDelete={() => handleDeleteTrack(track.id, track.title)}
+                          key={track.id}
+                          track={track}
+                          index={index}
+                          onEdit={() => setEditingTrack(track)}
+                          onKaraoke={() => setKaraokeTrack(track)}
+                          onDelete={() => handleDeleteTrack(track.id, track.title)}
                         />
                     ))}
                     </SortableContext>
@@ -258,6 +270,18 @@ export default function AlbumDetailModal({ albumId, onClose, onChange }: Props) 
             onClose={() => setEditingTrack(null)}
             onSuccess={() => {
             setEditingTrack(null);
+            loadAlbum();
+            onChange();
+            }}
+        />
+      )}
+
+      {karaokeTrack && (
+        <KaraokeEditorModal
+            track={karaokeTrack}
+            onClose={() => setKaraokeTrack(null)}
+            onSuccess={() => {
+            setKaraokeTrack(null);
             loadAlbum();
             onChange();
             }}

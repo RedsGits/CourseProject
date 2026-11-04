@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import type { Track } from '../../types';
 import TrackCover from '../TrackCover';
+import { useAuth } from '../../store/auth';
 
 interface Props {
   track: Track;
@@ -30,6 +31,8 @@ export default function LabelTrackRow({ track, onFetchLyrics, isFetching, onEdit
 
   const hasLyrics = track.lyrics != null;
   const hasSyncedLyrics = track.syncedLyrics != null;
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'ADMIN';
 
   return (
     <div className="label-track-row">
@@ -67,7 +70,7 @@ export default function LabelTrackRow({ track, onFetchLyrics, isFetching, onEdit
       </div>
 
       <div className="label-track-actions">
-        {!hasLyrics && (
+        {!isAdmin && !hasLyrics && (
           <button
             className="label-track-btn"
             onClick={onFetchLyrics}
@@ -77,7 +80,7 @@ export default function LabelTrackRow({ track, onFetchLyrics, isFetching, onEdit
             {isFetching ? '...' : 'Текст'}
           </button>
         )}
-        {hasLyrics && (
+        {!isAdmin && hasLyrics && (
           <button
             className="label-track-btn"
             onClick={onKaraoke}
@@ -86,9 +89,11 @@ export default function LabelTrackRow({ track, onFetchLyrics, isFetching, onEdit
             Караоке
           </button>
         )}
-        <button className="label-track-btn" onClick={onEdit} title="Редактировать">
-          Редактировать
-        </button>
+        {!isAdmin && (
+            <button className="label-track-btn" onClick={onEdit} title="Редактировать">
+            Редактировать
+            </button>
+        )}
         <button className="label-track-btn label-track-btn-danger" onClick={onDelete} title="Удалить">
           ✕
         </button>

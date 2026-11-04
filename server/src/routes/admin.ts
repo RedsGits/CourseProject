@@ -98,4 +98,52 @@ router.delete('/labels/:id', async (req, res) => {
   res.status(204).send();
 });
 
+router.patch('/tracks/:id/transfer', async (req, res) => {
+  const id = Number(req.params.id);
+  const { labelId } = req.body as { labelId?: number };
+
+  if (!Number.isInteger(id) || !labelId) {
+    return res.status(400).json({ error: 'Неверный id или labelId' });
+  }
+
+  const track = await db.orm.public.Track.where({ id }).first();
+  if (!track) return res.status(404).json({ error: 'Трек не найден' });
+
+  const label = await db.orm.public.User.where({ id: labelId }).first();
+  if (!label || (label.role !== 'LABEL' && label.role !== 'ADMIN')) {
+    return res.status(400).json({ error: 'Указанный лейбл не существует' });
+  }
+
+  await db.orm.public.Track.where({ id }).update({ labelId });
+
+  res.json({ message: 'Трек передан', trackId: id, newLabelId: labelId });
+});
+
+router.patch('/albums/:id/transfer', async (req, res) => {
+  const id = Number(req.params.id);
+  const { labelId } = req.body as { labelId?: number };
+
+  if (!Number.isInteger(id) || !labelId) {
+    return res.status(400).json({ error: 'Неверный id или labelId' });
+  }
+
+  const album = await db.orm.public.Album.where({ id }).first();
+  if (!album) return res.status(404).json({ error: 'Альбом не найден' });
+
+  const label = await db.orm.public.User.where({ id: labelId }).first();
+  if (!label || (label.role !== 'LABEL' && label.role !== 'ADMIN')) {
+    return res.status(400).json({ error: 'Указанный лейбл не существует' });
+  }
+
+  await db.transaction(async (tx) => {
+    await tx.orm.public.Album.where({ id }).update({ labelId });
+    const tracks = await tx.orm.public.Track.where({ albumId: id }).all();
+    for (const t of tracks) {
+      await tx.orm.public.Track.where({ id: t.id }).update({ labelId });
+    }
+  });
+
+  res.json({ message: 'Альбом и его треки переданы', albumId: id, newLabelId: labelId });
+});
+
 export default router;
