@@ -26,18 +26,15 @@ const VALID_GENRES = new Set([
   'EXPERIMENTAL','SPOKEN_WORD',
 ]);
 
-// GET /tracks?artistId=&labelId=&genre=
 router.get('/', async (req, res) => {
   const { artistId, labelId, genre } = req.query;
 
-  // Базовый фильтр
   const filters: Record<string, unknown> = {};
   if (labelId) filters.labelId = Number(labelId);
   if (genre) filters.genre = String(genre).toUpperCase();
 
   let tracks;
   if (artistId) {
-    // Через TrackArtist
     const links = await db.orm.public.TrackArtist
       .where({ artistId: Number(artistId) })
       .all();
@@ -159,7 +156,6 @@ router.get('/:id/lyrics', async (req, res) => {
 });
 
 
-// GET /tracks/:id — теперь с artists[]
 router.get('/:id', async (req, res) => {
   const id = Number(req.params.id);
   if (!Number.isInteger(id)) return res.status(400).json({ error: 'Неверный id' });
@@ -170,7 +166,6 @@ router.get('/:id', async (req, res) => {
   res.json(await withArtists(track));
 });
 
-// POST /tracks — загрузка (primary + featured)
 router.post(
   '/',
   authenticate,
@@ -188,7 +183,6 @@ router.post(
       genre?: string;
     };
 
-    // featuredArtistIds приходит как JSON-строка в multipart
     let featuredArtistIds: number[] = [];
     if (req.body.featuredArtistIds) {
       try {
@@ -227,7 +221,6 @@ router.post(
       return res.status(400).json({ error: 'Альбом принадлежит другому артисту' });
     }
 
-    // Проверить всех featured
     if (featuredArtistIds.length > 0) {
       if (featuredArtistIds.includes(Number(primaryArtistId))) {
         cleanupFile(req.file.path);
@@ -243,7 +236,6 @@ router.post(
       }
     }
 
-    // Длительность
     let durationInSeconds: number;
     try {
       const metadata = await parseFile(req.file.path, { duration: true });
@@ -255,7 +247,6 @@ router.post(
       return res.status(400).json({ error: 'Не удалось прочитать метаданные аудиофайла' });
     }
 
-    // labelId
     let labelId: number;
     if (req.user!.role === 'ADMIN' && req.body.labelId) {
       labelId = Number(req.body.labelId);
@@ -268,7 +259,6 @@ router.post(
       return res.status(400).json({ error: 'Указанный лейбл не существует' });
     }
 
-    // Транзакция: создать трек + TrackArtist
     const track = await db.transaction(async (tx) => {
       const created = await tx.orm.public.Track.create({
         title: title.trim(),
@@ -302,7 +292,103 @@ router.post(
   }
 );
 
-// PATCH /tracks/:id — редактирование (title, genre, albumId, featured; ADMIN — labelId)
+router.patch(
+  '/:id/synced-lyrics',
+  authenticate,
+  requireRole('LABEL', 'ADMIN'),
+  async (req: AuthRequest, res) => {
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id)) {
+      return res.status(400).json({ error: 'Неверный id' });
+    }
+
+    const track = await db.orm.public.Track.where({ id }).first();
+    if (!track) {
+      return res.status(404).json({ error: 'Трек не найден' });
+    }
+
+    if (req.user!.role === 'LABEL' && track.labelId !== req.user!.id) {
+      return res.status(403).json({ error: 'Это не ваш трек' });
+    }
+
+    if (track.lyrics == null || !track.lyrics.trim()) {
+      return res.status(400).json({
+        error: 'Сначала подтяните plain-текст из lrclib — без него караоке невозможно',
+      });
+    }
+
+    const { timings } = req.body as {
+      timings?: Array<{ lineIndex: number; time: number }>;
+    };
+
+    if (!Array.isArray(timings)) {
+      return res.status(400).json({ error: 'Поле timings обязательно (массив или [])' });
+    }
+
+    if (timings.length === 0) {
+      const cleared = await db.orm.public.Track.where({ id }).update({ syncedLyrics: null });
+      return res.json({
+        lyrics: cleared?.lyrics ?? track.lyrics,
+        syncedLyrics: null,
+        hasLyrics: true,
+        hasSyncedLyrics: false,
+        found: true,
+      });
+    }
+
+    const lyricLines = track.lyrics.split('\n');
+
+    const seenIndices = new Set<number>();
+    for (const t of timings) {
+      if (
+        typeof t.lineIndex !== 'number' ||
+        typeof t.time !== 'number' ||
+        !Number.isInteger(t.lineIndex) ||
+        !Number.isFinite(t.time) ||
+        t.time < 0
+      ) {
+        return res.status(400).json({ error: 'Неверный формат timings: нужны { lineIndex: int, time: number >= 0 }' });
+      }
+      if (t.lineIndex < 0 || t.lineIndex >= lyricLines.length) {
+        return res.status(400).json({
+          error: `lineIndex ${t.lineIndex} вне диапазона (в тексте ${lyricLines.length} строк)`,
+        });
+      }
+      if (seenIndices.has(t.lineIndex)) {
+        return res.status(400).json({ error: `lineIndex ${t.lineIndex} указан дважды` });
+      }
+      seenIndices.add(t.lineIndex);
+    }
+
+    const formatTime = (sec: number): string => {
+      const totalMs = Math.round(sec * 1000);
+      const m = Math.floor(totalMs / 60000);
+      const s = Math.floor((totalMs % 60000) / 1000);
+      const ms = totalMs % 1000;
+      return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}.${String(ms).padStart(3, '0')}`;
+    };
+
+    const lrcLines = timings
+      .sort((a, b) => a.time - b.time)
+      .map((t) => `[${formatTime(t.time)}]${lyricLines[t.lineIndex]}`);
+
+    const syncedLyrics = lrcLines.join('\n');
+
+    const updated = await db.orm.public.Track.where({ id }).update({ syncedLyrics });
+    if (!updated) {
+      return res.status(500).json({ error: 'Не удалось сохранить караоке' });
+    }
+
+    res.json({
+      lyrics: updated.lyrics,
+      syncedLyrics: updated.syncedLyrics,
+      hasLyrics: updated.lyrics != null,
+      hasSyncedLyrics: updated.syncedLyrics != null,
+      found: true,
+    });
+  }
+);
+
 router.patch(
   '/:id',
   authenticate,
@@ -354,18 +440,15 @@ router.patch(
       updateData.labelId = labelId;
     }
 
-    // Обновление самого трека
     if (Object.keys(updateData).length > 0) {
       await db.orm.public.Track.where({ id }).update(updateData);
     }
 
-    // Обновление featured artists (если передано)
     if (featuredArtistIds !== undefined) {
       if (!Array.isArray(featuredArtistIds)) {
         return res.status(400).json({ error: 'featuredArtistIds должен быть массивом' });
       }
 
-      // Удалить старые FEATURED, оставить PRIMARY
       const existing = await db.orm.public.TrackArtist.where({ trackId: id }).all();
       for (const link of existing) {
         if (link.role === 'FEATURED') {
@@ -469,7 +552,6 @@ router.post(
       return res.status(403).json({ error: 'Это не ваш трек' });
     }
 
-    // Берём primary artist для запроса
     const primaryLink = await db.orm.public.TrackArtist
       .where({ trackId: id, role: 'PRIMARY' })
       .first();
