@@ -8,6 +8,10 @@
       "model": "Album",
       "namespace": "public"
     },
+    "AlbumArtist": {
+      "model": "AlbumArtist",
+      "namespace": "public"
+    },
     "Artist": {
       "model": "Artist",
       "namespace": "public"
@@ -322,13 +326,6 @@
         "models": {
           "Album": {
             "fields": {
-              "artistId": {
-                "nullable": false,
-                "type": {
-                  "codecId": "pg/int4@1",
-                  "kind": "scalar"
-                }
-              },
               "coverUrl": {
                 "nullable": true,
                 "type": {
@@ -386,19 +383,18 @@
               }
             },
             "relations": {
-              "artist": {
-                "cardinality": "N:1",
-                "nullable": false,
+              "artists": {
+                "cardinality": "1:N",
                 "on": {
                   "localFields": [
-                    "artistId"
+                    "id"
                   ],
                   "targetFields": [
-                    "id"
+                    "albumId"
                   ]
                 },
                 "to": {
-                  "model": "Artist",
+                  "model": "AlbumArtist",
                   "namespace": "public"
                 }
               },
@@ -436,9 +432,6 @@
             },
             "storage": {
               "fields": {
-                "artistId": {
-                  "column": "artistId"
-                },
                 "coverUrl": {
                   "column": "coverUrl"
                 },
@@ -463,6 +456,106 @@
               },
               "namespaceId": "public",
               "table": "Album"
+            }
+          },
+          "AlbumArtist": {
+            "fields": {
+              "albumId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "artistId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "order": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "role": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "TrackArtistRole",
+                  "namespaceId": "public",
+                  "plane": "domain"
+                }
+              }
+            },
+            "relations": {
+              "album": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "albumId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Album",
+                  "namespace": "public"
+                }
+              },
+              "artist": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "artistId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Artist",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "albumId": {
+                  "column": "albumId"
+                },
+                "artistId": {
+                  "column": "artistId"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "order": {
+                  "column": "order"
+                },
+                "role": {
+                  "column": "role"
+                }
+              },
+              "namespaceId": "public",
+              "table": "AlbumArtist"
             }
           },
           "Artist": {
@@ -543,7 +636,7 @@
                   ]
                 },
                 "to": {
-                  "model": "Album",
+                  "model": "AlbumArtist",
                   "namespace": "public"
                 }
               },
@@ -946,6 +1039,13 @@
                   "kind": "scalar"
                 }
               },
+              "order": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
               "playCount": {
                 "nullable": false,
                 "type": {
@@ -1100,6 +1200,9 @@
                 },
                 "lyrics": {
                   "column": "lyrics"
+                },
+                "order": {
+                  "column": "order"
                 },
                 "playCount": {
                   "column": "playCount"
@@ -1610,11 +1713,6 @@
                 }
               ],
               "columns": {
-                "artistId": {
-                  "codecId": "pg/int4@1",
-                  "nativeType": "int4",
-                  "nullable": false
-                },
                 "coverUrl": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
@@ -1671,23 +1769,6 @@
               },
               "foreignKeys": [
                 {
-                  "onDelete": "cascade",
-                  "source": {
-                    "columns": [
-                      "artistId"
-                    ],
-                    "namespaceId": "public",
-                    "tableName": "Album"
-                  },
-                  "target": {
-                    "columns": [
-                      "id"
-                    ],
-                    "namespaceId": "public",
-                    "tableName": "Artist"
-                  }
-                },
-                {
                   "onDelete": "restrict",
                   "source": {
                     "columns": [
@@ -1708,14 +1789,6 @@
               "indexes": [
                 {
                   "columns": [
-                    "artistId"
-                  ],
-                  "name": "Album_artistId_idx_5a004db6",
-                  "prefix": "Album_artistId_idx",
-                  "unique": false
-                },
-                {
-                  "columns": [
                     "labelId"
                   ],
                   "name": "Album_labelId_idx_e2585939",
@@ -1729,6 +1802,127 @@
                 ]
               },
               "uniques": []
+            },
+            "AlbumArtist": {
+              "checks": [
+                {
+                  "expression": "\"role\" IN ('PRIMARY', 'FEATURED')",
+                  "name": "AlbumArtist_role_check_575ffdfc",
+                  "prefix": "AlbumArtist_role_check"
+                }
+              ],
+              "columns": {
+                "albumId": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "artistId": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "expression": "autoincrement()",
+                    "kind": "function"
+                  },
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "order": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": 0
+                  },
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "role": {
+                  "codecId": "pg/text@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": "PRIMARY"
+                  },
+                  "nativeType": "text",
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "TrackArtistRole",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
+                }
+              },
+              "foreignKeys": [
+                {
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "albumId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "AlbumArtist"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "Album"
+                  }
+                },
+                {
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "artistId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "AlbumArtist"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "Artist"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "albumId"
+                  ],
+                  "name": "AlbumArtist_albumId_idx_921f6966",
+                  "prefix": "AlbumArtist_albumId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "artistId"
+                  ],
+                  "name": "AlbumArtist_artistId_idx_5a004db6",
+                  "prefix": "AlbumArtist_artistId_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "albumId",
+                    "artistId"
+                  ]
+                }
+              ]
             },
             "Artist": {
               "columns": {
@@ -2179,6 +2373,15 @@
                   "codecId": "pg/text@1",
                   "nativeType": "text",
                   "nullable": true
+                },
+                "order": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": 0
+                  },
+                  "nativeType": "int4",
+                  "nullable": false
                 },
                 "playCount": {
                   "codecId": "pg/int4@1",
@@ -2756,7 +2959,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "1fe58ae628dcb44980ec54db454e584a22132bede851f0a927b5497a677a83d5"
+    "storageHash": "cf30569df2d3711f7cfddf4b6e3486b8233e516e701690f95769074654d9a9e8"
   },
   "execution": {
     "executionHash": "72d477c118df8adf639abd48920f502cca4a9c16de2e37e606b10fc765075b2a",

@@ -5,6 +5,7 @@ import { usePlayer } from '../store/player';
 import LikeButton from '../components/LikeButton';
 import AddToPlaylistMenu from '../components/AddToPlaylistMenu';
 import type { Artist, Track } from '../types';
+import TrackCover from '../components/TrackCover';
 
 function formatPlayCount(count: number): string {
   if (count >= 1000000) return (count / 1000000).toFixed(1) + 'M';
@@ -91,12 +92,11 @@ export default function ArtistTracks() {
                 }}
               >
                 <div className="track-row-left">
-                  <div className="track-row-cover">
-                    {track.title[0]?.toUpperCase() ?? '♪'}
+                  <TrackCover coverUrl={track.album?.coverUrl} alt={track.title}>
                     <div className="track-row-play-overlay">
                       {isActuallyPlaying ? <IconPause /> : <IconPlay />}
                     </div>
-                  </div>
+                  </TrackCover>
                   <div className="track-row-info">
                     <span className="track-row-title">{track.title}</span>
                     <div className="track-row-artist-line">

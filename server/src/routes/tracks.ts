@@ -176,27 +176,15 @@ router.post(
       return res.status(400).json({ error: 'Аудиофайл обязателен' });
     }
 
-    const { title, primaryArtistId, albumId, genre } = req.body as {
+    const { title, albumId, genre } = req.body as {
       title?: string;
-      primaryArtistId?: string;
       albumId?: string;
       genre?: string;
     };
 
-    let featuredArtistIds: number[] = [];
-    if (req.body.featuredArtistIds) {
-      try {
-        const parsed = JSON.parse(req.body.featuredArtistIds);
-        if (Array.isArray(parsed)) featuredArtistIds = parsed.map(Number).filter(Number.isInteger);
-      } catch {
-        cleanupFile(req.file.path);
-        return res.status(400).json({ error: 'featuredArtistIds должен быть JSON-массивом' });
-      }
-    }
-
-    if (!title || !primaryArtistId || !albumId || !genre) {
+    if (!title || !albumId || !genre) {
       cleanupFile(req.file.path);
-      return res.status(400).json({ error: 'title, primaryArtistId, albumId, genre обязательны' });
+      return res.status(400).json({ error: 'title, albumId, genre обязательны' });
     }
 
     const genreUpper = genre.toUpperCase();
@@ -205,36 +193,24 @@ router.post(
       return res.status(400).json({ error: `Неизвестный жанр: ${genre}` });
     }
 
-    const primaryArtist = await db.orm.public.Artist.where({ id: Number(primaryArtistId) }).first();
-    if (!primaryArtist) {
-      cleanupFile(req.file.path);
-      return res.status(404).json({ error: 'Основной артист не найден' });
-    }
-
     const album = await db.orm.public.Album.where({ id: Number(albumId) }).first();
     if (!album) {
       cleanupFile(req.file.path);
       return res.status(404).json({ error: 'Альбом не найден' });
     }
-    if (album.artistId !== Number(primaryArtistId)) {
+
+    if (req.user!.role === 'LABEL' && album.labelId !== req.user!.id) {
       cleanupFile(req.file.path);
-      return res.status(400).json({ error: 'Альбом принадлежит другому артисту' });
+      return res.status(403).json({ error: 'Это не ваш альбом' });
     }
 
-    if (featuredArtistIds.length > 0) {
-      if (featuredArtistIds.includes(Number(primaryArtistId))) {
-        cleanupFile(req.file.path);
-        return res.status(400).json({ error: 'Primary не может быть в featured' });
-      }
-      const allArtists = await db.orm.public.Artist.all();
-      const artistIds = new Set(allArtists.map((a) => a.id));
-      for (const fid of featuredArtistIds) {
-        if (!artistIds.has(fid)) {
-          cleanupFile(req.file.path);
-          return res.status(404).json({ error: `Featured артист ${fid} не найден` });
-        }
-      }
+    const albumArtists = await db.orm.public.AlbumArtist.where({ albumId: album.id }).all();
+    const primaryLink = albumArtists.find((l) => l.role === 'PRIMARY');
+    if (!primaryLink) {
+      cleanupFile(req.file.path);
+      return res.status(400).json({ error: 'У альбома нет основного артиста' });
     }
+    const featuredLinks = albumArtists.filter((l) => l.role === 'FEATURED');
 
     let durationInSeconds: number;
     try {
@@ -247,17 +223,12 @@ router.post(
       return res.status(400).json({ error: 'Не удалось прочитать метаданные аудиофайла' });
     }
 
-    let labelId: number;
-    if (req.user!.role === 'ADMIN' && req.body.labelId) {
-      labelId = Number(req.body.labelId);
-    } else {
-      labelId = req.user!.id;
-    }
-    const label = await db.orm.public.User.where({ id: labelId }).first();
-    if (!label || (label.role !== 'LABEL' && label.role !== 'ADMIN')) {
-      cleanupFile(req.file.path);
-      return res.status(400).json({ error: 'Указанный лейбл не существует' });
-    }
+    const labelId = album.labelId;
+
+    const albumTracks = await db.orm.public.Track.where({ albumId: album.id }).all();
+    const nextOrder = albumTracks.length > 0
+      ? Math.max(...albumTracks.map((t) => t.order)) + 1
+      : 0;
 
     const track = await db.transaction(async (tx) => {
       const created = await tx.orm.public.Track.create({
@@ -265,21 +236,22 @@ router.post(
         duration: durationInSeconds,
         fileUrl: path.basename(req.file!.path),
         genre: genreUpper as any,
-        albumId: Number(albumId),
+        albumId: album.id,
         labelId,
+        order: nextOrder,
       });
 
       await tx.orm.public.TrackArtist.create({
         trackId: created.id,
-        artistId: Number(primaryArtistId),
+        artistId: primaryLink.artistId,
         role: 'PRIMARY',
         order: 0,
       });
 
-      for (let i = 0; i < featuredArtistIds.length; i++) {
+      for (let i = 0; i < featuredLinks.length; i++) {
         await tx.orm.public.TrackArtist.create({
           trackId: created.id,
-          artistId: featuredArtistIds[i],
+          artistId: featuredLinks[i].artistId,
           role: 'FEATURED',
           order: i + 1,
         });
@@ -405,11 +377,9 @@ router.patch(
       return res.status(403).json({ error: 'Это не ваш трек' });
     }
 
-    const { title, genre, albumId, featuredArtistIds, labelId } = req.body as {
+    const { title, genre, labelId } = req.body as {
       title?: string;
       genre?: string;
-      albumId?: number;
-      featuredArtistIds?: number[];
       labelId?: number;
     };
 
@@ -426,12 +396,6 @@ router.patch(
       updateData.genre = g;
     }
 
-    if (albumId !== undefined) {
-      const album = await db.orm.public.Album.where({ id: albumId }).first();
-      if (!album) return res.status(404).json({ error: 'Альбом не найден' });
-      updateData.albumId = albumId;
-    }
-
     if (labelId !== undefined && isAdmin) {
       const label = await db.orm.public.User.where({ id: labelId }).first();
       if (!label || (label.role !== 'LABEL' && label.role !== 'ADMIN')) {
@@ -440,36 +404,11 @@ router.patch(
       updateData.labelId = labelId;
     }
 
-    if (Object.keys(updateData).length > 0) {
-      await db.orm.public.Track.where({ id }).update(updateData);
+    if (Object.keys(updateData).length === 0) {
+      return res.status(400).json({ error: 'Нет полей для обновления' });
     }
 
-    if (featuredArtistIds !== undefined) {
-      if (!Array.isArray(featuredArtistIds)) {
-        return res.status(400).json({ error: 'featuredArtistIds должен быть массивом' });
-      }
-
-      const existing = await db.orm.public.TrackArtist.where({ trackId: id }).all();
-      for (const link of existing) {
-        if (link.role === 'FEATURED') {
-          await db.orm.public.TrackArtist.where({ id: link.id }).delete();
-        }
-      }
-
-      const primaryLink = existing.find((l) => l.role === 'PRIMARY');
-      if (featuredArtistIds.includes(primaryLink?.artistId ?? -1)) {
-        return res.status(400).json({ error: 'Primary не может быть в featured' });
-      }
-
-      for (let i = 0; i < featuredArtistIds.length; i++) {
-        await db.orm.public.TrackArtist.create({
-          trackId: id,
-          artistId: featuredArtistIds[i],
-          role: 'FEATURED',
-          order: i + 1,
-        });
-      }
-    }
+    await db.orm.public.Track.where({ id }).update(updateData);
 
     const updated = await db.orm.public.Track.where({ id }).first();
     res.json(await withArtists(updated!));

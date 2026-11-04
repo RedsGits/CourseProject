@@ -5,6 +5,7 @@ import { usePlayer } from '../store/player';
 import type { Track, Artist } from '../types';
 import LikeButton from '../components/LikeButton';
 import AddToPlaylistMenu from '../components/AddToPlaylistMenu';
+import TrackCover from '../components/TrackCover';
 
 interface Album { id: number; title: string; artistId: number; }
 interface Playlist { id: number; name: string; isPublic: boolean; coverUrl?: string | null; }
@@ -235,8 +236,7 @@ export default function Search() {
                                 }}
                               >
                                 <div className="track-row-left">
-                                  <div className="track-row-cover">
-                                    {track.title[0]?.toUpperCase() ?? '♪'}
+                                  <TrackCover coverUrl={track.album?.coverUrl} alt={track.title}>
                                     <div className="track-row-play-overlay">
                                       {isActuallyPlaying ? (
                                         <svg viewBox="0 0 24 24" fill="currentColor">
@@ -248,7 +248,7 @@ export default function Search() {
                                         </svg>
                                       )}
                                     </div>
-                                  </div>
+                                  </TrackCover>
 
                                   <div className="track-row-info">
                                     <span className="track-row-title">{track.title}</span>
@@ -377,8 +377,7 @@ export default function Search() {
                           }}
                         >
                           <div className="track-row-left">
-                            <div className="track-row-cover">
-                              {track.title[0]?.toUpperCase() ?? '♪'}
+                            <TrackCover coverUrl={track.album?.coverUrl} alt={track.title}>
                               <div className="track-row-play-overlay">
                                 {isActuallyPlaying ? (
                                   <svg viewBox="0 0 24 24" fill="currentColor">
@@ -390,7 +389,7 @@ export default function Search() {
                                   </svg>
                                 )}
                               </div>
-                            </div>
+                            </TrackCover>
 
                             <div className="track-row-info">
                               <span className="track-row-title">{track.title}</span>

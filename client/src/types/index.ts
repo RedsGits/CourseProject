@@ -18,6 +18,13 @@ export interface TrackArtistInfo {
   order: number;
 }
 
+export interface TrackAlbumInfo {
+  id: number;
+  title: string;
+  coverUrl: string | null;
+  type: AlbumType;
+}
+
 export interface Artist {
   id: number;
   name: string;
@@ -33,7 +40,7 @@ export interface Artist {
 export interface Album {
   id: number;
   title: string;
-  artistId: number;
+  artists: TrackArtistInfo[];
   year: number | null;
   coverUrl: string | null;
   type: AlbumType;
@@ -47,6 +54,7 @@ export interface Track {
   duration: number;
   fileUrl: string;
   genre: Genre;
+  order: number;
   albumId: number;
   labelId: number;
   playCount: number;
@@ -55,6 +63,7 @@ export interface Track {
   lyrics: string | null;
   syncedLyrics: string | null;
   artists: TrackArtistInfo[];
+  album: TrackAlbumInfo | null;
   createdAt: string;
   updatedAt: string;
 }

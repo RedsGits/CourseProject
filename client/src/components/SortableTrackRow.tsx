@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import LikeButton from './LikeButton';
 import AddToPlaylistMenu from './AddToPlaylistMenu';
 import type { Track } from '../types';
+import TrackCover from './TrackCover';
 
 const IconPlay = () => (
   <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
@@ -65,12 +66,11 @@ export default function SortableTrackRow({
         onClick={() => { if (isCurrent) togglePlay(); else onPlay(); }}
       >
         <div className="track-row-left">
-          <div className="track-row-cover">
-            {track.title[0]?.toUpperCase() ?? '♪'}
+          <TrackCover coverUrl={track.album?.coverUrl} alt={track.title}>
             <div className="track-row-play-overlay">
               {isPlaying ? <IconPause /> : <IconPlay />}
             </div>
-          </div>
+          </TrackCover>
           
           <div className="track-row-info">
             <span className="track-row-title">{track.title}</span>

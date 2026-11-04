@@ -53,7 +53,10 @@ export default function Login() {
     }
 
     const ok = await login(email, password);
-    if (ok) navigate('/');
+    if (ok) {
+      const role = useAuth.getState().user?.role;
+      navigate(role === 'LABEL' ? '/label' : '/');
+    }
   };
 
   const shownError = localError?.text ?? error;

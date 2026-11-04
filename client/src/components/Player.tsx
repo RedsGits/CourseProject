@@ -114,6 +114,7 @@ export default function Player() {
   isMutedRef.current = isMuted;
   const fadeInRef = useRef(fadeIn);
   const isSwitchingTrackRef = useRef(false);
+  const lastPositionRef = useRef(0);
   fadeInRef.current = fadeIn;
   const [lyricsData, setLyricsData] = useState<LyricsResponse | null>(null);
   const [lyricsLoading, setLyricsLoading] = useState(false);
@@ -122,6 +123,7 @@ export default function Player() {
   useEffect(() => {
     hasScrobbledRef.current = false;
     listenedTimeRef.current = 0;
+    lastPositionRef.current = 0;
     lastTickRef.current = performance.now();
   }, [current]);
 
@@ -239,21 +241,6 @@ export default function Player() {
       if (audio && !isSeeking) {
         setCurrentTime(audio.currentTime);
         applyVolumeWithFade(audio);
-
-        if (isPlaying && !audio.paused) {
-          listenedTimeRef.current += delta / 1000;
-        }
-
-        const threshold = Math.min(30, audio.duration / 2);
-        
-        if (
-          listenedTimeRef.current >= threshold &&
-          !hasScrobbledRef.current &&
-          current
-        ) {
-          hasScrobbledRef.current = true;
-          api.post(`/history/${current.id}`).catch(console.error);
-        }
       }
       rafId = requestAnimationFrame(tick);
     };
@@ -639,12 +626,38 @@ export default function Player() {
                 next();
             }
           }}
-        onPlay={() => {
-          if (!isSwitchingTrackRef.current) setIsPlaying(true);
-        }}
-        onPause={() => {
-          if (!isSwitchingTrackRef.current) setIsPlaying(false);
-        }}
+          onPlay={() => {
+            if (!isSwitchingTrackRef.current) setIsPlaying(true);
+          }}
+          onPause={() => {
+            if (!isSwitchingTrackRef.current) setIsPlaying(false);
+          }}
+          onTimeUpdate={() => {
+            const audio = audioRef.current;
+            if (!audio || audio.paused) {
+              lastPositionRef.current = audio?.currentTime ?? 0;
+              return;
+            }
+
+            const pos = audio.currentTime;
+            const delta = pos - lastPositionRef.current;
+
+            if (delta > 0 && delta < 2) {
+              listenedTimeRef.current += delta;
+            }
+
+            lastPositionRef.current = pos;
+
+            const threshold = Math.min(30, audio.duration / 2);
+            if (
+              listenedTimeRef.current >= threshold &&
+              !hasScrobbledRef.current &&
+              current
+            ) {
+              hasScrobbledRef.current = true;
+              api.post(`/history/${current.id}`).catch(console.error);
+            }
+          }}
         />
 
         <div className="player-content">

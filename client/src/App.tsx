@@ -12,6 +12,7 @@ import Library from './pages/Library';
 import LikedTracks from './pages/LikedTracks';
 import PlaylistDetail from './pages/PlaylistDetail';
 import ArtistTracks from './pages/ArtistTracks';
+import LabelDashboard from './pages/LabelDashboard';
 
 function App() {
   const { loadFromStorage } = useAuth();
@@ -23,6 +24,7 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
+        <Route path="/label" element={<LabelDashboard />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/" element={<Layout />}>

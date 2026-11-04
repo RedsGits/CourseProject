@@ -66,8 +66,8 @@ model Artist {
   bannerUrl      String?
   countryCode    String?
 
-  albums   Album[]
-  tracks   TrackArtist[]
+  albums       AlbumArtist[]
+  tracks       TrackArtist[]
 
   createdAt DateTime @default(now())
   updatedAt temporal.updatedAt()
@@ -78,8 +78,6 @@ model Artist {
 model Album {
   id       Int       @id @default(autoincrement())
   title    String
-  artistId Int
-  artist   Artist    @relation(fields: [artistId], references: [id], onDelete: Cascade)
   year     Int?
   coverUrl String?
   type     AlbumType @default(ALBUM)
@@ -87,12 +85,27 @@ model Album {
   labelId  Int
   label    User      @relation("LabelAlbums", fields: [labelId], references: [id], onDelete: Restrict)
 
+  artists  AlbumArtist[]
   tracks   Track[]
 
   createdAt DateTime @default(now())
 
-  @@index([artistId])
   @@index([labelId])
+}
+
+model AlbumArtist {
+  id       Int              @id @default(autoincrement())
+  albumId  Int
+  artistId Int
+  role     TrackArtistRole  @default(PRIMARY)
+  order    Int              @default(0)
+
+  album    Album            @relation(fields: [albumId], references: [id], onDelete: Cascade)
+  artist   Artist           @relation(fields: [artistId], references: [id], onDelete: Cascade)
+
+  @@unique([albumId, artistId])
+  @@index([albumId])
+  @@index([artistId])
 }
 
 model Track {
@@ -101,6 +114,7 @@ model Track {
   duration  Int
   fileUrl   String
   genre     Genre
+  order     Int      @default(0)
 
   playCount    Int      @default(0)
   likeCount    Int      @default(0)

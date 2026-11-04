@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Outlet, Link, NavLink } from 'react-router-dom';
+import { Outlet, Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../store/auth';
 import { usePlayer } from '../store/player';
 import { useEffect } from 'react';
@@ -25,6 +25,13 @@ const IconLibrary = () => (
 export default function Layout() {
   const { user } = useAuth();
   const { current } = usePlayer();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (user?.role === 'LABEL') {
+      navigate('/label');
+    }
+  }, [user, navigate]);
   
   const [avatarLoaded, setAvatarLoaded] = useState(false);
 

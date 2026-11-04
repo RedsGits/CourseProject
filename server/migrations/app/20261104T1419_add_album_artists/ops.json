@@ -1,0 +1,50 @@
+[
+  {
+    "id": "create_album_artist",
+    "label": "Create AlbumArtist table",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres"
+    },
+    "precheck": [],
+    "postcheck": [],
+    "execute": [
+      {
+        "description": "Create AlbumArtist",
+        "sql": "\n            CREATE TABLE \"AlbumArtist\" (\n              \"id\" SERIAL PRIMARY KEY,\n              \"albumId\" INTEGER NOT NULL,\n              \"artistId\" INTEGER NOT NULL,\n              \"role\" TEXT NOT NULL DEFAULT 'PRIMARY',\n              \"order\" INTEGER NOT NULL DEFAULT 0,\n              CONSTRAINT \"AlbumArtist_albumId_artistId_key\" UNIQUE (\"albumId\", \"artistId\"),\n              CONSTRAINT \"AlbumArtist_role_check_575ffdfc\" CHECK (\"role\" IN ('PRIMARY', 'FEATURED'))\n            );\n            CREATE INDEX \"AlbumArtist_albumId_idx_921f6966\" ON \"AlbumArtist\"(\"albumId\");\n            CREATE INDEX \"AlbumArtist_artistId_idx_5a004db6\" ON \"AlbumArtist\"(\"artistId\");\n            ALTER TABLE \"AlbumArtist\"\n              ADD CONSTRAINT \"AlbumArtist_albumId_fkey\"\n              FOREIGN KEY (\"albumId\") REFERENCES \"Album\"(\"id\") ON DELETE CASCADE;\n            ALTER TABLE \"AlbumArtist\"\n              ADD CONSTRAINT \"AlbumArtist_artistId_fkey\"\n              FOREIGN KEY (\"artistId\") REFERENCES \"Artist\"(\"id\") ON DELETE CASCADE;\n          "
+      }
+    ]
+  },
+  {
+    "id": "backfill_album_artist",
+    "label": "Backfill AlbumArtist from Album.artistId",
+    "operationClass": "data",
+    "target": {
+      "id": "postgres"
+    },
+    "precheck": [],
+    "postcheck": [],
+    "execute": [
+      {
+        "description": "Insert PRIMARY for each existing album",
+        "sql": "\n            INSERT INTO \"AlbumArtist\" (\"albumId\", \"artistId\", \"role\", \"order\")\n            SELECT id, \"artistId\", 'PRIMARY', 0\n            FROM \"Album\"\n            WHERE \"artistId\" IS NOT NULL;\n          "
+      }
+    ]
+  },
+  {
+    "id": "drop_album_artistId",
+    "label": "Drop Album.artistId (now in AlbumArtist)",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres"
+    },
+    "precheck": [],
+    "postcheck": [],
+    "execute": [
+      {
+        "description": "Drop FK, index, column",
+        "sql": "\n            ALTER TABLE \"Album\" DROP CONSTRAINT IF EXISTS \"Album_artistId_fkey\";\n            DROP INDEX IF EXISTS \"Album_artistId_idx_5a004db6\";\n            ALTER TABLE \"Album\" DROP COLUMN \"artistId\";\n          "
+      }
+    ]
+  }
+]

@@ -5,6 +5,7 @@ import { usePlayer } from '../store/player';
 import LikeButton from '../components/LikeButton';
 import AddToPlaylistMenu from '../components/AddToPlaylistMenu';
 import type { Artist, Track } from '../types';
+import TrackCover from '../components/TrackCover';
 
 function formatPlayCount(count: number): string {
   if (count >= 1000000) return (count / 1000000).toFixed(1) + 'M';
@@ -79,7 +80,16 @@ export default function ArtistDetail() {
 
       <header className="playlist-header" style={{ position: 'relative', zIndex: 1 }}>
         <div className="playlist-cover-large playlist-cover-interactive" onClick={() => setIsImageOpen(true)}>
-          <img src={artist.imageUrl || '/Defpfp.png'} alt={artist.name} className="playlist-cover-img" />
+          <img
+            src={artist.imageUrl ? `http://localhost:5000/uploads/${artist.imageUrl}` : '/Defpfp.png'}
+            alt={artist.name}
+            className="playlist-cover-img"
+            onError={(e) => {
+              if (!e.currentTarget.src.includes('Defpfp')) {
+                e.currentTarget.src = '/Defpfp.png';
+              }
+            }}
+          />
         </div>
 
         <div className="playlist-header-content">
@@ -125,10 +135,9 @@ export default function ArtistDetail() {
                 return (
                   <div key={track.id} className={`track-row ${isCurrent ? 'track-row-active' : ''}`} onClick={() => { if (isCurrent) togglePlay(); else setTrack(track, tracks, contextId); }}>
                     <div className="track-row-left">
-                      <div className="track-row-cover">
-                        {track.title[0]?.toUpperCase() ?? '♪'}
+                      <TrackCover coverUrl={track.album?.coverUrl} alt={track.title}>
                         <div className="track-row-play-overlay">{isActuallyPlaying ? <IconPause /> : <IconPlay />}</div>
-                      </div>
+                      </TrackCover>
                       <div className="track-row-info">
                         <span className="track-row-title">{track.title}</span>
                         <div className="track-row-artist-line">
@@ -172,7 +181,16 @@ export default function ArtistDetail() {
       {isImageOpen && (
         <div className="cover-fullscreen-modal" onClick={() => setIsImageOpen(false)}>
           <div className="cover-fullscreen-content" onClick={(e) => e.stopPropagation()}>
-            <img src={artist.imageUrl || '/Defpfp.png'} alt={artist.name} className="cover-fullscreen-img" />
+            <img
+              src={artist.imageUrl ? `http://localhost:5000/uploads/${artist.imageUrl}` : '/Defpfp.png'}
+              alt={artist.name}
+              className="cover-fullscreen-img"
+              onError={(e) => {
+                if (!e.currentTarget.src.includes('Defpfp')) {
+                  e.currentTarget.src = '/Defpfp.png';
+                }
+              }}
+            />
             <button className="close-fullscreen-btn" onClick={() => setIsImageOpen(false)}>✕</button>
           </div>
         </div>
