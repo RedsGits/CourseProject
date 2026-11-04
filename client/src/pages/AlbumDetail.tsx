@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { api } from '../api/client';
 import { usePlayer } from '../store/player';
@@ -6,6 +6,7 @@ import LikeButton from '../components/LikeButton';
 import AddToPlaylistMenu from '../components/AddToPlaylistMenu';
 import type { Album, Track, TrackArtistInfo } from '../types';
 import { formatAlbumType } from '../api/format'
+import { FastAverageColor } from 'fast-average-color';
 
 interface AlbumWithTracks extends Album {
   tracks: Track[];
@@ -33,6 +34,9 @@ export default function AlbumDetailPage() {
   const [album, setAlbum] = useState<AlbumWithTracks | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [dominantColor, setDominantColor] = useState<string>('var(--bg-elevated)');
+  const [isImageOpen, setIsImageOpen] = useState(false);
+  const imgRef = useRef<HTMLImageElement>(null);
 
   const { setTrack, current, isPlaying, togglePlay, playbackContext } = usePlayer();
   const contextId = `album-${id}`;
@@ -45,6 +49,30 @@ export default function AlbumDetailPage() {
       .catch(() => setNotFound(true))
       .finally(() => setLoading(false));
   }, [id]);
+
+   const extractColor = async (img: HTMLImageElement) => {
+    try {
+      const fac = new FastAverageColor();
+      const color = await fac.getColorAsync(img);
+      setDominantColor(color.hex);
+    } catch (err) {
+      console.error('Ошибка извлечения цвета:', err);
+    }
+  };
+
+  const handleImageLoad = () => {
+    if (imgRef.current) extractColor(imgRef.current);
+  };
+
+  useEffect(() => {
+    setDominantColor('var(--bg-elevated)');
+    if (album?.coverUrl) {
+      const timer = setTimeout(() => {
+        if (imgRef.current) extractColor(imgRef.current);
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [id, album?.coverUrl]);
 
   if (loading) return <p className="muted">Загрузка...</p>;
   if (notFound || !album) return <div className="empty-state"><h1>Альбом не найден</h1><Link to="/" className="back-link">← На главную</Link></div>;
@@ -59,12 +87,22 @@ export default function AlbumDetailPage() {
 
   return (
     <div className="playlist-page">
-      <div className="playlist-gradient-bg" style={{ background: 'linear-gradient(to bottom, rgba(255,255,255,0.15) 0%, var(--bg) 80%)' }} />
+      <div 
+        className="playlist-gradient-bg" 
+        style={{ background: `linear-gradient(to bottom, ${dominantColor} 0%, var(--bg) 80%)` }} 
+      />
 
       <header className="playlist-header" style={{ position: 'relative', zIndex: 1 }}>
-        <div className="playlist-cover-large">
+        <div className="playlist-cover-large playlist-cover-interactive" onClick={() => setIsImageOpen(true)}>
           {album.coverUrl ? (
-            <img src={`http://localhost:5000/uploads/${album.coverUrl}`} alt={album.title} className="playlist-cover-img" />
+            <img 
+                ref={imgRef}
+                src={`http://localhost:5000/uploads/${album.coverUrl}`} 
+                alt={album.title} 
+                className="playlist-cover-img" 
+                crossOrigin="anonymous"
+                onLoad={handleImageLoad}
+            />
           ) : (
             <svg viewBox="0 0 24 24" width="80" height="80" fill="#fff">
               <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 14.5c-2.49 0-4.5-2.01-4.5-4.5S9.51 7.5 12 7.5s4.5 2.01 4.5 4.5-2.01 4.5-4.5 4.5zm0-5.5c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1z" />
@@ -140,6 +178,28 @@ export default function AlbumDetailPage() {
           )}
         </div>
       </div>
+      {isImageOpen && (
+        <div className="cover-fullscreen-modal" onClick={() => setIsImageOpen(false)}>
+          <div className="cover-fullscreen-content" onClick={(e) => e.stopPropagation()}>
+            {album.coverUrl ? (
+              <img
+                src={`http://localhost:5000/uploads/${album.coverUrl}`}
+                alt={album.title}
+                className="cover-fullscreen-img"
+              />
+            ) : (
+              <div className="cover-fullscreen-placeholder">
+                <svg viewBox="0 0 24 24" width="120" height="120" fill="#fff">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 14.5c-2.49 0-4.5-2.01-4.5-4.5S9.51 7.5 12 7.5s4.5 2.01 4.5 4.5-2.01 4.5-4.5 4.5zm0-5.5c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1z" />
+                </svg>
+              </div>
+            )}
+            <button className="close-fullscreen-btn" onClick={() => setIsImageOpen(false)}>
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
