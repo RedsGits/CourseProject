@@ -8,6 +8,7 @@ import fs from 'fs';
 import { getAudioMimeType } from '../utils/mime';
 import { fetchLyricsFromLrclib } from '../services/lyrics';
 import { withArtists, withArtistsBatch } from '../utils/track';
+import jwt from 'jsonwebtoken';
 
 const router = Router();
 
@@ -32,6 +33,7 @@ router.get('/', async (req, res) => {
   const filters: Record<string, unknown> = {};
   if (labelId) filters.labelId = Number(labelId);
   if (genre) filters.genre = String(genre).toUpperCase();
+  if (!labelId) filters.isPublished = true;
 
   let tracks;
   if (artistId) {
@@ -57,6 +59,19 @@ router.get('/:id/stream', async (req, res) => {
 
   const track = await db.orm.public.Track.where({ id }).first();
   if (!track) {
+    return res.status(404).json({ error: 'Трек не найден' });
+  }
+
+  let userRole: string | null = null;
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    try {
+      const payload = jwt.verify(authHeader.slice(7), process.env.JWT_SECRET!) as { role: string };
+      userRole = payload.role;
+    } catch (e) {}
+  }
+
+  if (!track.isPublished && userRole !== 'LABEL' && userRole !== 'ADMIN') {
     return res.status(404).json({ error: 'Трек не найден' });
   }
 
@@ -210,7 +225,14 @@ router.post(
       cleanupFile(req.file.path);
       return res.status(400).json({ error: 'У альбома нет основного артиста' });
     }
-    const featuredLinks = albumArtists.filter((l) => l.role === 'FEATURED');
+    let featuredIds: number[] = [];
+    if (req.body.featuredArtistIds) {
+      try {
+        featuredIds = JSON.parse(req.body.featuredArtistIds);
+      } catch (e) {}
+    } else {
+      featuredIds = albumArtists.filter((a) => a.role === 'FEATURED').map((a) => a.artistId);
+    }
 
     let durationInSeconds: number;
     try {
@@ -239,6 +261,7 @@ router.post(
         albumId: album.id,
         labelId,
         order: nextOrder,
+        isPublished: false,
       });
 
       await tx.orm.public.TrackArtist.create({
@@ -248,10 +271,10 @@ router.post(
         order: 0,
       });
 
-      for (let i = 0; i < featuredLinks.length; i++) {
+      for (let i = 0; i < featuredIds.length; i++) {
         await tx.orm.public.TrackArtist.create({
           trackId: created.id,
-          artistId: featuredLinks[i].artistId,
+          artistId: featuredIds[i],
           role: 'FEATURED',
           order: i + 1,
         });
@@ -377,10 +400,11 @@ router.patch(
       return res.status(403).json({ error: 'Это не ваш трек' });
     }
 
-    const { title, genre, labelId } = req.body as {
+    const { title, genre, labelId, featuredArtistIds } = req.body as {
       title?: string;
       genre?: string;
       labelId?: number;
+      featuredArtistIds?: number[];
     };
 
     const updateData: Record<string, unknown> = {};
@@ -402,6 +426,25 @@ router.patch(
         return res.status(400).json({ error: 'Указанный лейбл не существует' });
       }
       updateData.labelId = labelId;
+    }
+
+    if (featuredArtistIds !== undefined) {
+      await db.transaction(async (tx) => {
+        const existing = await tx.orm.public.TrackArtist.where({ trackId: id }).all();
+        for (const link of existing) {
+          if (link.role === 'FEATURED') {
+            await tx.orm.public.TrackArtist.where({ id: link.id }).delete();
+          }
+        }
+        for (let i = 0; i < featuredArtistIds.length; i++) {
+          await tx.orm.public.TrackArtist.create({
+            trackId: id,
+            artistId: featuredArtistIds[i],
+            role: 'FEATURED',
+            order: i + 1,
+          });
+        }
+      });
     }
 
     if (Object.keys(updateData).length === 0) {
@@ -618,6 +661,42 @@ router.post(
       console.error('Ошибка импорта из lrclib:', err);
       res.status(500).json({ error: 'Ошибка при обращении к lrclib' });
     }
+  }
+);
+
+router.delete(
+  '/:id/lyrics',
+  authenticate,
+  requireRole('LABEL', 'ADMIN'),
+  async (req: AuthRequest, res) => {
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id)) {
+      return res.status(400).json({ error: 'Неверный id' });
+    }
+
+    const track = await db.orm.public.Track.where({ id }).first();
+    if (!track) return res.status(404).json({ error: 'Трек не найден' });
+
+    if (req.user!.role === 'LABEL' && track.labelId !== req.user!.id) {
+      return res.status(403).json({ error: 'Это не ваш трек' });
+    }
+
+    const updated = await db.orm.public.Track.where({ id }).update({
+      lyrics: null,
+      syncedLyrics: null,
+    });
+
+    if (!updated) {
+      return res.status(500).json({ error: 'Не удалось удалить текст' });
+    }
+
+    res.json({
+      lyrics: null,
+      syncedLyrics: null,
+      hasLyrics: false,
+      hasSyncedLyrics: false,
+      found: false,
+    });
   }
 );
 

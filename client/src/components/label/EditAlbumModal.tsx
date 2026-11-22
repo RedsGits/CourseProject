@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { api } from '../../api/client';
 import type { Album, Artist, AlbumType } from '../../types';
+import ArtistSearchSelect from './ArtistSearchSelect';
+import ArtistSingleSelect from './ArtistSingleSelect';
 
 interface Props {
   album: Album;
@@ -12,6 +14,10 @@ export default function EditAlbumModal({ album, onClose, onSuccess }: Props) {
   const [title, setTitle] = useState(album.title);
   const [year, setYear] = useState(album.year?.toString() ?? '');
   const [type, setType] = useState<AlbumType>(album.type);
+  
+  const primary = album.artists.find((a) => a.role === 'PRIMARY');
+  const [primaryArtistId, setPrimaryArtistId] = useState<number | null>(primary?.id || null);
+
   const [featuredIds, setFeaturedIds] = useState<number[]>(
     album.artists.filter((a) => a.role === 'FEATURED').map((a) => a.id)
   );
@@ -26,21 +32,17 @@ export default function EditAlbumModal({ album, onClose, onSuccess }: Props) {
       .catch(console.error);
   }, []);
 
-  const primary = album.artists.find((a) => a.role === 'PRIMARY');
-  const availableFeatured = artists.filter((a) => a.id !== primary?.id);
-
-  const toggleFeatured = (id: number) => {
-    setFeaturedIds((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
-    );
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) {
       setError('Название не может быть пустым');
       return;
     }
+    if (!primaryArtistId) {
+      setError('Выберите основного артиста');
+      return;
+    }
+
     setSubmitting(true);
     setError(null);
     try {
@@ -48,6 +50,7 @@ export default function EditAlbumModal({ album, onClose, onSuccess }: Props) {
         title: title.trim(),
         year: year ? Number(year) : null,
         type,
+        primaryArtistId,
         featuredArtistIds: featuredIds,
       });
       onSuccess();
@@ -109,31 +112,29 @@ export default function EditAlbumModal({ album, onClose, onSuccess }: Props) {
           </label>
 
           <div className="label-form-field">
-            <span className="label-form-label">
-              Основной артист: <strong>{primary?.name ?? '—'}</strong> (нельзя изменить)
-            </span>
+            <span className="label-form-label">Основной артист *</span>
+            <ArtistSingleSelect
+              artists={artists}
+              selectedId={primaryArtistId}
+              onChange={(id) => setPrimaryArtistId(id)}
+            />
+            <p className="muted" style={{ fontSize: '12px', marginTop: '4px' }}>
+              Вы можете выбрать любого артиста. Если у вас появятся его треки, вы сможете редактировать его профиль.
+            </p>
           </div>
 
-          {availableFeatured.length > 0 && (
-            <div className="label-form-field">
-              <span className="label-form-label">Фиты</span>
-              <p className="muted" style={{ fontSize: '12px', marginBottom: '6px' }}>
-                Изменение затронет все треки этого альбома
-              </p>
-              <div className="label-feat-list">
-                {availableFeatured.map((a) => (
-                  <label key={a.id} className="label-feat-item">
-                    <input
-                      type="checkbox"
-                      checked={featuredIds.includes(a.id)}
-                      onChange={() => toggleFeatured(a.id)}
-                    />
-                    <span>{a.name}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-          )}
+          <div className="label-form-field">
+            <span className="label-form-label">Фиты (опционально)</span>
+            <p className="muted" style={{ fontSize: '12px', marginBottom: '6px' }}>
+              Изменение затронет все треки этого альбома
+            </p>
+            <ArtistSearchSelect
+              artists={artists}
+              selectedIds={featuredIds}
+              onChange={setFeaturedIds}
+              primaryArtistId={primaryArtistId}
+            />
+          </div>
 
           <div className="modal-actions">
             <button type="button" className="btn-cancel" onClick={onClose}>Отмена</button>

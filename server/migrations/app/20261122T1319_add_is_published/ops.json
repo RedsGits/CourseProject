@@ -1,0 +1,86 @@
+[
+  {
+    "id": "column.public.Album.isPublished",
+    "label": "Add column \"isPublished\" to \"Album\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "isPublished",
+        "table": "Album"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"isPublished\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Album",
+          "isPublished"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"isPublished\"",
+        "sql": "ALTER TABLE \"public\".\"Album\" ADD COLUMN \"isPublished\" bool DEFAULT false NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"isPublished\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Album",
+          "isPublished"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.Track.isPublished",
+    "label": "Add column \"isPublished\" to \"Track\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "isPublished",
+        "table": "Track"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"isPublished\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Track",
+          "isPublished"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"isPublished\"",
+        "sql": "ALTER TABLE \"public\".\"Track\" ADD COLUMN \"isPublished\" bool DEFAULT false NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"isPublished\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Track",
+          "isPublished"
+        ]
+      }
+    ]
+  }
+]

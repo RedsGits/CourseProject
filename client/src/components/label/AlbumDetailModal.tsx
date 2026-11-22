@@ -137,6 +137,17 @@ export default function AlbumDetailModal({ albumId, onClose, onChange }: Props) 
   const primary = album?.artists.find((a) => a.role === 'PRIMARY');
   const featured = album?.artists.filter((a) => a.role === 'FEATURED') ?? [];
 
+    const handlePublish = async () => {
+    if (!confirm('Опубликовать альбом? Он и все его треки станут доступны пользователям.')) return;
+    try {
+      await api.patch(`/albums/${albumId}/publish`);
+      await loadAlbum();
+      onChange();
+    } catch (err: any) {
+      alert(err.response?.data?.error || 'Ошибка публикации');
+    }
+  };
+
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div
@@ -173,7 +184,14 @@ export default function AlbumDetailModal({ albumId, onClose, onChange }: Props) 
               </div>
 
               <div className="album-detail-info">
-                <span className="label-form-label">{formatAlbumType(album.type)}</span>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', marginBottom: '4px' }}>
+                  <span className="label-form-label" style={{ marginBottom: 0 }}>{formatAlbumType(album.type)}</span>
+                  {!album.isPublished && (
+                    <span style={{ color: '#e74c3c', fontSize: '13px', fontWeight: 'bold', marginTop: '2px' }}>
+                      Черновик
+                    </span>
+                  )}
+                </div>
                 <h2 className="album-detail-title">{album.title}</h2>
                 <p className="album-detail-artists">
                   {primary?.name ?? '—'}
@@ -188,6 +206,15 @@ export default function AlbumDetailModal({ albumId, onClose, onChange }: Props) 
             </div>
 
             <div className="album-detail-actions">
+              {!album.isPublished && (
+                <button 
+                  className="label-track-btn" 
+                  style={{ backgroundColor: '#1DB954', color: '#fff', fontWeight: 600 }} 
+                  onClick={handlePublish}
+                >
+                  Опубликовать
+                </button>
+              )}
               {!isAdmin && (
                 <>
                   <button className="label-track-btn" onClick={() => setUploadOpen(true)}>

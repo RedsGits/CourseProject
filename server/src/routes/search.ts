@@ -37,28 +37,30 @@ router.get('/', async (req, res) => {
 
   if (type === 'all' || type === 'tracks') {
     const allTracks = await db.orm.public.Track.all();
-    const fuse = new Fuse(allTracks, { ...FUSE_OPTIONS, keys: ['title', 'genre'], });
+    const publishedTracks = allTracks.filter(t => t.isPublished);
+    const fuse = new Fuse(publishedTracks, { ...FUSE_OPTIONS, keys: ['title', 'genre'] });
     const matched = fuse.search(q).slice(0, limit).map((r) => r.item);
     result.tracks = await withArtistsBatch(matched);
   }
 
   if (type === 'all' || type === 'artists') {
     const allArtists = await db.orm.public.Artist.all();
-    const fuse = new Fuse(allArtists, { ...FUSE_OPTIONS, keys: ['name', 'nameNormalized'], });
+    const fuse = new Fuse(allArtists, { ...FUSE_OPTIONS, keys: ['name', 'nameNormalized'] });
     const matched = fuse.search(q).slice(0, limit).map((r) => r.item);
     result.artists = matched;
   }
 
   if (type === 'all' || type === 'playlists') {
     const publicPlaylists = await db.orm.public.Playlist.where({ isPublic: true }).all();
-    const fuse = new Fuse(publicPlaylists, { ...FUSE_OPTIONS, keys: ['name'], });
+    const fuse = new Fuse(publicPlaylists, { ...FUSE_OPTIONS, keys: ['name'] });
     const matched = fuse.search(q).slice(0, limit).map((r) => r.item);
     result.playlists = matched;
   }
 
   if (type === 'all' || type === 'albums') {
     const allAlbums = await db.orm.public.Album.all();
-    const fuse = new Fuse(allAlbums, { ...FUSE_OPTIONS, keys: ['title'], });
+    const publishedAlbums = allAlbums.filter(a => a.isPublished);
+    const fuse = new Fuse(publishedAlbums, { ...FUSE_OPTIONS, keys: ['title'] });
     const matched = fuse.search(q).slice(0, limit).map((r) => r.item);
     result.albums = matched;
   }

@@ -47,6 +47,7 @@ export interface Album {
   coverUrl: string | null;
   type: AlbumType;
   labelId: number;
+  isPublished: boolean;
   createdAt: string;
 }
 
@@ -62,6 +63,7 @@ export interface Track {
   playCount: number;
   likeCount: number;
   dislikeCount: number;
+  isPublished: boolean;
   lyrics: string | null;
   syncedLyrics: string | null;
   artists: TrackArtistInfo[];

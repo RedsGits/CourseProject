@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { api } from '../../api/client';
-import type { Track, Genre } from '../../types';
+import ArtistSearchSelect from './ArtistSearchSelect';
+import type { Artist, Track, Genre } from '../../types';
 
 const GENRES: Genre[] = [
   'POP','ROCK','HIPHOP','RNB','ELECTRONIC','HOUSE','TECHNO','TRANCE','DUBSTEP','DRUM_AND_BASS',
@@ -22,6 +23,19 @@ export default function EditTrackModal({ track, onClose, onSuccess }: Props) {
   const [genre, setGenre] = useState<Genre>(track.genre);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [artists, setArtists] = useState<Artist[]>([]);
+
+  const [featuredIds, setFeaturedIds] = useState<number[]>(() => {
+    return track.artists
+      ?.filter((a) => a.role === 'FEATURED')
+      .map((a) => a.id) || [];
+  });
+
+  useEffect(() => {
+    api.get<Artist[]>('/artists')
+      .then((r) => setArtists(r.data))
+      .catch(console.error);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,6 +49,7 @@ export default function EditTrackModal({ track, onClose, onSuccess }: Props) {
       await api.patch(`/tracks/${track.id}`, {
         title: title.trim(),
         genre,
+        featuredArtistIds: featuredIds,
       });
       onSuccess();
     } catch (err: any) {
@@ -73,6 +88,16 @@ export default function EditTrackModal({ track, onClose, onSuccess }: Props) {
               {GENRES.map((g) => <option key={g} value={g}>{g}</option>)}
             </select>
           </label>
+
+          <div className="label-form-field">
+            <span className="label-form-label">Фиты (опционально)</span>
+            <ArtistSearchSelect
+              artists={artists}
+              selectedIds={featuredIds}
+              onChange={setFeaturedIds}
+              primaryArtistId={track.artists?.find((a) => a.role === 'PRIMARY')?.id}
+            />
+          </div>
 
           <p className="muted" style={{ fontSize: '12px', margin: 0 }}>
             Артисты, альбом и аудиофайл не меняются. Чтобы изменить артистов — отредактируйте альбом.

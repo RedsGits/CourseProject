@@ -58,7 +58,7 @@ router.get('/:id/tracks', async (req, res) => {
   const trackIds = links.map((l) => l.trackId);
   const allTracks = await db.orm.public.Track.all();
   const artistTracks = allTracks
-    .filter((t) => trackIds.includes(t.id))
+    .filter((t) => trackIds.includes(t.id) && t.isPublished)
     .sort((a, b) => (b.playCount ?? 0) - (a.playCount ?? 0));
 
   res.json(await withArtistsBatch(artistTracks));

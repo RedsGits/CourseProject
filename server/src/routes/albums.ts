@@ -5,6 +5,7 @@ import { uploadImage } from '../config/multer';
 import { withArtistsBatch } from '../utils/track';
 import fs from 'fs';
 import path from 'path';
+import jwt from 'jsonwebtoken';
 
 const router = Router();
 
@@ -60,6 +61,7 @@ router.get('/', async (req, res) => {
 
   const filters: Record<string, unknown> = {};
   if (labelId) filters.labelId = Number(labelId);
+  if (!labelId) filters.isPublished = true;
 
   let albums;
   if (artistId) {
@@ -84,6 +86,22 @@ router.get('/:id', async (req, res) => {
   const album = await db.orm.public.Album.where({ id }).first();
   if (!album) return res.status(404).json({ error: 'Альбом не найден' });
 
+  let userRole: string | null = null;
+  const authHeader = req.headers.authorization;
+  
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    try {
+      const token = authHeader.slice(7);
+      const payload = jwt.verify(token, process.env.JWT_SECRET!) as { role: string };
+      userRole = payload.role;
+    } catch (e) {
+    }
+  }
+
+  if (!album.isPublished && userRole !== 'LABEL' && userRole !== 'ADMIN') {
+    return res.status(404).json({ error: 'Альбом не найден' });
+  }
+
   const enriched = await withAlbumArtists(album);
 
   const tracks = await db.orm.public.Track.where({ albumId: id }).all();
@@ -105,6 +123,7 @@ router.post(
       year?: number;
       type?: string;
       labelId?: number;
+
     };
 
     if (!title || !title.trim() || !primaryArtistId) {
@@ -150,6 +169,7 @@ router.post(
         year: year ?? null,
         type: albumType as 'SINGLE' | 'EP' | 'ALBUM',
         labelId: ownerLabelId,
+        isPublished: false,
       });
 
       await tx.orm.public.AlbumArtist.create({
@@ -393,5 +413,22 @@ router.put(
     res.json({ message: 'Порядок обновлён' });
   }
 );
+
+router.patch('/:id/publish', authenticate, requireRole('LABEL', 'ADMIN'), async (req: AuthRequest, res) => {
+  const id = Number(req.params.id);
+  const album = await db.orm.public.Album.where({ id }).first();
+  if (!album) return res.status(404).json({ error: 'Не найден' });
+  if (req.user!.role === 'LABEL' && album.labelId !== req.user!.id) {
+    return res.status(403).json({ error: 'Нет прав' });
+  }
+
+  await db.orm.public.Album.where({ id }).update({ isPublished: true });
+  const tracks = await db.orm.public.Track.where({ albumId: id }).all();
+  for (const t of tracks) {
+    await db.orm.public.Track.where({ id: t.id }).update({ isPublished: true });
+  }
+
+  res.json({ message: 'Альбом опубликован' });
+});
 
 export default router;

@@ -347,6 +347,13 @@
                   "kind": "scalar"
                 }
               },
+              "isPublished": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/bool@1",
+                  "kind": "scalar"
+                }
+              },
               "labelId": {
                 "nullable": false,
                 "type": {
@@ -440,6 +447,9 @@
                 },
                 "id": {
                   "column": "id"
+                },
+                "isPublished": {
+                  "column": "isPublished"
                 },
                 "labelId": {
                   "column": "labelId"
@@ -1044,6 +1054,13 @@
                   "kind": "scalar"
                 }
               },
+              "isPublished": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/bool@1",
+                  "kind": "scalar"
+                }
+              },
               "labelId": {
                 "nullable": false,
                 "type": {
@@ -1217,6 +1234,9 @@
                 },
                 "id": {
                   "column": "id"
+                },
+                "isPublished": {
+                  "column": "isPublished"
                 },
                 "labelId": {
                   "column": "labelId"
@@ -1775,6 +1795,15 @@
                     "kind": "function"
                   },
                   "nativeType": "int4",
+                  "nullable": false
+                },
+                "isPublished": {
+                  "codecId": "pg/bool@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": false
+                  },
+                  "nativeType": "bool",
                   "nullable": false
                 },
                 "labelId": {
@@ -2427,6 +2456,15 @@
                   "nativeType": "int4",
                   "nullable": false
                 },
+                "isPublished": {
+                  "codecId": "pg/bool@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": false
+                  },
+                  "nativeType": "bool",
+                  "nullable": false
+                },
                 "labelId": {
                   "codecId": "pg/int4@1",
                   "nativeType": "int4",
@@ -3031,7 +3069,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "7f653a13f43173e76a44551b60e5525744272ce9ac50703e2acbc8621910f00c"
+    "storageHash": "87b969b6fc49bfb9d2b3fac578f36a0f193656fd5d7d1b54c2d3a7dbf0bf10ae"
   },
   "execution": {
     "executionHash": "72d477c118df8adf639abd48920f502cca4a9c16de2e37e606b10fc765075b2a",

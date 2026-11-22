@@ -34,7 +34,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'7f653a13f43173e76a44551b60e5525744272ce9ac50703e2acbc8621910f00c'>;
+  StorageHashBase<'87b969b6fc49bfb9d2b3fac578f36a0f193656fd5d7d1b54c2d3a7dbf0bf10ae'>;
 export type ExecutionHash =
   ExecutionHashBase<'72d477c118df8adf639abd48920f502cca4a9c16de2e37e606b10fc765075b2a'>;
 export type ProfileHash =
@@ -254,6 +254,7 @@ export type FieldOutputTypes = {
       readonly coverUrl: CodecTypes['pg/text@1']['output'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly id: CodecTypes['pg/int4@1']['output'];
+      readonly isPublished: CodecTypes['pg/bool@1']['output'];
       readonly labelId: CodecTypes['pg/int4@1']['output'];
       readonly title: CodecTypes['pg/text@1']['output'];
       readonly type: 'SINGLE' | 'EP' | 'ALBUM';
@@ -358,6 +359,7 @@ export type FieldOutputTypes = {
         | 'EXPERIMENTAL'
         | 'SPOKEN_WORD';
       readonly id: CodecTypes['pg/int4@1']['output'];
+      readonly isPublished: CodecTypes['pg/bool@1']['output'];
       readonly labelId: CodecTypes['pg/int4@1']['output'];
       readonly likeCount: CodecTypes['pg/int4@1']['output'];
       readonly lyrics: CodecTypes['pg/text@1']['output'] | null;
@@ -406,6 +408,7 @@ export type FieldInputTypes = {
       readonly coverUrl: CodecTypes['pg/text@1']['input'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly id: CodecTypes['pg/int4@1']['input'];
+      readonly isPublished: CodecTypes['pg/bool@1']['input'];
       readonly labelId: CodecTypes['pg/int4@1']['input'];
       readonly title: CodecTypes['pg/text@1']['input'];
       readonly type: 'SINGLE' | 'EP' | 'ALBUM';
@@ -510,6 +513,7 @@ export type FieldInputTypes = {
         | 'EXPERIMENTAL'
         | 'SPOKEN_WORD';
       readonly id: CodecTypes['pg/int4@1']['input'];
+      readonly isPublished: CodecTypes['pg/bool@1']['input'];
       readonly labelId: CodecTypes['pg/int4@1']['input'];
       readonly likeCount: CodecTypes['pg/int4@1']['input'];
       readonly lyrics: CodecTypes['pg/text@1']['input'] | null;
@@ -558,6 +562,7 @@ export type StorageColumnTypes = {
       readonly coverUrl: CodecTypes['pg/text@1']['output'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
       readonly id: CodecTypes['pg/int4@1']['output'];
+      readonly isPublished: CodecTypes['pg/bool@1']['output'];
       readonly labelId: CodecTypes['pg/int4@1']['output'];
       readonly title: CodecTypes['pg/text@1']['output'];
       readonly type: 'SINGLE' | 'EP' | 'ALBUM';
@@ -662,6 +667,7 @@ export type StorageColumnTypes = {
         | 'EXPERIMENTAL'
         | 'SPOKEN_WORD';
       readonly id: CodecTypes['pg/int4@1']['output'];
+      readonly isPublished: CodecTypes['pg/bool@1']['output'];
       readonly labelId: CodecTypes['pg/int4@1']['output'];
       readonly likeCount: CodecTypes['pg/int4@1']['output'];
       readonly lyrics: CodecTypes['pg/text@1']['output'] | null;
@@ -710,6 +716,7 @@ export type StorageColumnInputTypes = {
       readonly coverUrl: CodecTypes['pg/text@1']['input'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-temporal@1']['input'];
       readonly id: CodecTypes['pg/int4@1']['input'];
+      readonly isPublished: CodecTypes['pg/bool@1']['input'];
       readonly labelId: CodecTypes['pg/int4@1']['input'];
       readonly title: CodecTypes['pg/text@1']['input'];
       readonly type: 'SINGLE' | 'EP' | 'ALBUM';
@@ -814,6 +821,7 @@ export type StorageColumnInputTypes = {
         | 'EXPERIMENTAL'
         | 'SPOKEN_WORD';
       readonly id: CodecTypes['pg/int4@1']['input'];
+      readonly isPublished: CodecTypes['pg/bool@1']['input'];
       readonly labelId: CodecTypes['pg/int4@1']['input'];
       readonly likeCount: CodecTypes['pg/int4@1']['input'];
       readonly lyrics: CodecTypes['pg/text@1']['input'] | null;
@@ -862,6 +870,7 @@ export namespace Models {
     coverUrl: CodecTypes['pg/text@1']['output'] | null;
     createdAt: CodecTypes['pg/timestamptz-temporal@1']['output'];
     id: CodecTypes['pg/int4@1']['output'];
+    isPublished: CodecTypes['pg/bool@1']['output'];
     labelId: CodecTypes['pg/int4@1']['output'];
     title: CodecTypes['pg/text@1']['output'];
     type: 'SINGLE' | 'EP' | 'ALBUM';
@@ -986,6 +995,7 @@ export namespace Models {
       | 'EXPERIMENTAL'
       | 'SPOKEN_WORD';
     id: CodecTypes['pg/int4@1']['output'];
+    isPublished: CodecTypes['pg/bool@1']['output'];
     labelId: CodecTypes['pg/int4@1']['output'];
     likeCount: CodecTypes['pg/int4@1']['output'];
     lyrics: CodecTypes['pg/text@1']['output'] | null;
@@ -1111,6 +1121,15 @@ type ContractBase = Omit<
                   readonly default: {
                     readonly kind: 'function';
                     readonly expression: 'autoincrement()';
+                  };
+                };
+                readonly isPublished: {
+                  readonly nativeType: 'bool';
+                  readonly codecId: 'pg/bool@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/bool@1', false>;
                   };
                 };
                 readonly labelId: {
@@ -1603,6 +1622,15 @@ type ContractBase = Omit<
                   readonly default: {
                     readonly kind: 'function';
                     readonly expression: 'autoincrement()';
+                  };
+                };
+                readonly isPublished: {
+                  readonly nativeType: 'bool';
+                  readonly codecId: 'pg/bool@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/bool@1', false>;
                   };
                 };
                 readonly labelId: {
@@ -2118,6 +2146,10 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
               };
+              readonly isPublished: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/bool@1' };
+              };
               readonly labelId: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
@@ -2175,6 +2207,7 @@ type ContractBase = Omit<
                 readonly coverUrl: { readonly column: 'coverUrl' };
                 readonly createdAt: { readonly column: 'createdAt' };
                 readonly id: { readonly column: 'id' };
+                readonly isPublished: { readonly column: 'isPublished' };
                 readonly labelId: { readonly column: 'labelId' };
                 readonly title: { readonly column: 'title' };
                 readonly type: { readonly column: 'type' };
@@ -2552,6 +2585,10 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
               };
+              readonly isPublished: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/bool@1' };
+              };
               readonly labelId: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
@@ -2666,6 +2703,7 @@ type ContractBase = Omit<
                 readonly fileUrl: { readonly column: 'fileUrl' };
                 readonly genre: { readonly column: 'genre' };
                 readonly id: { readonly column: 'id' };
+                readonly isPublished: { readonly column: 'isPublished' };
                 readonly labelId: { readonly column: 'labelId' };
                 readonly likeCount: { readonly column: 'likeCount' };
                 readonly lyrics: { readonly column: 'lyrics' };

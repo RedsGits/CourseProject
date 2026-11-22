@@ -67,7 +67,8 @@ router.get('/:id', async (req: AuthRequest, res) => {
   const validPairs = orderedLinks
     .map((pt) => {
       const track = trackMap.get(pt.trackId);
-      return track ? { order: pt.order, track } : null;
+      if (!track || !track.isPublished) return null;
+      return { order: pt.order, track };
     })
     .filter((x): x is NonNullable<typeof x> => x !== null);
 
@@ -77,8 +78,8 @@ router.get('/:id', async (req: AuthRequest, res) => {
     ...playlist,
     owner: owner ? { name: owner.name, email: owner.email } : null,
     tracks: validPairs.map((x, i) => ({
-      order: x.order,
       ...enriched[i],
+      order: x.order,
     })),
   });
 });

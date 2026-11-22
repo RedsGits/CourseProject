@@ -115,14 +115,22 @@ export default function AlbumDetailPage() {
             <span className="playlist-type">{formatAlbumType(album.type)}</span>
             <h1 className="playlist-name" style={{ fontSize: '56px' }}>{album.title}</h1>
             <div className="playlist-meta">
-              {primary && <Link to={`/artist/${primary.id}`} className="track-row-artist">{primary.name}</Link>}
-              {featured.map((a) => (
-                <span key={a.id}>
-                  <span>, </span>
-                  <Link to={`/artist/${a.id}`} className="track-row-artist">{a.name}</Link>
-                </span>
-              ))}
-              {album.year && <><span>•</span><span>{album.year}</span></>}
+              <div style={{ display: 'flex', flexWrap: 'wrap' }}>
+                {primary && <Link to={`/artist/${primary.id}`} className="track-row-artist">{primary.name}</Link>}
+                {featured.map((a) => (
+                  <span key={a.id}>
+                    <span>,&nbsp;</span>
+                    <Link to={`/artist/${a.id}`} className="track-row-artist">{a.name}</Link>
+                  </span>
+                ))}
+              </div>
+
+              {album.year && (
+                <>
+                  <span>•</span>
+                  <span>{album.year}</span>
+                </>
+              )}
               <span>•</span>
               <span>{album.tracks.length} треков</span>
             </div>

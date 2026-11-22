@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { api } from '../../api/client';
-import type { Album, Genre } from '../../types';
+import type { Album, Genre, Artist } from '../../types';
+import ArtistSearchSelect from './ArtistSearchSelect';
 
 const GENRES: Genre[] = [
   'POP','ROCK','HIPHOP','RNB','ELECTRONIC','HOUSE','TECHNO','TRANCE','DUBSTEP','DRUM_AND_BASS',
@@ -28,6 +29,11 @@ export default function UploadTracksModal({ album, onClose, onSuccess }: Props) 
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState({ done: 0, total: 0 });
   const [error, setError] = useState<string | null>(null);
+  const [artists, setArtists] = useState<Artist[]>([]);
+
+  useEffect(() => {
+    api.get<Artist[]>('/artists').then((r) => setArtists(r.data)).catch(console.error);
+  }, [])
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selected = Array.from(e.target.files ?? []);
@@ -164,6 +170,10 @@ export default function UploadTracksModal({ album, onClose, onSuccess }: Props) 
               Загрузка: {progress.done} из {progress.total}
             </p>
           )}
+
+          <div className="label-form-field">
+            <span className="label-form-label">Фиты для этих треков (опционально)</span>
+          </div>
 
           <div className="modal-actions">
             <button type="button" className="btn-cancel" onClick={onClose} disabled={uploading}>

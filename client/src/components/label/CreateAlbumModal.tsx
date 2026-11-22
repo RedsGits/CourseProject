@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { api } from '../../api/client';
 import type { Artist, AlbumType } from '../../types';
+import ArtistSearchSelect from './ArtistSearchSelect';
+import ArtistSingleSelect from './ArtistSingleSelect';
 
 interface Props {
   onClose: () => void;
@@ -25,11 +27,11 @@ export default function CreateAlbumModal({ onClose, onSuccess }: Props) {
       .catch(console.error);
   }, []);
 
-  const toggleFeatured = (id: number) => {
-    setFeaturedIds((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
-    );
-  };
+  useEffect(() => {
+    if (primaryArtistId) {
+      setFeaturedIds((prev) => prev.filter((id) => id !== primaryArtistId));
+    }
+  }, [primaryArtistId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,8 +39,10 @@ export default function CreateAlbumModal({ onClose, onSuccess }: Props) {
       setError('Заполните название и выберите основного артиста');
       return;
     }
+    
     setSubmitting(true);
     setError(null);
+    
     try {
       const { data: album } = await api.post('/albums', {
         title: title.trim(),
@@ -64,8 +68,6 @@ export default function CreateAlbumModal({ onClose, onSuccess }: Props) {
     }
   };
 
-  const availableFeatured = artists.filter((a) => a.id !== primaryArtistId);
-
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div
@@ -89,19 +91,19 @@ export default function CreateAlbumModal({ onClose, onSuccess }: Props) {
             />
           </label>
 
-          <label className="label-form-field">
-            <span className="label-form-label">Основной артист *</span>
-            <select
-              value={primaryArtistId ?? ''}
-              onChange={(e) => setPrimaryArtistId(Number(e.target.value) || null)}
-              required
-            >
-              <option value="">— Выберите —</option>
-              {artists.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
-            </select>
-          </label>
-
           <div className="label-form-field">
+            <span className="label-form-label">Основной артист *</span>
+            <ArtistSingleSelect
+              artists={artists}
+              selectedId={primaryArtistId}
+              onChange={(id) => setPrimaryArtistId(id)}
+            />
+            <p className="muted" style={{ fontSize: '12px', marginTop: '4px' }}>
+              Вы можете выбрать любого артиста. Если у вас появятся его треки, вы сможете редактировать его профиль.
+            </p>
+          </div>
+
+          <label className="label-form-field">
             <span className="label-form-label">Тип релиза *</span>
             <div className="label-type-tabs">
               {(['SINGLE', 'EP', 'ALBUM'] as AlbumType[]).map((t) => (
@@ -115,7 +117,7 @@ export default function CreateAlbumModal({ onClose, onSuccess }: Props) {
                 </button>
               ))}
             </div>
-          </div>
+          </label>
 
           <label className="label-form-field">
             <span className="label-form-label">Год (опционально)</span>
@@ -129,23 +131,15 @@ export default function CreateAlbumModal({ onClose, onSuccess }: Props) {
             />
           </label>
 
-          {availableFeatured.length > 0 && (
-            <div className="label-form-field">
-              <span className="label-form-label">Фиты (опционально)</span>
-              <div className="label-feat-list">
-                {availableFeatured.map((a) => (
-                  <label key={a.id} className="label-feat-item">
-                    <input
-                      type="checkbox"
-                      checked={featuredIds.includes(a.id)}
-                      onChange={() => toggleFeatured(a.id)}
-                    />
-                    <span>{a.name}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-          )}
+          <div className="label-form-field">
+            <span className="label-form-label">Фиты (опционально)</span>
+            <ArtistSearchSelect
+              artists={artists}
+              selectedIds={featuredIds}
+              onChange={setFeaturedIds}
+              primaryArtistId={primaryArtistId}
+            />
+          </div>
 
           <label className="label-form-field">
             <span className="label-form-label">Обложка (опционально, до 5 МБ)</span>

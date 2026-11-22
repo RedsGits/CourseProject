@@ -111,7 +111,20 @@ export default function KaraokeEditorModal({ track, onClose, onSuccess }: Props)
     }
   };
 
-    const handleImportFromUrl = async () => {
+  const handleClearAll = async () => {
+    if (!confirm('Удалить полностью текст и караоке для этого трека? Это действие нельзя отменить.')) return;
+    setSubmitting(true);
+    try {
+      await api.delete(`/tracks/${track.id}/lyrics`);
+      onSuccess();
+    } catch (err: any) {
+      alert(err.response?.data?.error || 'Ошибка удаления текста');
+      setSubmitting(false);
+    }
+  };
+
+
+  const handleImportFromUrl = async () => {
     if (!lrclibUrl.trim()) return;
     setImporting(true);
     setError(null);
@@ -155,7 +168,13 @@ export default function KaraokeEditorModal({ track, onClose, onSuccess }: Props)
                 type="text"
                 placeholder="https://lrclib.net/tracks/12345"
                 value={lrclibUrl}
-                onChange={(e) => setLrclibUrl(e.target.value)}
+                onChange={(e) => { setLrclibUrl(e.target.value); setError(null); }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault(); 
+                    handleImportFromUrl();
+                  }
+                }}
                 style={{ flex: 1, padding: '8px 12px', borderRadius: '6px', border: '1px solid var(--border)', background: 'var(--bg-elevated)', color: 'var(--text)' }}
               />
               <button
@@ -167,7 +186,6 @@ export default function KaraokeEditorModal({ track, onClose, onSuccess }: Props)
                 {importing ? 'Импорт...' : 'Загрузить'}
               </button>
             </div>
-            {error && <div className="error" style={{ marginTop: '8px' }}>{error}</div>}
           </div>
         )}
 
@@ -192,15 +210,36 @@ export default function KaraokeEditorModal({ track, onClose, onSuccess }: Props)
         </div>
 
         <div className="modal-actions" style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid var(--border)', justifyContent: 'space-between' }}>
-          <button type="button" className="label-track-btn label-track-btn-danger" onClick={handleClear} disabled={submitting || !track.syncedLyrics}>
-            Удалить караоке
-          </button>
+          
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button 
+              type="button" 
+              className="label-track-btn label-track-btn-danger" 
+              onClick={handleClear} 
+              disabled={submitting || !track.syncedLyrics}
+              title="Оставит обычный текст, но удалит таймкоды"
+            >
+              Удалить караоке
+            </button>
+
+            <button 
+              type="button" 
+              className="label-track-btn label-track-btn-danger" 
+              onClick={handleClearAll} 
+              disabled={submitting || !track.lyrics}
+              title="Удалит и обычный текст, и караоке"
+            >
+              Удалить весь текст
+            </button>
+          </div>
+
           <div style={{ display: 'flex', gap: '12px' }}>
             <button type="button" className="btn-cancel" onClick={onClose} disabled={submitting}>Отмена</button>
             <button type="button" className="btn-pill" onClick={handleSubmit} disabled={submitting}>
               {submitting ? 'Сохранение...' : 'Сохранить'}
             </button>
           </div>
+          
         </div>
       </div>
     </div>

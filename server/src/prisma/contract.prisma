@@ -85,6 +85,7 @@ model Album {
   year     Int?
   coverUrl String?
   type     AlbumType @default(ALBUM)
+  isPublished Boolean @default(false)
 
   labelId  Int
   label    User      @relation("LabelAlbums", fields: [labelId], references: [id], onDelete: Restrict)
@@ -119,6 +120,7 @@ model Track {
   fileUrl   String
   genre     Genre
   order     Int      @default(0)
+  isPublished Boolean @default(false)
 
   playCount    Int      @default(0)
   likeCount    Int      @default(0)
