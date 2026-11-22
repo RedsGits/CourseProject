@@ -550,4 +550,75 @@ router.post(
   }
 );
 
+router.post(
+  '/:id/lyrics/import',
+  authenticate,
+  requireRole('LABEL', 'ADMIN'),
+  async (req: AuthRequest, res) => {
+    const id = Number(req.params.id);
+    const { url } = req.body as { url?: string };
+
+    if (!Number.isInteger(id) || !url) {
+      return res.status(400).json({ error: 'Неверный id или отсутствует ссылка' });
+    }
+
+    const track = await db.orm.public.Track.where({ id }).first();
+    if (!track) return res.status(404).json({ error: 'Трек не найден' });
+
+    if (req.user!.role === 'LABEL' && track.labelId !== req.user!.id) {
+      return res.status(403).json({ error: 'Это не ваш трек' });
+    }
+
+    const match = url.match(/lrclib\.net\/tracks\/(\d+)/);
+    if (!match) {
+      return res.status(400).json({ error: 'Неверный формат ссылки. Нужна ссылка вида https://lrclib.net/tracks/12345' });
+    }
+    const lrclibId = match[1];
+
+    try {
+      const response = await fetch(`https://lrclib.net/api/get/${lrclibId}`, {
+        headers: { 'User-Agent': 'DoeReMi/1.0.0 (https://github.com/RedsGits/CourseProject)' },
+      });
+
+      if (!response.ok) {
+        return res.status(404).json({ error: 'Трек не найден в базе lrclib по этой ссылке' });
+      }
+
+      const data = await response.json();
+
+      const lrclibTitle = (data.trackName || '').toLowerCase().trim();
+      const dbTitle = track.title.toLowerCase().trim();
+      
+      const durationDiff = Math.abs((data.duration || 0) - track.duration);
+
+      if (lrclibTitle !== dbTitle || durationDiff > 2) {
+        return res.status(400).json({ 
+          error: 'Данные не совпадают. Проверьте название и длительность.',
+          lrclibData: { title: data.trackName, duration: data.duration },
+          dbData: { title: track.title, duration: track.duration }
+        });
+      }
+
+      const updated = await db.orm.public.Track.where({ id }).update({
+        lyrics: data.plainLyrics || null,
+        syncedLyrics: data.syncedLyrics || null,
+      });
+
+      if (!updated) return res.status(500).json({ error: 'Не удалось сохранить текст' });
+
+      res.json({
+        success: true,
+        lyrics: updated.lyrics,
+        syncedLyrics: updated.syncedLyrics,
+        hasLyrics: updated.lyrics != null,
+        hasSyncedLyrics: updated.syncedLyrics != null,
+      });
+
+    } catch (err: any) {
+      console.error('Ошибка импорта из lrclib:', err);
+      res.status(500).json({ error: 'Ошибка при обращении к lrclib' });
+    }
+  }
+);
+
 export default router;

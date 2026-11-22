@@ -51,7 +51,7 @@ export default function SortableAlbumTrackRow({ track, index, onEdit, onKaraoke,
       </div>
 
       <div className="album-detail-track-actions" onPointerDown={(e) => e.stopPropagation()}>
-        {!isAdmin && track.lyrics && (
+        {!isAdmin && (
           <button className="label-track-btn" onClick={(e) => { e.stopPropagation(); onKaraoke(); }}>
             🎤
           </button>

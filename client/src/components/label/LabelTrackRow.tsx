@@ -80,7 +80,7 @@ export default function LabelTrackRow({ track, onFetchLyrics, isFetching, onEdit
             {isFetching ? '...' : 'Текст'}
           </button>
         )}
-        {!isAdmin && hasLyrics && (
+        {!isAdmin && (
           <button
             className="label-track-btn"
             onClick={onKaraoke}

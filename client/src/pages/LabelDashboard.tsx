@@ -7,6 +7,7 @@ import AlbumsTab from '../components/label/AlbumsTab';
 import ArtistsTab from '../components/label/ArtistsTab';
 import AdminTab from '../components/label/AdminTab';
 import EditTrackModal from '../components/label/EditTrackModal';
+import KaraokeEditorModal from '../components/label/KaraokeEditorModal';
 import type { Track } from '../types';
 
 type Tab = 'tracks' | 'albums' | 'artists' | 'admin';

@@ -32,6 +32,8 @@ function parseTimeString(str: string): number | null {
 export default function KaraokeEditorModal({ track, onClose, onSuccess }: Props) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [lrclibUrl, setLrclibUrl] = useState('');
+  const [importing, setImporting] = useState(false);
 
   const lines = useMemo(() => {
     return track.lyrics ? track.lyrics.split('\n') : [];
@@ -109,6 +111,20 @@ export default function KaraokeEditorModal({ track, onClose, onSuccess }: Props)
     }
   };
 
+    const handleImportFromUrl = async () => {
+    if (!lrclibUrl.trim()) return;
+    setImporting(true);
+    setError(null);
+    try {
+      await api.post(`/tracks/${track.id}/lyrics/import`, { url: lrclibUrl });
+      onSuccess(); 
+    } catch (err: any) {
+      setError(err.response?.data?.error || 'Ошибка импорта по ссылке');
+    } finally {
+      setImporting(false);
+    }
+  };
+
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div
@@ -128,6 +144,32 @@ export default function KaraokeEditorModal({ track, onClose, onSuccess }: Props)
         </div>
 
         {error && <div className="error" style={{ marginBottom: '16px' }}>{error}</div>}
+
+        {!track.lyrics && (
+          <div style={{ marginBottom: '16px', padding: '12px', backgroundColor: 'var(--bg)', borderRadius: '8px', border: '1px solid var(--border)' }}>
+            <p className="label-form-label" style={{ marginBottom: '8px' }}>
+              Нашли текст на lrclib, но автоматический поиск не сработал? Вставьте ссылку на трек:
+            </p>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <input
+                type="text"
+                placeholder="https://lrclib.net/tracks/12345"
+                value={lrclibUrl}
+                onChange={(e) => setLrclibUrl(e.target.value)}
+                style={{ flex: 1, padding: '8px 12px', borderRadius: '6px', border: '1px solid var(--border)', background: 'var(--bg-elevated)', color: 'var(--text)' }}
+              />
+              <button
+                type="button"
+                className="btn-pill"
+                onClick={handleImportFromUrl}
+                disabled={importing || !lrclibUrl.trim()}
+              >
+                {importing ? 'Импорт...' : 'Загрузить'}
+              </button>
+            </div>
+            {error && <div className="error" style={{ marginTop: '8px' }}>{error}</div>}
+          </div>
+        )}
 
         <div className="karaoke-editor-list" style={{ flex: 1, overflowY: 'auto', paddingRight: '8px' }}>
           {lines.map((line, idx) => {
