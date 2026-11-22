@@ -15,7 +15,7 @@ export function getArtistLine(track: Track): string {
   if (!primary && featured.length === 0) return 'Unknown';
   if (!primary) return featured.map((a) => a.name).join(', ');
   if (featured.length === 0) return primary.name;
-  return `${primary.name} feat. ${featured.map((a) => a.name).join(', ')}`;
+  return [primary.name, ...featured.map((a) => a.name)].join(', ');
 }
 
 export function getPrimaryArtistId(track: Track): number | null {

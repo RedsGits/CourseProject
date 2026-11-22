@@ -2584,6 +2584,30 @@ body.fullscreen-open .app {
   transform: none;
 }
 
+.fullscreen-volume {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.fullscreen-volume-popover {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 46px);
+  display: flex;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background-color: rgba(24, 24, 24, 0.96);
+  border: 1px solid var(--border);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.55);
+  z-index: 20;
+}
+
+.fullscreen-volume-slider {
+  width: 130px;
+}
+
 .lyrics-panel {
   position: fixed;
   top: 80px;

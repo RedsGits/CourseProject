@@ -128,6 +128,8 @@ export default function Player() {
   const [lyricsLoading, setLyricsLoading] = useState(false);
   const colorCacheRef = useRef<Record<string, string>>({});
   const [coverLayoutActive, setCoverLayoutActive] = useState(false);
+  const [isVolumeOpen, setIsVolumeOpen] = useState(false);
+  const volumePopoverRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     hasScrobbledRef.current = false;
@@ -272,6 +274,21 @@ export default function Player() {
       document.body.classList.remove('fullscreen-open');
     };
   }, [isFullScreen]);
+
+  useEffect(() => {
+    if (!isFullScreen) setIsVolumeOpen(false);
+  }, [isFullScreen]);
+
+  useEffect(() => {
+    if (!isVolumeOpen) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (volumePopoverRef.current && !volumePopoverRef.current.contains(e.target as Node)) {
+        setIsVolumeOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isVolumeOpen]);
 
   useEffect(() => {
     isSwitchingTrackRef.current = true;
@@ -625,6 +642,45 @@ export default function Player() {
 
           <div className="fullscreen-controls-row">
             <LikeButton trackId={current.id} type="dislike" className="fullscreen-action-btn" />
+            <div className="fullscreen-volume" ref={volumePopoverRef}>
+              <button
+                className={`fullscreen-action-btn ${isVolumeOpen ? 'is-active' : ''}`}
+                onClick={() => setIsVolumeOpen((v) => !v)}
+                title={isMuted ? 'Звук выключен' : 'Громкость'}
+                aria-label="Громкость"
+              >
+                <IconVolume muted={isMuted || volume === 0} />
+              </button>
+              <AnimatePresence>
+                {isVolumeOpen && (
+                  <motion.div
+                    className="fullscreen-volume-popover"
+                    initial={{ opacity: 0, y: 8, x: '-50%' }}
+                    animate={{ opacity: 1, y: 0, x: '-50%' }}
+                    exit={{ opacity: 0, y: 8, x: '-50%' }}
+                    transition={{ duration: 0.18, ease: [0.2, 0.8, 0.2, 1] }}
+                  >
+                    <input
+                      type="range"
+                      min="0"
+                      max="1"
+                      step="0.01"
+                      value={isMuted ? 0 : volume}
+                      onChange={(e) => {
+                        setVolume(Number(e.target.value));
+                        setIsMuted(false);
+                      }}
+                      className="player-volume fullscreen-volume-slider"
+                      style={{
+                        background: `linear-gradient(to right, var(--accent) 0%, var(--accent) ${
+                          (isMuted ? 0 : volume) * 100
+                        }%, #404040 ${(isMuted ? 0 : volume) * 100}%, #404040 100%)`,
+                      }}
+                    />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
             <AddToPlaylistMenu trackId={current.id} className="fullscreen-action-btn" />
             <button className={`fullscreen-action-btn ${shuffle ? 'is-active' : ''}`} onClick={toggleShuffle}><IconShuffle /></button>
             <button className={`fullscreen-action-btn ${isPrevDisabled ? 'is-disabled' : ''}`} onClick={handlePrev} disabled={isPrevDisabled}><IconPrev /></button>
