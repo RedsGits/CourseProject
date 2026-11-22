@@ -7,6 +7,7 @@ import LikeButton from '../components/LikeButton';
 import AddToPlaylistMenu from '../components/AddToPlaylistMenu';
 import TrackCover from '../components/TrackCover';
 import ExplicitBadge from '../components/ExplicitBadge';
+import PlayingBars from '../components/PlayingBars';
 import { formatAlbumType } from '../api/format';
 
 interface Playlist { id: number; name: string; isPublic: boolean; coverUrl?: string | null; }
@@ -238,22 +239,28 @@ export default function Search() {
                               >
                                 <div className="track-row-left">
                                   <TrackCover coverUrl={track.album?.coverUrl} alt={track.title}>
-                                    <div className="track-row-play-overlay">
-                                      {isActuallyPlaying ? (
-                                        <svg viewBox="0 0 24 24" fill="currentColor">
-                                          <path d="M6 5h4v14H6zM14 5h4v14h-4z" />
-                                        </svg>
-                                      ) : (
+                                    {isCurrent ? (
+                                      <div className="track-row-play-overlay is-now-playing">
+                                        <PlayingBars active={isActuallyPlaying} />
+                                      </div>
+                                    ) : (
+                                      <div className="track-row-play-overlay">
                                         <svg viewBox="0 0 24 24" fill="currentColor">
                                           <path d="M8 5v14l11-7z" />
                                         </svg>
-                                      )}
-                                    </div>
+                                      </div>
+                                    )}
                                   </TrackCover>
 
                                   <div className="track-row-info">
                                     <span className="track-title-line">
-                                      <span className="track-row-title">{track.title}</span>
+                                      <Link
+                                        to={`/album/${track.albumId}`}
+                                        className="track-title-link"
+                                        onClick={(e) => e.stopPropagation()}
+                                      >
+                                        <span className="track-row-title">{track.title}</span>
+                                      </Link>
                                       {track.isExplicit && <ExplicitBadge />}
                                     </span>
                                     <div className="track-row-artist-line">
@@ -396,22 +403,28 @@ export default function Search() {
                         >
                           <div className="track-row-left">
                             <TrackCover coverUrl={track.album?.coverUrl} alt={track.title}>
-                              <div className="track-row-play-overlay">
-                                {isActuallyPlaying ? (
-                                  <svg viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M6 5h4v14H6zM14 5h4v14h-4z" />
-                                  </svg>
-                                ) : (
+                              {isCurrent ? (
+                                <div className="track-row-play-overlay is-now-playing">
+                                  <PlayingBars active={isActuallyPlaying} />
+                                </div>
+                              ) : (
+                                <div className="track-row-play-overlay">
                                   <svg viewBox="0 0 24 24" fill="currentColor">
                                     <path d="M8 5v14l11-7z" />
                                   </svg>
-                                )}
-                              </div>
+                                </div>
+                              )}
                             </TrackCover>
 
                             <div className="track-row-info">
                               <span className="track-title-line">
-                                <span className="track-row-title">{track.title}</span>
+                                <Link
+                                  to={`/album/${track.albumId}`}
+                                  className="track-title-link"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  <span className="track-row-title">{track.title}</span>
+                                </Link>
                                 {track.isExplicit && <ExplicitBadge />}
                               </span>
                               <div className="track-row-artist-line">

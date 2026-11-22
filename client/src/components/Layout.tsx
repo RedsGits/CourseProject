@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Outlet, Link, NavLink, useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { useAuth } from '../store/auth';
 import { usePlayer } from '../store/player';
 import { useEffect } from 'react';
@@ -35,8 +36,10 @@ export default function Layout() {
   
   const [avatarLoaded, setAvatarLoaded] = useState(false);
 
+  // layoutScroll обязателен: без него layout-анимация обложки плеера
+  // стартует со смещением на величину прокрутки .app
   return (
-    <div className={`app ${current ? 'has-player' : ''}`}>
+    <motion.div className={`app ${current ? 'has-player' : ''}`} layoutScroll>
       <aside className="sidebar">
         <Link to="/" className="sidebar-logo" title="На главную">
           <img src="/Logonotext.png" className="logo-icon" />
@@ -95,6 +98,6 @@ export default function Layout() {
       </div>
 
       <Player />
-    </div>
+    </motion.div>
   );
 }

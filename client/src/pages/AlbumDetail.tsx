@@ -7,6 +7,7 @@ import AddToPlaylistMenu from '../components/AddToPlaylistMenu';
 import type { Album, Track, TrackArtistInfo } from '../types';
 import { formatAlbumType } from '../api/format'
 import ExplicitBadge from '../components/ExplicitBadge';
+import PlayingBars from '../components/PlayingBars';
 import { FastAverageColor } from 'fast-average-color';
 
 interface AlbumWithTracks extends Album {
@@ -160,7 +161,7 @@ export default function AlbumDetailPage() {
                 >
                   <div className="track-row-left">
                     <div className="album-detail-track-num" style={{ width: '32px', fontSize: '15px', textAlign: 'center' }}>
-                      {idx + 1}
+                      {isCurrent ? <PlayingBars active={isActuallyPlaying} /> : idx + 1}
                     </div>
                     <div className="track-row-info">
                       <span className="track-title-line">

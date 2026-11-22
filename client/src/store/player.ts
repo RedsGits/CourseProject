@@ -16,6 +16,7 @@ interface PlayerState {
 
   playbackContext: string | null;
   setTrack: (track: Track, queue?: Track[], context?: string) => void;
+  playAtIndex: (index: number) => void;
   next: () => void;
   prev: () => void;
   stop: () => void;
@@ -80,6 +81,17 @@ export const usePlayer = create<PlayerState>((set, get) => ({
         playbackContext: context || null,
       });
     }
+  },
+
+  playAtIndex: (index) => {
+    const { queue } = get();
+    if (index < 0 || index >= queue.length) return;
+    set({
+      current: queue[index],
+      currentIndex: index,
+      fadeIn: true,
+      isPlaying: true,
+    });
   },
 
   next: () => {

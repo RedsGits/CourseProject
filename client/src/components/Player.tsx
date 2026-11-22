@@ -8,6 +8,7 @@ import ExplicitBadge from './ExplicitBadge';
 import { FastAverageColor } from 'fast-average-color';
 import { motion, AnimatePresence } from 'framer-motion';
 import LyricsPanel from './LyricsPanel';
+import QueuePanel from './QueuePanel';
 import type { LyricsResponse } from '../types';
 import KaraokeLyrics from './KaraokeLyrics';
 import { getArtistLine, getPrimaryArtistLink } from '../api/track';
@@ -78,6 +79,12 @@ const IconLyrics = () => (
   </svg>
 );
 
+const IconQueue = () => (
+  <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+    <path d="M15,6H3V8H15V6M15,10H3V12H15V10M3,16H11V14H3V16M17,6V14.18C16.69,14.07 16.35,14 16,14A3,3 0 0,0 13,17A3,3 0 0,0 16,20A3,3 0 0,0 19,17V8H22V6H17Z" />
+  </svg>
+);
+
 const VOLUME_KEY = 'player.volume';
 const MUTED_KEY = 'player.muted';
 
@@ -93,7 +100,7 @@ function loadMuted(): boolean {
 }
 
 export default function Player() {
-  const {current, next, prev, currentIndex, fadeIn, shuffle, repeat, toggleShuffle, toggleRepeat, isPlaying, setIsPlaying, togglePlay, isLyricsOpen, toggleLyrics, setLyricsOpen} = usePlayer();
+  const {current, next, prev, currentIndex, queue, fadeIn, shuffle, repeat, toggleShuffle, toggleRepeat, isPlaying, setIsPlaying, togglePlay, isLyricsOpen, toggleLyrics, setLyricsOpen, playAtIndex, removeTrackFromQueue} = usePlayer();
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const [currentTime, setCurrentTime] = useState(0);
@@ -105,7 +112,7 @@ export default function Player() {
   const [isMuted, setIsMuted] = useState(loadMuted);
   const [albumCover, setAlbumCover] = useState<string | null>(null);
   const [isFullScreen, setIsFullScreen] = useState(false);
-  const [fullscreenMode, setFullscreenMode] = useState<'cover' | 'lyrics'>('cover');
+  const [fullscreenMode, setFullscreenMode] = useState<'cover' | 'lyrics' | 'queue'>('cover');
   const [dominantColor, setDominantColor] = useState<string>('#181818');
   const fsImgRef = useRef<HTMLImageElement>(null);
   const [isSeeking, setIsSeeking] = useState(false);
@@ -254,12 +261,15 @@ export default function Player() {
   useEffect(() => {
     if (isFullScreen) {
       document.body.style.overflow = 'hidden';
+      document.body.classList.add('fullscreen-open');
     } else {
       document.body.style.overflow = 'unset';
+      document.body.classList.remove('fullscreen-open');
     }
 
     return () => {
       document.body.style.overflow = 'unset';
+      document.body.classList.remove('fullscreen-open');
     };
   }, [isFullScreen]);
 
@@ -299,6 +309,8 @@ export default function Player() {
     const featured = current.artists?.filter((a) => a.role === 'FEATURED') ?? [];
     return primary ? [primary, ...featured] : featured;
   })();
+
+  const upcomingTracks = queue.slice(currentIndex + 1);
 
   const isFirstInQueue = currentIndex <= 0;
   const canGoPrevByTrack = !isFirstInQueue;
@@ -372,8 +384,18 @@ export default function Player() {
   };
 
   const openFullscreen = () => {
+    setFullscreenMode('cover');
     setCoverLayoutActive(true);
     setIsFullScreen(true);
+  };
+
+  const openQueue = () => {
+    setFullscreenMode('queue');
+    setIsFullScreen(true);
+  };
+
+  const toggleQueueMode = () => {
+    setFullscreenMode((m) => (m === 'queue' ? 'cover' : 'queue'));
   };
 
   const closeFullscreen = () => {
@@ -502,7 +524,14 @@ export default function Player() {
               </div>
               <div className="fullscreen-info">
                 <div className="fullscreen-title-wrapper">
-                  <h1 className="fullscreen-title">{current.title}</h1>
+                  <Link
+                    to={`/album/${current.albumId}`}
+                    className="fullscreen-title-link"
+                    title={current.album?.title ?? 'К альбому'}
+                    onClick={closeFullscreen}
+                  >
+                    <h1 className="fullscreen-title">{current.title}</h1>
+                  </Link>
                   {current.isExplicit && <ExplicitBadge size="md" />}
                 </div>
                   <div className="fullscreen-artist-wrapper">
@@ -546,6 +575,32 @@ export default function Player() {
                 </motion.div>
               )}
             </AnimatePresence>
+
+            <AnimatePresence>
+              {fullscreenMode === 'queue' && (
+                <motion.div
+                  key="queue"
+                  className="fullscreen-queue-layout"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.3, ease: [0.2, 0.8, 0.2, 1] }}
+                >
+                  <QueuePanel
+                    current={current}
+                    upcoming={upcomingTracks}
+                    isPlaying={isPlaying}
+                    onTogglePlay={togglePlay}
+                    onPlayTrack={(trackId) => {
+                      const idx = queue.findIndex((t) => t.id === trackId);
+                      if (idx >= 0) playAtIndex(idx);
+                    }}
+                    onRemoveTrack={removeTrackFromQueue}
+                    onNavigateToAlbum={closeFullscreen}
+                  />
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
 
           <div className="fullscreen-progress">
@@ -579,15 +634,15 @@ export default function Player() {
                 className="fullscreen-action-btn fullscreen-play-btn"
                 onClick={togglePlay}
                 animate={{
-                  width: fullscreenMode === 'lyrics' ? 40 : 0,
-                  opacity: fullscreenMode === 'lyrics' ? 1 : 0,
+                  width: fullscreenMode === 'lyrics' || fullscreenMode === 'queue' ? 40 : 0,
+                  opacity: fullscreenMode === 'lyrics' || fullscreenMode === 'queue' ? 1 : 0,
                 }}
                 transition={{ duration: 0.3, ease: [0.2, 0.8, 0.2, 1] }}
                 style={{
                   overflow: 'hidden',
                   flexShrink: 0,
                   padding: 0,
-                  pointerEvents: fullscreenMode === 'lyrics' ? 'auto' : 'none',
+                  pointerEvents: fullscreenMode === 'lyrics' || fullscreenMode === 'queue' ? 'auto' : 'none',
                 }}
               >
                 <span style={{ display: 'inline-flex', flexShrink: 0 }}>
@@ -605,12 +660,19 @@ export default function Player() {
               className={`fullscreen-action-btn ${fullscreenMode === 'lyrics' ? 'is-active' : ''}`}
               onClick={() => {
                 if (lyricsDisabled) return;
-                setFullscreenMode((m) => (m === 'cover' ? 'lyrics' : 'cover'));
+                setFullscreenMode((m) => (m === 'lyrics' ? 'cover' : 'lyrics'));
               }}
               disabled={lyricsDisabled}
               title={lyricsDisabled ? 'Текст недоступен' : 'Текст песни'}
             >
               <IconLyrics />
+            </button>
+            <button
+              className={`fullscreen-action-btn ${fullscreenMode === 'queue' ? 'is-active' : ''}`}
+              onClick={toggleQueueMode}
+              title={fullscreenMode === 'queue' ? 'Свернуть очередь' : 'Очередь'}
+            >
+              <IconQueue />
             </button>
             <LikeButton trackId={current.id} type="like" className="fullscreen-action-btn" />
           </div>
@@ -689,7 +751,13 @@ export default function Player() {
             </motion.div>
             <div className="player-info">
               <div className="player-title-line">
-                <div className="player-title">{current.title}</div>
+                <Link
+                  to={`/album/${current.albumId}`}
+                  className="player-title-link"
+                  title={current.album?.title ?? 'К альбому'}
+                >
+                  <div className="player-title">{current.title}</div>
+                </Link>
                 {current.isExplicit && <ExplicitBadge />}
               </div>
                 <div className="player-artist-line">
@@ -794,6 +862,13 @@ export default function Player() {
             >
               <IconLyrics />
             </button>
+            <button
+              className="player-btn"
+              onClick={openQueue}
+              title="Очередь"
+            >
+              <IconQueue />
+            </button>
             <AddToPlaylistMenu trackId={current.id} />
             <button
               className="player-btn"
@@ -828,6 +903,7 @@ export default function Player() {
           <LyricsPanel
             trackId={current.id}
             trackTitle={current.title}
+            albumId={current.albumId}
             lyricsData={lyricsData}
             loading={lyricsLoading}
             hasSyncedLyrics={lyricsData?.hasSyncedLyrics ?? false}

@@ -1,9 +1,11 @@
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import type { LyricsResponse } from '../types';
 
 interface Props {
   trackId: number;
   trackTitle: string;
+  albumId: number;
   lyricsData: LyricsResponse | null;
   loading: boolean;
   hasSyncedLyrics: boolean;
@@ -19,6 +21,7 @@ const IconClose = () => (
 
 export default function LyricsPanel({
   trackTitle,
+  albumId,
   lyricsData,
   loading,
   hasSyncedLyrics,
@@ -36,8 +39,15 @@ export default function LyricsPanel({
       <div className="lyrics-panel-header">
         <div className="lyrics-panel-header-info">
           <span className="lyrics-panel-type">Текст песни</span>
-          <h3 className="lyrics-panel-title" title={trackTitle}>
-            {trackTitle}
+          <h3 className="lyrics-panel-title">
+            <Link
+              to={`/album/${albumId}`}
+              className="lyrics-panel-title-link"
+              title="Перейти к альбому"
+              onClick={onClose}
+            >
+              {trackTitle}
+            </Link>
           </h3>
         </div>
         <button className="lyrics-panel-close" onClick={onClose} title="Закрыть">

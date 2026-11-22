@@ -7,6 +7,7 @@ import AddToPlaylistMenu from '../components/AddToPlaylistMenu';
 import type { Artist, Track, Album } from '../types';
 import TrackCover from '../components/TrackCover';
 import ExplicitBadge from '../components/ExplicitBadge';
+import PlayingBars from '../components/PlayingBars';
 import { formatAlbumType } from '../api/format';
 
 
@@ -165,11 +166,23 @@ export default function ArtistDetail() {
                   <div key={track.id} className={`track-row ${isCurrent ? 'track-row-active' : ''}`} onClick={() => { if (isCurrent) togglePlay(); else setTrack(track, tracks, contextId); }}>
                     <div className="track-row-left">
                       <TrackCover coverUrl={track.album?.coverUrl} alt={track.title}>
-                        <div className="track-row-play-overlay">{isActuallyPlaying ? <IconPause /> : <IconPlay />}</div>
+                        {isCurrent ? (
+                          <div className="track-row-play-overlay is-now-playing">
+                            <PlayingBars active={isActuallyPlaying} />
+                          </div>
+                        ) : (
+                          <div className="track-row-play-overlay"><IconPlay /></div>
+                        )}
                       </TrackCover>
                       <div className="track-row-info">
                         <span className="track-title-line">
-                          <span className="track-row-title">{track.title}</span>
+                          <Link
+                            to={`/album/${track.albumId}`}
+                            className="track-title-link"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <span className="track-row-title">{track.title}</span>
+                          </Link>
                           {track.isExplicit && <ExplicitBadge />}
                         </span>
                         <div className="track-row-artist-line">
