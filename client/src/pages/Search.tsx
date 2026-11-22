@@ -6,6 +6,7 @@ import type { Track, Artist, Album } from '../types';
 import LikeButton from '../components/LikeButton';
 import AddToPlaylistMenu from '../components/AddToPlaylistMenu';
 import TrackCover from '../components/TrackCover';
+import ExplicitBadge from '../components/ExplicitBadge';
 import { formatAlbumType } from '../api/format';
 
 interface Playlist { id: number; name: string; isPublic: boolean; coverUrl?: string | null; }
@@ -251,7 +252,10 @@ export default function Search() {
                                   </TrackCover>
 
                                   <div className="track-row-info">
-                                    <span className="track-row-title">{track.title}</span>
+                                    <span className="track-title-line">
+                                      <span className="track-row-title">{track.title}</span>
+                                      {track.isExplicit && <ExplicitBadge />}
+                                    </span>
                                     <div className="track-row-artist-line">
                                       {(() => {
                                         const primary = track.artists?.find((a) => a.role === 'PRIMARY');
@@ -406,7 +410,10 @@ export default function Search() {
                             </TrackCover>
 
                             <div className="track-row-info">
-                              <span className="track-row-title">{track.title}</span>
+                              <span className="track-title-line">
+                                <span className="track-row-title">{track.title}</span>
+                                {track.isExplicit && <ExplicitBadge />}
+                              </span>
                               <div className="track-row-artist-line">
                                 {(() => {
                                   const primary = track.artists?.find((a) => a.role === 'PRIMARY');

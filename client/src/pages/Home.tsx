@@ -6,6 +6,7 @@ import TrackCover from '../components/TrackCover';
 import ScrollRow from '../components/ScrollRow';
 import LikeButton from '../components/LikeButton';
 import AddToPlaylistMenu from '../components/AddToPlaylistMenu';
+import ExplicitBadge from '../components/ExplicitBadge';
 import type { Track, Album, Artist } from '../types';
 
 import { useAuth } from '../store/auth';
@@ -113,7 +114,10 @@ export default function Home() {
                       </div>
                     </TrackCover>
                     <div className="track-row-info">
-                      <span className="track-row-title">{track.title}</span>
+                      <span className="track-title-line">
+                        <span className="track-row-title">{track.title}</span>
+                        {track.isExplicit && <ExplicitBadge />}
+                      </span>
                       <div className="track-row-artist-line">
                         {track.artists.map((a, i) => (
                           <span key={a.id}>

@@ -34,7 +34,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'87b969b6fc49bfb9d2b3fac578f36a0f193656fd5d7d1b54c2d3a7dbf0bf10ae'>;
+  StorageHashBase<'f1b730e9ff174e56458bda93f91e4ad9ca4350350d2e485bf2b1f08fa36d1cb3'>;
 export type ExecutionHash =
   ExecutionHashBase<'72d477c118df8adf639abd48920f502cca4a9c16de2e37e606b10fc765075b2a'>;
 export type ProfileHash =
@@ -359,6 +359,7 @@ export type FieldOutputTypes = {
         | 'EXPERIMENTAL'
         | 'SPOKEN_WORD';
       readonly id: CodecTypes['pg/int4@1']['output'];
+      readonly isExplicit: CodecTypes['pg/bool@1']['output'];
       readonly isPublished: CodecTypes['pg/bool@1']['output'];
       readonly labelId: CodecTypes['pg/int4@1']['output'];
       readonly likeCount: CodecTypes['pg/int4@1']['output'];
@@ -513,6 +514,7 @@ export type FieldInputTypes = {
         | 'EXPERIMENTAL'
         | 'SPOKEN_WORD';
       readonly id: CodecTypes['pg/int4@1']['input'];
+      readonly isExplicit: CodecTypes['pg/bool@1']['input'];
       readonly isPublished: CodecTypes['pg/bool@1']['input'];
       readonly labelId: CodecTypes['pg/int4@1']['input'];
       readonly likeCount: CodecTypes['pg/int4@1']['input'];
@@ -667,6 +669,7 @@ export type StorageColumnTypes = {
         | 'EXPERIMENTAL'
         | 'SPOKEN_WORD';
       readonly id: CodecTypes['pg/int4@1']['output'];
+      readonly isExplicit: CodecTypes['pg/bool@1']['output'];
       readonly isPublished: CodecTypes['pg/bool@1']['output'];
       readonly labelId: CodecTypes['pg/int4@1']['output'];
       readonly likeCount: CodecTypes['pg/int4@1']['output'];
@@ -821,6 +824,7 @@ export type StorageColumnInputTypes = {
         | 'EXPERIMENTAL'
         | 'SPOKEN_WORD';
       readonly id: CodecTypes['pg/int4@1']['input'];
+      readonly isExplicit: CodecTypes['pg/bool@1']['input'];
       readonly isPublished: CodecTypes['pg/bool@1']['input'];
       readonly labelId: CodecTypes['pg/int4@1']['input'];
       readonly likeCount: CodecTypes['pg/int4@1']['input'];
@@ -995,6 +999,7 @@ export namespace Models {
       | 'EXPERIMENTAL'
       | 'SPOKEN_WORD';
     id: CodecTypes['pg/int4@1']['output'];
+    isExplicit: CodecTypes['pg/bool@1']['output'];
     isPublished: CodecTypes['pg/bool@1']['output'];
     labelId: CodecTypes['pg/int4@1']['output'];
     likeCount: CodecTypes['pg/int4@1']['output'];
@@ -1622,6 +1627,15 @@ type ContractBase = Omit<
                   readonly default: {
                     readonly kind: 'function';
                     readonly expression: 'autoincrement()';
+                  };
+                };
+                readonly isExplicit: {
+                  readonly nativeType: 'bool';
+                  readonly codecId: 'pg/bool@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/bool@1', false>;
                   };
                 };
                 readonly isPublished: {
@@ -2585,6 +2599,10 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
               };
+              readonly isExplicit: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/bool@1' };
+              };
               readonly isPublished: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/bool@1' };
@@ -2703,6 +2721,7 @@ type ContractBase = Omit<
                 readonly fileUrl: { readonly column: 'fileUrl' };
                 readonly genre: { readonly column: 'genre' };
                 readonly id: { readonly column: 'id' };
+                readonly isExplicit: { readonly column: 'isExplicit' };
                 readonly isPublished: { readonly column: 'isPublished' };
                 readonly labelId: { readonly column: 'labelId' };
                 readonly likeCount: { readonly column: 'likeCount' };

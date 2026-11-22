@@ -64,6 +64,7 @@ export interface Track {
   likeCount: number;
   dislikeCount: number;
   isPublished: boolean;
+  isExplicit: boolean;
   lyrics: string | null;
   syncedLyrics: string | null;
   artists: TrackArtistInfo[];

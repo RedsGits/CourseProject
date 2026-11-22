@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { api } from '../../api/client';
 import type { Artist, Album, Genre } from '../../types';
+import ExplicitBadge from '../ExplicitBadge';
 
 const GENRES: Genre[] = [
   'POP','ROCK','HIPHOP','RNB','ELECTRONIC','HOUSE','TECHNO','TRANCE','DUBSTEP','DRUM_AND_BASS',
@@ -21,6 +22,7 @@ export default function UploadTrackModal({ onClose, onSuccess }: Props) {
   const [artistId, setArtistId] = useState<number | null>(null);
   const [albumId, setAlbumId] = useState<number | null>(null);
   const [genre, setGenre] = useState<Genre>('POP');
+  const [isExplicit, setIsExplicit] = useState(false);
   const [file, setFile] = useState<File | null>(null);
 
   const [artists, setArtists] = useState<Artist[]>([]);
@@ -52,6 +54,7 @@ export default function UploadTrackModal({ onClose, onSuccess }: Props) {
         fd.append('title', title.trim());
         fd.append('albumId', String(albumId));
         fd.append('genre', genre);
+        fd.append('isExplicit', String(isExplicit));
         await api.post('/tracks', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
         onSuccess();
     } catch (err: any) {
@@ -103,6 +106,18 @@ export default function UploadTrackModal({ onClose, onSuccess }: Props) {
             <select value={genre} onChange={(e) => setGenre(e.target.value as Genre)}>
               {GENRES.map((g) => <option key={g} value={g}>{g}</option>)}
             </select>
+          </label>
+
+          <label className="label-form-checkbox">
+            <input
+              type="checkbox"
+              checked={isExplicit}
+              onChange={(e) => setIsExplicit(e.target.checked)}
+            />
+            <span>
+              Содержит нецензурную лексику (18+)
+              <ExplicitBadge />
+            </span>
           </label>
 
           <label className="label-form-field">

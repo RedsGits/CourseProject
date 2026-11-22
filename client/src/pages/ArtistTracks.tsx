@@ -6,6 +6,7 @@ import LikeButton from '../components/LikeButton';
 import AddToPlaylistMenu from '../components/AddToPlaylistMenu';
 import type { Artist, Track } from '../types';
 import TrackCover from '../components/TrackCover';
+import ExplicitBadge from '../components/ExplicitBadge';
 
 function formatPlayCount(count: number): string {
   if (count >= 1000000) return (count / 1000000).toFixed(1) + 'M';
@@ -98,7 +99,10 @@ export default function ArtistTracks() {
                     </div>
                   </TrackCover>
                   <div className="track-row-info">
-                    <span className="track-row-title">{track.title}</span>
+                    <span className="track-title-line">
+                      <span className="track-row-title">{track.title}</span>
+                      {track.isExplicit && <ExplicitBadge />}
+                    </span>
                     <div className="track-row-artist-line">
                       {allArtists.map((a, i) => (
                         <span key={a.id}>

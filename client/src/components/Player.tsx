@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { api } from '../api/client';
 import LikeButton from './LikeButton';
 import AddToPlaylistMenu from './AddToPlaylistMenu';
+import ExplicitBadge from './ExplicitBadge';
 import { FastAverageColor } from 'fast-average-color';
 import { motion, AnimatePresence } from 'framer-motion';
 import LyricsPanel from './LyricsPanel';
@@ -502,6 +503,7 @@ export default function Player() {
               <div className="fullscreen-info">
                 <div className="fullscreen-title-wrapper">
                   <h1 className="fullscreen-title">{current.title}</h1>
+                  {current.isExplicit && <ExplicitBadge size="md" />}
                 </div>
                   <div className="fullscreen-artist-wrapper">
                     <div className="fullscreen-artist-line">
@@ -686,7 +688,10 @@ export default function Player() {
               />
             </motion.div>
             <div className="player-info">
-              <div className="player-title">{current.title}</div>
+              <div className="player-title-line">
+                <div className="player-title">{current.title}</div>
+                {current.isExplicit && <ExplicitBadge />}
+              </div>
                 <div className="player-artist-line">
                   {allArtists.map((a, i) => (
                     <span key={a.id}>

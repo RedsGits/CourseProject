@@ -197,6 +197,10 @@ router.post(
       genre?: string;
     };
 
+    const rawExplicit = req.body.isExplicit;
+    const isExplicit =
+      rawExplicit === true || rawExplicit === 'true' || rawExplicit === '1' || rawExplicit === 'on';
+
     if (!title || !albumId || !genre) {
       cleanupFile(req.file.path);
       return res.status(400).json({ error: 'title, albumId, genre обязательны' });
@@ -262,6 +266,7 @@ router.post(
         labelId,
         order: nextOrder,
         isPublished: false,
+        isExplicit,
       });
 
       await tx.orm.public.TrackArtist.create({
@@ -400,11 +405,12 @@ router.patch(
       return res.status(403).json({ error: 'Это не ваш трек' });
     }
 
-    const { title, genre, labelId, featuredArtistIds } = req.body as {
+    const { title, genre, labelId, featuredArtistIds, isExplicit } = req.body as {
       title?: string;
       genre?: string;
       labelId?: number;
       featuredArtistIds?: number[];
+      isExplicit?: boolean;
     };
 
     const updateData: Record<string, unknown> = {};
@@ -418,6 +424,10 @@ router.patch(
       const g = genre.toUpperCase();
       if (!VALID_GENRES.has(g)) return res.status(400).json({ error: `Неизвестный жанр: ${genre}` });
       updateData.genre = g;
+    }
+
+    if (isExplicit !== undefined) {
+      updateData.isExplicit = Boolean(isExplicit);
     }
 
     if (labelId !== undefined && isAdmin) {

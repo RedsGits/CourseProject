@@ -2,6 +2,7 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import type { Track } from '../../types';
 import { useAuth } from '../../store/auth';
+import ExplicitBadge from '../ExplicitBadge';
 
 function formatTime(sec: number) {
   const m = Math.floor(sec / 60);
@@ -42,7 +43,10 @@ export default function SortableAlbumTrackRow({ track, index, onEdit, onKaraoke,
       <div className="album-detail-track-num">{index + 1}</div>
 
       <div className="album-detail-track-info">
-        <span className="album-detail-track-title">{track.title}</span>
+        <span className="album-detail-track-title-line">
+          <span className="album-detail-track-title">{track.title}</span>
+          {track.isExplicit && <ExplicitBadge />}
+        </span>
         <span className="album-detail-track-meta">
           {track.genre} • {formatTime(track.duration)}
           {track.lyrics ? ' • 📝' : ''}

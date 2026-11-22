@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { api } from '../../api/client';
 import type { Album, Genre, Artist } from '../../types';
 import ArtistSearchSelect from './ArtistSearchSelect';
+import ExplicitBadge from '../ExplicitBadge';
 
 const GENRES: Genre[] = [
   'POP','ROCK','HIPHOP','RNB','ELECTRONIC','HOUSE','TECHNO','TRANCE','DUBSTEP','DRUM_AND_BASS',
@@ -16,6 +17,7 @@ interface PendingFile {
   file: File;
   title: string;
   genre: Genre;
+  isExplicit: boolean;
 }
 
 interface Props {
@@ -41,6 +43,7 @@ export default function UploadTracksModal({ album, onClose, onSuccess }: Props) 
       file: f,
       title: f.name.replace(/\.[^.]+$/, ''),
       genre: 'POP',
+      isExplicit: false,
     }));
     setFiles((prev) => [...prev, ...pending]);
     e.target.value = '';
@@ -78,6 +81,7 @@ export default function UploadTracksModal({ album, onClose, onSuccess }: Props) 
         fd.append('title', f.title.trim());
         fd.append('albumId', String(album.id));
         fd.append('genre', f.genre);
+        fd.append('isExplicit', String(f.isExplicit));
         await api.post('/tracks', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
       } catch (err) {
         failed++;
@@ -151,6 +155,16 @@ export default function UploadTracksModal({ album, onClose, onSuccess }: Props) 
                   >
                     {GENRES.map((g) => <option key={g} value={g}>{g}</option>)}
                   </select>
+                  <label className="explicit-check" title="Содержит нецензурную лексику (18+)">
+                    <input
+                      type="checkbox"
+                      className="explicit-checkbox"
+                      checked={f.isExplicit}
+                      onChange={(e) => updateFile(idx, { isExplicit: e.target.checked })}
+                      disabled={uploading}
+                    />
+                    <ExplicitBadge />
+                  </label>
                   <button
                     type="button"
                     className="label-track-btn label-track-btn-danger"

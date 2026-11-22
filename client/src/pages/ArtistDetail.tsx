@@ -6,6 +6,7 @@ import LikeButton from '../components/LikeButton';
 import AddToPlaylistMenu from '../components/AddToPlaylistMenu';
 import type { Artist, Track, Album } from '../types';
 import TrackCover from '../components/TrackCover';
+import ExplicitBadge from '../components/ExplicitBadge';
 import { formatAlbumType } from '../api/format';
 
 
@@ -42,6 +43,7 @@ export default function ArtistDetail() {
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [isImageOpen, setIsImageOpen] = useState(false);
+  const [isBioOpen, setIsBioOpen] = useState(false);
   const [albums, setAlbums] = useState<Album[]>([]);
 
   const { setTrack, current, isPlaying, togglePlay, playbackContext } = usePlayer();
@@ -60,6 +62,15 @@ export default function ArtistDetail() {
       .catch(() => setNotFound(true))
       .finally(() => setLoading(false));
   }, [id]);
+
+  useEffect(() => {
+    if (!isBioOpen) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsBioOpen(false);
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [isBioOpen]);
 
   if (loading) return <p className="muted">Загрузка...</p>;
   if (notFound || !artist) return <div className="empty-state"><h1>Ничего не найдено</h1><Link to="/" className="back-link">← На главную</Link></div>;
@@ -99,13 +110,27 @@ export default function ArtistDetail() {
         <div className="playlist-header-content">
           <div className="playlist-info">
             <span className="playlist-type">Исполнитель</span>
-            <h1 className="playlist-name" title={artist.name} style={{ fontSize: '56px' }}>
+            <h1
+              className={`playlist-name${artist.bio ? ' playlist-name-clickable' : ''}`}
+              title={artist.bio ? 'Открыть биографию' : artist.name}
+              style={{ fontSize: '56px' }}
+              onClick={() => { if (artist.bio) setIsBioOpen(true); }}
+            >
               {artist.name}
             </h1>
-            {artist.countryCode && country && (
-              <div className="playlist-meta" style={{ marginTop: '8px' }}>
-                <span className={`fi fi-${artist.countryCode.toLowerCase()}`} style={{ marginRight: '3px', borderRadius: '2px' }} />
-                <span>{country}</span>
+            {((artist.countryCode && country) || artist.bio) && (
+              <div className="playlist-meta" style={{ marginTop: '8px', gap: '14px' }}>
+                {artist.countryCode && country && (
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                    <span className={`fi fi-${artist.countryCode.toLowerCase()}`} style={{ borderRadius: '2px' }} />
+                    <span>{country}</span>
+                  </span>
+                )}
+                {artist.bio && (
+                  <button className="artist-bio-btn" onClick={() => setIsBioOpen(true)}>
+                    Биография
+                  </button>
+                )}
               </div>
             )}
           </div>
@@ -143,7 +168,10 @@ export default function ArtistDetail() {
                         <div className="track-row-play-overlay">{isActuallyPlaying ? <IconPause /> : <IconPlay />}</div>
                       </TrackCover>
                       <div className="track-row-info">
-                        <span className="track-row-title">{track.title}</span>
+                        <span className="track-title-line">
+                          <span className="track-row-title">{track.title}</span>
+                          {track.isExplicit && <ExplicitBadge />}
+                        </span>
                         <div className="track-row-artist-line">
                           {allArtists.map((a, i) => (
                             <span key={a.id}>
@@ -228,6 +256,49 @@ export default function ArtistDetail() {
               }}
             />
             <button className="close-fullscreen-btn" onClick={() => setIsImageOpen(false)}>✕</button>
+          </div>
+        </div>
+      )}
+      {isBioOpen && artist.bio && (
+        <div className="bio-modal-overlay" onClick={() => setIsBioOpen(false)}>
+          <div
+            className="bio-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-label={`Биография ${artist.name}`}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button className="bio-modal-close" onClick={() => setIsBioOpen(false)} title="Закрыть">✕</button>
+
+            <div className="bio-modal-header">
+              <img
+                src={artist.imageUrl ? `http://localhost:5000/uploads/${artist.imageUrl}` : '/Defpfp.png'}
+                alt={artist.name}
+                className="bio-modal-avatar"
+                onError={(e) => {
+                  if (!e.currentTarget.src.includes('Defpfp')) {
+                    e.currentTarget.src = '/Defpfp.png';
+                  }
+                }}
+              />
+              <div>
+                <span className="bio-modal-label">Биография</span>
+                <h2 className="bio-modal-name">{artist.name}</h2>
+                {artist.countryCode && country && (
+                  <div className="bio-modal-country">
+                    <span className={`fi fi-${artist.countryCode.toLowerCase()}`} />
+                    <span>{country}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="bio-modal-text">
+              {artist.bio
+                .split(/\r?\n/)
+                .filter((line) => line.trim())
+                .map((line, i) => <p key={i}>{line}</p>)}
+            </div>
           </div>
         </div>
       )}

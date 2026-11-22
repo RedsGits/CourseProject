@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import type { Track } from '../../types';
 import TrackCover from '../TrackCover';
+import ExplicitBadge from '../ExplicitBadge';
 import { useAuth } from '../../store/auth';
 
 interface Props {
@@ -45,7 +46,7 @@ export default function LabelTrackRow({ track, onFetchLyrics, isFetching, onEdit
       <div className="label-track-info">
         <div className="label-track-title-line">
           <span className="label-track-title">{track.title}</span>
-          {track.isExplicit && <span className="explicit-badge">E</span>}
+          {track.isExplicit && <ExplicitBadge />}
         </div>
         <div className="label-track-sub">
           <span>{getArtistLine(track)}</span>

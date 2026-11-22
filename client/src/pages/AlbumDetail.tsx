@@ -6,6 +6,7 @@ import LikeButton from '../components/LikeButton';
 import AddToPlaylistMenu from '../components/AddToPlaylistMenu';
 import type { Album, Track, TrackArtistInfo } from '../types';
 import { formatAlbumType } from '../api/format'
+import ExplicitBadge from '../components/ExplicitBadge';
 import { FastAverageColor } from 'fast-average-color';
 
 interface AlbumWithTracks extends Album {
@@ -162,7 +163,10 @@ export default function AlbumDetailPage() {
                       {idx + 1}
                     </div>
                     <div className="track-row-info">
-                      <span className="track-row-title">{track.title}</span>
+                      <span className="track-title-line">
+                        <span className="track-row-title">{track.title}</span>
+                        {track.isExplicit && <ExplicitBadge />}
+                      </span>
                       <div className="track-row-artist-line">
                         {track.artists?.map((a, i) => (
                           <span key={a.id}>

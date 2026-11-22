@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { api } from '../../api/client';
 import ArtistSearchSelect from './ArtistSearchSelect';
+import ExplicitBadge from '../ExplicitBadge';
 import type { Artist, Track, Genre } from '../../types';
 
 const GENRES: Genre[] = [
@@ -21,6 +22,7 @@ interface Props {
 export default function EditTrackModal({ track, onClose, onSuccess }: Props) {
   const [title, setTitle] = useState(track.title);
   const [genre, setGenre] = useState<Genre>(track.genre);
+  const [isExplicit, setIsExplicit] = useState(track.isExplicit ?? false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [artists, setArtists] = useState<Artist[]>([]);
@@ -49,6 +51,7 @@ export default function EditTrackModal({ track, onClose, onSuccess }: Props) {
       await api.patch(`/tracks/${track.id}`, {
         title: title.trim(),
         genre,
+        isExplicit,
         featuredArtistIds: featuredIds,
       });
       onSuccess();
@@ -87,6 +90,18 @@ export default function EditTrackModal({ track, onClose, onSuccess }: Props) {
             <select value={genre} onChange={(e) => setGenre(e.target.value as Genre)}>
               {GENRES.map((g) => <option key={g} value={g}>{g}</option>)}
             </select>
+          </label>
+
+          <label className="label-form-checkbox">
+            <input
+              type="checkbox"
+              checked={isExplicit}
+              onChange={(e) => setIsExplicit(e.target.checked)}
+            />
+            <span>
+              Содержит нецензурную лексику (18+)
+              <ExplicitBadge />
+            </span>
           </label>
 
           <div className="label-form-field">

@@ -5,6 +5,7 @@ import LikeButton from './LikeButton';
 import AddToPlaylistMenu from './AddToPlaylistMenu';
 import type { Track } from '../types';
 import TrackCover from './TrackCover';
+import ExplicitBadge from './ExplicitBadge';
 
 const IconPlay = () => (
   <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
@@ -73,7 +74,10 @@ export default function SortableTrackRow({
           </TrackCover>
           
           <div className="track-row-info">
-            <span className="track-row-title">{track.title}</span>
+            <span className="track-title-line">
+              <span className="track-row-title">{track.title}</span>
+              {track.isExplicit && <ExplicitBadge />}
+            </span>
             <div className="track-row-artist-line">
               {allArtists.map((a, i) => (
                 <span key={a.id}>

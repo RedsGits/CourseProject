@@ -121,6 +121,7 @@ model Track {
   genre     Genre
   order     Int      @default(0)
   isPublished Boolean @default(false)
+  isExplicit  Boolean @default(false)
 
   playCount    Int      @default(0)
   likeCount    Int      @default(0)
