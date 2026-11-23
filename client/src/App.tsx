@@ -14,6 +14,8 @@ import PlaylistDetail from './pages/PlaylistDetail';
 import ArtistTracks from './pages/ArtistTracks';
 import LabelDashboard from './pages/LabelDashboard';
 import AlbumDetailPage from './pages/AlbumDetail';
+import Landing from './pages/Landing';
+import RequireAuth from './components/RequireAuth';
 
 function App() {
   const { loadFromStorage } = useAuth();
@@ -25,10 +27,11 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/label" element={<LabelDashboard />} />
+        <Route path="/welcome" element={<Landing />} />
+        <Route path="/label" element={<RequireAuth><LabelDashboard /></RequireAuth>} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/" element={<Layout />}>
+        <Route path="/" element={<RequireAuth><Layout /></RequireAuth>}>
           <Route index element={<Home />} />
           <Route path="artist" element={<ArtistDetail />} />
           <Route path="artist/:id" element={<ArtistDetail />} />
