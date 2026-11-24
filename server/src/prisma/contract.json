@@ -43,6 +43,10 @@
     "User": {
       "model": "User",
       "namespace": "public"
+    },
+    "UserGenrePreference": {
+      "model": "UserGenrePreference",
+      "namespace": "public"
     }
   },
   "domain": {
@@ -728,6 +732,13 @@
           },
           "ListeningHistory": {
             "fields": {
+              "completed": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/bool@1",
+                  "kind": "scalar"
+                }
+              },
               "id": {
                 "nullable": false,
                 "type": {
@@ -739,6 +750,13 @@
                 "nullable": false,
                 "type": {
                   "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "listenedSeconds": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
                   "kind": "scalar"
                 }
               },
@@ -793,11 +811,17 @@
             },
             "storage": {
               "fields": {
+                "completed": {
+                  "column": "completed"
+                },
                 "id": {
                   "column": "id"
                 },
                 "listenedAt": {
                   "column": "listenedAt"
+                },
+                "listenedSeconds": {
+                  "column": "listenedSeconds"
                 },
                 "trackId": {
                   "column": "trackId"
@@ -1644,6 +1668,21 @@
                   "namespace": "public"
                 }
               },
+              "genrePreferences": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "userId"
+                  ]
+                },
+                "to": {
+                  "model": "UserGenrePreference",
+                  "namespace": "public"
+                }
+              },
               "history": {
                 "cardinality": "1:N",
                 "on": {
@@ -1764,6 +1803,80 @@
               },
               "namespaceId": "public",
               "table": "User"
+            }
+          },
+          "UserGenrePreference": {
+            "fields": {
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "kind": "scalar"
+                }
+              },
+              "genre": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "Genre",
+                  "namespaceId": "public",
+                  "plane": "domain"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "userId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "user": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "userId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "User",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "genre": {
+                  "column": "genre"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "userId": {
+                  "column": "userId"
+                }
+              },
+              "namespaceId": "public",
+              "table": "UserGenrePreference"
             }
           }
         }
@@ -2117,6 +2230,15 @@
             },
             "ListeningHistory": {
               "columns": {
+                "completed": {
+                  "codecId": "pg/bool@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": false
+                  },
+                  "nativeType": "bool",
+                  "nullable": false
+                },
                 "id": {
                   "codecId": "pg/int4@1",
                   "default": {
@@ -2133,6 +2255,15 @@
                     "kind": "function"
                   },
                   "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "listenedSeconds": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": 0
+                  },
+                  "nativeType": "int4",
                   "nullable": false
                 },
                 "trackId": {
@@ -2992,6 +3123,93 @@
                   ]
                 }
               ]
+            },
+            "UserGenrePreference": {
+              "checks": [
+                {
+                  "expression": "\"genre\" IN ('POP', 'ROCK', 'HIPHOP', 'RNB', 'ELECTRONIC', 'HOUSE', 'TECHNO', 'TRANCE', 'DUBSTEP', 'DRUM_AND_BASS', 'RAP', 'JAZZ', 'BLUES', 'CLASSICAL', 'ORCHESTRAL', 'OPERA', 'COUNTRY', 'FOLK', 'FOLK_ROCK', 'INDIE', 'ALTERNATIVE', 'METAL', 'HEAVY_METAL', 'PUNK', 'HARDCORE', 'REGGAE', 'SKA', 'SOUL', 'FUNK', 'DISCO', 'LATIN', 'PHONK', 'SALSA', 'BOSSA_NOVA', 'SAMBA', 'AFROBEAT', 'K_POP', 'J_POP', 'ANIME', 'SOUNDTRACK', 'AMBIENT', 'CHILLOUT', 'LO_FI', 'NEW_AGE', 'GOSPEL', 'SPIRITUAL', 'WORLD', 'CELTIC', 'GUITAR', 'PIANO', 'EXPERIMENTAL', 'SPOKEN_WORD')",
+                  "name": "UserGenrePreference_genre_check_7ea8c6b1",
+                  "prefix": "UserGenrePreference_genre_check"
+                }
+              ],
+              "columns": {
+                "createdAt": {
+                  "codecId": "pg/timestamptz-temporal@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "genre": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "Genre",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
+                },
+                "id": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "expression": "autoincrement()",
+                    "kind": "function"
+                  },
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "userId": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "onDelete": "cascade",
+                  "source": {
+                    "columns": [
+                      "userId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "UserGenrePreference"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "User"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "userId"
+                  ],
+                  "name": "UserGenrePreference_userId_idx_a489d58a",
+                  "prefix": "UserGenrePreference_userId_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "userId",
+                    "genre"
+                  ]
+                }
+              ]
             }
           },
           "valueSet": {
@@ -3088,7 +3306,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "f1b730e9ff174e56458bda93f91e4ad9ca4350350d2e485bf2b1f08fa36d1cb3"
+    "storageHash": "0b5465d530a7a495bfff36cb4e8568440fa278e44b5efa8804ee6aaa3b382fcc"
   },
   "execution": {
     "executionHash": "72d477c118df8adf639abd48920f502cca4a9c16de2e37e606b10fc765075b2a",

@@ -4420,4 +4420,687 @@ body.fullscreen-open .app {
   }
 }
 
+.home-header {
+  margin: 12px 0 32px;
+}
+
+.home-header h1 {
+  font-size: 36px;
+  font-weight: 800;
+  margin-bottom: 6px;
+}
+
+.scroll-row-heading {
+  min-width: 0;
+}
+
+.scroll-row-subtitle {
+  margin-top: 4px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.btn-pill-ghost {
+  background-color: rgba(255, 255, 255, 0.08);
+  color: var(--text);
+  border-color: var(--border);
+}
+
+.btn-pill-ghost:hover {
+  background-color: rgba(255, 255, 255, 0.16);
+}
+
+.rec-onboarding {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 24px 28px;
+  margin-bottom: 32px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.02));
+}
+
+.rec-onboarding-text h2 {
+  font-size: 22px;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+.rec-onboarding-text p {
+  max-width: 640px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.rec-onboarding .btn-pill {
+  flex-shrink: 0;
+  background-color: #fff;
+  color: #0a0a0a;
+  border-color: #fff;
+}
+
+.rec-onboarding .btn-pill:hover {
+  background-color: #e3e3e3;
+}
+
+.rec-daily {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 28px;
+  padding: 28px 32px;
+  margin-bottom: 36px;
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+  background: linear-gradient(135deg, #1b3327 0%, #111a15 55%, #0b0f0d 100%);
+}
+
+.rec-daily-info {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+}
+
+.rec-daily-kicker {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.rec-daily-info h2 {
+  margin: 6px 0 8px;
+  font-size: clamp(22px, 2.4vw, 32px);
+  font-weight: 800;
+}
+
+.rec-daily-meta {
+  margin-bottom: 18px;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.rec-daily-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.rec-daily .btn-pill {
+  background-color: #fff;
+  color: #0a0a0a;
+  border-color: #fff;
+}
+
+.rec-daily .btn-pill:hover {
+  background-color: #e3e3e3;
+}
+
+.rec-daily .btn-pill-ghost {
+  background-color: rgba(255, 255, 255, 0.08);
+  color: var(--text);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+.rec-daily .btn-pill-ghost:hover {
+  background-color: rgba(255, 255, 255, 0.16);
+}
+
+.rec-daily-covers {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(2, 122px);
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.rec-daily-cover {
+  width: 122px;
+  height: 122px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #232323;
+}
+
+.rec-daily-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.rec-genre-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px;
+}
+
+.rec-genre-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 122px;
+  padding: 20px;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #fff;
+  text-decoration: none;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.rec-genre-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.rec-genre-name {
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.rec-genre-count {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.rec-genre-arrow {
+  position: absolute;
+  right: 18px;
+  bottom: 14px;
+  font-size: 20px;
+  opacity: 0.6;
+}
+
+.rec-track-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 168px;
+  flex-shrink: 0;
+  cursor: pointer;
+  scroll-snap-align: start;
+}
+
+.rec-track-cover {
+  position: relative;
+  width: 168px;
+  height: 168px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: linear-gradient(135deg, #2a2a2a, #1a1a1a);
+}
+
+.rec-track-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.45);
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.rec-track-card:hover .rec-track-overlay,
+.rec-track-overlay.is-now-playing {
+  opacity: 1;
+}
+
+.rec-track-overlay svg {
+  width: 40px;
+  height: 40px;
+  color: #fff;
+}
+
+.rec-track-explicit {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+}
+
+.rec-track-title {
+  margin-top: 2px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rec-track-title:hover {
+  text-decoration: underline;
+}
+
+.rec-track-artist {
+  font-size: 12px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mix-cover-note {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.rec-settings-page {
+  max-width: 1100px;
+}
+
+.rec-panel {
+  margin-bottom: 20px;
+  padding: 24px 28px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background-color: var(--bg-elevated);
+}
+
+.rec-panel h2 {
+  margin-bottom: 10px;
+  font-size: 21px;
+  font-weight: 800;
+}
+
+.rec-panel-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 18px;
+}
+
+.rec-panel-head h2 {
+  margin-bottom: 6px;
+}
+
+.rec-panel-head p {
+  max-width: 720px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.rec-counter {
+  flex-shrink: 0;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background-color: rgba(255, 255, 255, 0.08);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.genre-chip-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 4px 0 18px;
+}
+
+.genre-chip {
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 600;
+  transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.genre-chip:hover {
+  border-color: rgba(255, 255, 255, 0.35);
+  color: var(--text);
+}
+
+.genre-chip.is-active {
+  background-color: #fff;
+  border-color: #fff;
+  color: #0a0a0a;
+}
+
+.rec-panel-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.rec-panel-actions .btn-pill {
+  background-color: #fff;
+  color: #0a0a0a;
+  border-color: #fff;
+}
+
+.rec-panel-actions .btn-pill:hover:not(:disabled) {
+  background-color: #e3e3e3;
+}
+
+.rec-message {
+  margin-top: 12px;
+}
+
+.rec-success {
+  padding: 10px 12px;
+  border-radius: 8px;
+  background-color: rgba(46, 204, 113, 0.12);
+  color: #7ce7a8;
+  font-size: 14px;
+}
+
+.rec-taste-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 14px 0 22px;
+}
+
+.rec-taste-row {
+  display: grid;
+  grid-template-columns: 150px 1fr 50px;
+  align-items: center;
+  gap: 12px;
+}
+
+.rec-taste-name {
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rec-taste-bar {
+  height: 8px;
+  border-radius: 999px;
+  background-color: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.rec-taste-bar span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background-color: #fff;
+}
+
+.rec-taste-score {
+  text-align: right;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.rec-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.rec-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px;
+  border-radius: 12px;
+  background-color: rgba(255, 255, 255, 0.04);
+}
+
+.rec-stat strong {
+  font-size: 24px;
+}
+
+.rec-stat span {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.rec-artists-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  margin-top: 14px;
+}
+
+.rec-artist {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 96px;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.rec-artist-avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+.rec-artist-name {
+  max-width: 96px;
+  font-size: 12px;
+  color: var(--text-muted);
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rec-panel-note ul {
+  padding-left: 20px;
+  color: var(--text-muted);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+@media (max-width: 900px) {
+  .rec-daily {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .rec-daily-covers {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    width: 100%;
+  }
+
+  .rec-daily-cover {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1 / 1;
+  }
+
+  .rec-taste-row {
+    grid-template-columns: 110px 1fr 40px;
+  }
+}
+
+@media (max-width: 640px) {
+  .rec-onboarding {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .rec-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .rec-daily-covers {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .rec-track-card,
+  .rec-track-cover {
+    width: 140px;
+  }
+
+  .rec-track-cover {
+    height: 140px;
+  }
+}
+
+.rec-album-cover-link {
+  display: block;
+  margin-bottom: 16px;
+}
+
+.rec-album-cover-link .library-card-cover {
+  margin-bottom: 0;
+}
+
+.rec-album-title-link {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+
+.rec-album-title-link:hover {
+  text-decoration: underline;
+}
+
+.rec-album-artists {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rec-album-artist {
+  color: inherit;
+  text-decoration: none;
+}
+
+.rec-album-artist:hover {
+  color: var(--text);
+  text-decoration: underline;
+}
+
+.rec-album-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 22px;
+}
+
+.rec-album-grid .album-card {
+  width: 100%;
+}
+
+.scroll-row-content .album-card {
+  min-width: 200px;
+  max-width: 200px;
+  scroll-snap-align: start;
+}
+
+.rec-fav-artists {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 32px;
+}
+
+.rec-fav-artist {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.rec-fav-avatar-wrap {
+  position: relative;
+  width: 100%;
+  max-width: 260px;
+}
+
+.rec-fav-avatar-link {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #232323;
+}
+
+.rec-fav-avatar {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.rec-fav-album {
+  position: absolute;
+  right: -10px;
+  bottom: -12px;
+  width: 72px;
+  height: 72px;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 3px solid var(--bg);
+  background: #232323;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  transition: transform 0.15s ease;
+}
+
+.rec-fav-album:hover {
+  transform: scale(1.06);
+}
+
+.rec-fav-album-cover {
+  width: 100%;
+  height: 100%;
+}
+
+.rec-fav-name {
+  margin-top: 20px;
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--text);
+  text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rec-fav-name:hover {
+  text-decoration: underline;
+}
+
+.rec-fav-track {
+  margin-top: 2px;
+  font-size: 13px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rec-mix-note {
+  margin: 0 0 16px;
+}
+
+.mix-actions {
+  margin-bottom: 20px;
+}
+
+@media (max-width: 900px) {
+  .rec-fav-artists {
+    grid-template-columns: 1fr;
+    gap: 36px;
+  }
+
+  .rec-fav-avatar-wrap {
+    max-width: 220px;
+  }
+}
+
 

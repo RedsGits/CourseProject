@@ -11,6 +11,7 @@ import historyRoutes from './routes/history';
 import searchRoutes from './routes/search';
 import reactionRoutes from './routes/reactions';
 import albumRoutes from './routes/albums';
+import recommendationRoutes from './routes/recommendations';
 import path from 'path';
 
 const app = express();
@@ -36,6 +37,7 @@ app.use('/api/history', historyRoutes);
 app.use('/api/search', searchRoutes);
 app.use('/api/reactions', reactionRoutes);
 app.use('/api/albums', albumRoutes);
+app.use('/api/recommendations', recommendationRoutes);
 
 app.listen(PORT, () => {
   console.log(`Сервер работает на http://localhost:${PORT}`);

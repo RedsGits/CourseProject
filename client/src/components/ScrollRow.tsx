@@ -14,11 +14,12 @@ const IconChevronRight = () => (
 
 interface Props {
   title: string;
+  subtitle?: string;
   children: React.ReactNode;
   onTitleClick?: () => void;
 }
 
-export default function ScrollRow({ title, children, onTitleClick }: Props) {
+export default function ScrollRow({ title, subtitle, children, onTitleClick }: Props) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [showLeft, setShowLeft] = useState(false);
   const [showRight, setShowRight] = useState(false);
@@ -52,12 +53,15 @@ export default function ScrollRow({ title, children, onTitleClick }: Props) {
   return (
     <section className="section scroll-row-section">
       <div className="scroll-row-header">
-        <h2 
-          onClick={onTitleClick} 
-          className={onTitleClick ? 'clickable-title' : ''}
-        >
-          {title}
-        </h2>
+        <div className="scroll-row-heading">
+          <h2
+            onClick={onTitleClick}
+            className={onTitleClick ? 'clickable-title' : ''}
+          >
+            {title}
+          </h2>
+          {subtitle && <p className="scroll-row-subtitle">{subtitle}</p>}
+        </div>
         {showArrows && (
           <div className="scroll-row-arrows">
             {showLeft && <button onClick={() => scroll('left')}><IconChevronLeft /></button>}

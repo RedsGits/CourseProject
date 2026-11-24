@@ -99,3 +99,71 @@ export interface LrcLine {
   time: number;
   text: string;
 }
+
+export interface GenreWeight {
+  genre: Genre;
+  score: number;
+}
+
+export interface RecommendedArtist {
+  id: number;
+  name: string;
+  imageUrl: string | null;
+  score: number;
+}
+
+export interface RecommendationProfile {
+  hasData: boolean;
+  topGenres: GenreWeight[];
+  topArtists: RecommendedArtist[];
+  preferredGenres: Genre[];
+  stats: {
+    plays: number;
+    likes: number;
+    playlistTracks: number;
+  };
+}
+
+export interface AlbumSection {
+  id: 'for-you' | 'favorite-artists' | 'discover' | string;
+  genres?: Genre[];
+  albums: Album[];
+}
+
+export interface FavoriteArtistCard {
+  id: number;
+  name: string;
+  imageUrl: string | null;
+  trackTitle: string;
+  albumId: number;
+  albumTitle: string;
+  coverUrl: string | null;
+}
+
+export interface GenreMixInfo {
+  genre: Genre;
+  trackCount: number;
+}
+
+export interface DailyMix {
+  date: string;
+  tracks: Track[];
+}
+
+export interface HomeRecommendations {
+  hasData: boolean;
+  profile: RecommendationProfile;
+  daily: DailyMix | null;
+  genreMixes: GenreMixInfo[];
+  sections: AlbumSection[];
+  favoriteArtists: FavoriteArtistCard[];
+}
+
+export interface MixPayload {
+  id: string;
+  kind: 'daily' | 'genre' | 'album-section';
+  genre?: Genre;
+  date?: string;
+  tracks?: Track[];
+  albums?: Album[];
+}

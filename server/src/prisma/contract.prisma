@@ -53,6 +53,7 @@ model User {
   createdArtists Artist[] @relation("ArtistCreatedBy")
 
   reactions   TrackReaction[]
+  genrePreferences UserGenrePreference[]
 
   createdAt DateTime @default(now())
   updatedAt temporal.updatedAt()
@@ -198,8 +199,21 @@ model ListeningHistory {
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   track      Track    @relation(fields: [trackId], references: [id], onDelete: Cascade)
   listenedAt DateTime @default(now())
+  listenedSeconds Int  @default(0)
+  completed       Boolean @default(false)
 
   @@index([userId, listenedAt])
+}
+
+model UserGenrePreference {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  genre     Genre
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, genre])
+  @@index([userId])
 }
 
 model TrackReaction {

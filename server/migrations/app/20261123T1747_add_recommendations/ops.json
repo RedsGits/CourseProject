@@ -1,0 +1,248 @@
+[
+  {
+    "id": "table.UserGenrePreference",
+    "label": "Create table \"UserGenrePreference\"",
+    "summary": "Creates table \"UserGenrePreference\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "UserGenrePreference"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"UserGenrePreference\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"UserGenrePreference\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"UserGenrePreference\"",
+        "sql": "CREATE TABLE \"public\".\"UserGenrePreference\" (\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"genre\" text NOT NULL,\n  \"id\" SERIAL NOT NULL,\n  \"userId\" int4 NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"UserGenrePreference_genre_check_7ea8c6b1\" CHECK (\"genre\" IN ('POP', 'ROCK', 'HIPHOP', 'RNB', 'ELECTRONIC', 'HOUSE', 'TECHNO', 'TRANCE', 'DUBSTEP', 'DRUM_AND_BASS', 'RAP', 'JAZZ', 'BLUES', 'CLASSICAL', 'ORCHESTRAL', 'OPERA', 'COUNTRY', 'FOLK', 'FOLK_ROCK', 'INDIE', 'ALTERNATIVE', 'METAL', 'HEAVY_METAL', 'PUNK', 'HARDCORE', 'REGGAE', 'SKA', 'SOUL', 'FUNK', 'DISCO', 'LATIN', 'PHONK', 'SALSA', 'BOSSA_NOVA', 'SAMBA', 'AFROBEAT', 'K_POP', 'J_POP', 'ANIME', 'SOUNDTRACK', 'AMBIENT', 'CHILLOUT', 'LO_FI', 'NEW_AGE', 'GOSPEL', 'SPIRITUAL', 'WORLD', 'CELTIC', 'GUITAR', 'PIANO', 'EXPERIMENTAL', 'SPOKEN_WORD'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"UserGenrePreference\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"UserGenrePreference\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.ListeningHistory.completed",
+    "label": "Add column \"completed\" to \"ListeningHistory\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "completed",
+        "table": "ListeningHistory"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"completed\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "ListeningHistory",
+          "completed"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"completed\"",
+        "sql": "ALTER TABLE \"public\".\"ListeningHistory\" ADD COLUMN \"completed\" bool DEFAULT false NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"completed\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "ListeningHistory",
+          "completed"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.ListeningHistory.listenedSeconds",
+    "label": "Add column \"listenedSeconds\" to \"ListeningHistory\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "listenedSeconds",
+        "table": "ListeningHistory"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"listenedSeconds\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "ListeningHistory",
+          "listenedSeconds"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"listenedSeconds\"",
+        "sql": "ALTER TABLE \"public\".\"ListeningHistory\" ADD COLUMN \"listenedSeconds\" int4 DEFAULT 0 NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"listenedSeconds\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "ListeningHistory",
+          "listenedSeconds"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.UserGenrePreference.UserGenrePreference_userId_genre_key",
+    "label": "Add unique constraint on \"UserGenrePreference\" (userId, genre)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "UserGenrePreference_userId_genre_key",
+        "table": "UserGenrePreference"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"UserGenrePreference_userId_genre_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "UserGenrePreference_userId_genre_key",
+          "public",
+          "\"public\".\"UserGenrePreference\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"UserGenrePreference_userId_genre_key\"",
+        "sql": "ALTER TABLE \"public\".\"UserGenrePreference\" ADD CONSTRAINT \"UserGenrePreference_userId_genre_key\" UNIQUE (\"userId\", \"genre\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"UserGenrePreference_userId_genre_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "UserGenrePreference_userId_genre_key",
+          "public",
+          "\"public\".\"UserGenrePreference\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.UserGenrePreference.UserGenrePreference_userId_idx_a489d58a",
+    "label": "Create index \"UserGenrePreference_userId_idx_a489d58a\" on \"UserGenrePreference\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "UserGenrePreference_userId_idx_a489d58a",
+        "table": "UserGenrePreference"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"UserGenrePreference_userId_idx_a489d58a\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"UserGenrePreference_userId_idx_a489d58a\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"UserGenrePreference_userId_idx_a489d58a\"",
+        "sql": "CREATE INDEX \"UserGenrePreference_userId_idx_a489d58a\" ON \"public\".\"UserGenrePreference\" (\"userId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"UserGenrePreference_userId_idx_a489d58a\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"UserGenrePreference_userId_idx_a489d58a\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.UserGenrePreference.UserGenrePreference_userId_fkey",
+    "label": "Add foreign key \"UserGenrePreference_userId_fkey\" on \"UserGenrePreference\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "UserGenrePreference_userId_fkey",
+        "table": "UserGenrePreference"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"UserGenrePreference_userId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "UserGenrePreference_userId_fkey",
+          "public",
+          "\"public\".\"UserGenrePreference\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"UserGenrePreference_userId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"UserGenrePreference\"\nADD CONSTRAINT \"UserGenrePreference_userId_fkey\"\nFOREIGN KEY (\"userId\")\nREFERENCES \"public\".\"User\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"UserGenrePreference_userId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "UserGenrePreference_userId_fkey",
+          "public",
+          "\"public\".\"UserGenrePreference\""
+        ]
+      }
+    ]
+  }
+]

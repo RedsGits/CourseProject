@@ -16,6 +16,10 @@ import LabelDashboard from './pages/LabelDashboard';
 import AlbumDetailPage from './pages/AlbumDetail';
 import Landing from './pages/Landing';
 import RequireAuth from './components/RequireAuth';
+import MixPage from './pages/MixPage';
+import RecommendationSettings from './pages/RecommendationSettings';
+import NewReleases from './pages/NewReleases';
+import Popular from './pages/Popular';
 
 function App() {
   const { loadFromStorage } = useAuth();
@@ -33,6 +37,10 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/" element={<RequireAuth><Layout /></RequireAuth>}>
           <Route index element={<Home />} />
+          <Route path="recommendations" element={<RecommendationSettings />} />
+          <Route path="mix/:id" element={<MixPage />} />
+          <Route path="new-releases" element={<NewReleases />} />
+          <Route path="popular" element={<Popular />} />
           <Route path="artist" element={<ArtistDetail />} />
           <Route path="artist/:id" element={<ArtistDetail />} />
           <Route path="/album/:id" element={<AlbumDetailPage />} />

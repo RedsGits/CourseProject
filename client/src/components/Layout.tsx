@@ -23,6 +23,12 @@ const IconLibrary = () => (
   </svg>
 );
 
+const IconRecommendations = () => (
+  <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+    <path d="M3,17v2h6v-2H3ZM3,5v2h10V5H3Zm10,16v-2h8v-2h-8v-2h-2v6h2ZM7,9v2H3v2h4v2h2V9H7Zm14,4v-2H11v2h10Zm-6-4h2V7h4V5h-4V3h-2v6Z" />
+  </svg>
+);
+
 export default function Layout() {
   const { user } = useAuth();
   const { current } = usePlayer();
@@ -60,6 +66,11 @@ export default function Layout() {
           <NavLink to="/library" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>
             <span className="sidebar-icon"><IconLibrary /></span>
             <span className="sidebar-link-text">Библиотека</span>
+          </NavLink>
+
+          <NavLink to="/recommendations" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>
+            <span className="sidebar-icon"><IconRecommendations /></span>
+            <span className="sidebar-link-text">Рекомендации</span>
           </NavLink>
         </nav>
       </aside>

@@ -104,7 +104,6 @@ export default function Player() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const [currentTime, setCurrentTime] = useState(0);
-  const hasScrobbledRef = useRef(false);
   const listenedTimeRef = useRef(0);
   const lastTickRef = useRef(performance.now());
   const [duration, setDuration] = useState(0);
@@ -130,13 +129,94 @@ export default function Player() {
   const [coverLayoutActive, setCoverLayoutActive] = useState(false);
   const [isVolumeOpen, setIsVolumeOpen] = useState(false);
   const volumePopoverRef = useRef<HTMLDivElement>(null);
+  const historyEntryIdRef = useRef<number | null>(null);
+  const playSessionRef = useRef<{
+    trackId: number;
+    listened: number;
+    completed: boolean;
+    reported: boolean;
+  } | null>(null);
+
+  const finalizePlay = () => {
+    const session = playSessionRef.current;
+    if (!session) return;
+
+    const listened = Math.max(0, Math.round(session.listened));
+    const entryId = historyEntryIdRef.current;
+    playSessionRef.current = null;
+    historyEntryIdRef.current = null;
+
+    if (entryId) {
+      api.patch(`/history/${entryId}`, {
+        listenedSeconds: listened,
+        completed: session.completed,
+      }).catch(console.error);
+      return;
+    }
+
+    if (session.reported) return;
+    if (!session.completed && listened < 3) return;
+
+    api.post(`/history/${session.trackId}`, {
+      listenedSeconds: listened,
+      completed: session.completed,
+    }).catch(console.error);
+  };
 
   useEffect(() => {
-    hasScrobbledRef.current = false;
     listenedTimeRef.current = 0;
     lastPositionRef.current = 0;
     lastTickRef.current = performance.now();
+    if (current) {
+      playSessionRef.current = {
+        trackId: current.id,
+        listened: 0,
+        completed: false,
+        reported: false,
+      };
+      historyEntryIdRef.current = null;
+    }
   }, [current]);
+
+  useEffect(() => {
+    return () => {
+      finalizePlay();
+    };
+  }, [current?.id]);
+
+  useEffect(() => {
+    const handlePageHide = () => {
+      const session = playSessionRef.current;
+      if (!session) return;
+
+      const listened = Math.max(0, Math.round(session.listened));
+      const entryId = historyEntryIdRef.current;
+      if (!entryId && (session.reported || (!session.completed && listened < 3))) return;
+
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
+      const url = `http://localhost:5000/api/history/${entryId ?? session.trackId}`;
+      fetch(url, {
+        method: entryId ? 'PATCH' : 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          listenedSeconds: listened,
+          completed: session.completed,
+        }),
+        keepalive: true,
+      }).catch(() => {});
+
+      playSessionRef.current = null;
+      historyEntryIdRef.current = null;
+    };
+
+    window.addEventListener('pagehide', handlePageHide);
+    return () => window.removeEventListener('pagehide', handlePageHide);
+  }, []);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -746,15 +826,29 @@ export default function Player() {
           src={streamUrl}
           onLoadedMetadata={(e) => setDuration(e.currentTarget.duration)}
           onEnded={() => {
+            if (playSessionRef.current) {
+              playSessionRef.current.completed = true;
+            }
+
             if (repeat === 'one') {
-                const audio = audioRef.current;
-                if (audio) {
+              finalizePlay();
+              const audio = audioRef.current;
+              if (audio && current) {
+                listenedTimeRef.current = 0;
+                lastPositionRef.current = 0;
+                playSessionRef.current = {
+                  trackId: current.id,
+                  listened: 0,
+                  completed: false,
+                  reported: false,
+                };
+                historyEntryIdRef.current = null;
                 audio.currentTime = 0;
                 audio.play();
-                
-                }
+              }
             } else {
-                next();
+              finalizePlay();
+              next();
             }
           }}
           onPlay={() => {
@@ -779,14 +873,26 @@ export default function Player() {
 
             lastPositionRef.current = pos;
 
+            const session = playSessionRef.current;
+            if (!session) return;
+
+            session.listened = listenedTimeRef.current;
+
             const threshold = Math.min(30, audio.duration / 2);
-            if (
-              listenedTimeRef.current >= threshold &&
-              !hasScrobbledRef.current &&
-              current
-            ) {
-              hasScrobbledRef.current = true;
-              api.post(`/history/${current.id}`).catch(console.error);
+            if (!session.reported && listenedTimeRef.current >= threshold) {
+              session.reported = true;
+              api.post(`/history/${session.trackId}`, {
+                listenedSeconds: Math.round(listenedTimeRef.current),
+                completed: false,
+              }).then((res) => {
+                if (
+                  playSessionRef.current === session &&
+                  res.data?.id &&
+                  !res.data?.skipped
+                ) {
+                  historyEntryIdRef.current = res.data.id;
+                }
+              }).catch(console.error);
             }
           }}
         />

@@ -49,7 +49,13 @@ router.get('/', async (req: AuthRequest, res) => {
     .map((e) => {
       const track = trackMap.get(e.trackId);
       return track
-        ? { historyId: e.id, listenedAt: e.listenedAt, track }
+        ? {
+            historyId: e.id,
+            listenedAt: e.listenedAt,
+            listenedSeconds: e.listenedSeconds,
+            completed: e.completed,
+            track,
+          }
         : null;
     })
     .filter((x): x is NonNullable<typeof x> => x !== null);
@@ -59,6 +65,8 @@ router.get('/', async (req: AuthRequest, res) => {
   const items = pageItems.map((x, i) => ({
     historyId: x.historyId,
     listenedAt: x.listenedAt,
+    listenedSeconds: x.listenedSeconds,
+    completed: x.completed,
     track: enrichedTracks[i],
   }));
 
@@ -145,6 +153,16 @@ router.post('/:trackId', async (req: AuthRequest, res) => {
     return res.status(404).json({ error: 'Трек не найден' });
   }
 
+  const { listenedSeconds, completed } = req.body as {
+    listenedSeconds?: number;
+    completed?: boolean;
+  };
+
+  const listened = Number.isFinite(Number(listenedSeconds))
+    ? Math.max(0, Math.round(Number(listenedSeconds)))
+    : 0;
+  const isCompleted = Boolean(completed);
+
   const userHistory = await db.orm.public.ListeningHistory
     .where({ userId: req.user!.id })
     .all();
@@ -155,22 +173,29 @@ router.post('/:trackId', async (req: AuthRequest, res) => {
   if (last && last.trackId === trackId) {
     const diffSec = (Date.now() - toMillis(last.listenedAt)) / 1000;
     if (diffSec < DEDUP_WINDOW_SECONDS) {
-      return res.status(200).json({ skipped: true });
+      return res.status(200).json({ skipped: true, id: last.id });
     }
   }
 
-    const entry = await db.transaction(async (tx) => {
+  const playThreshold = Math.min(30, track.duration / 2);
+  const countsAsPlay = isCompleted || listened >= playThreshold;
+
+  const entry = await db.transaction(async (tx) => {
     const created = await tx.orm.public.ListeningHistory.create({
-        userId: req.user!.id,
-        trackId,
+      userId: req.user!.id,
+      trackId,
+      listenedSeconds: listened,
+      completed: isCompleted,
     });
 
-    await tx.orm.public.Track
+    if (countsAsPlay) {
+      await tx.orm.public.Track
         .where({ id: trackId })
         .update({ playCount: (track.playCount ?? 0) + 1 });
+    }
 
     return created;
-    });
+  });
 
   const newCount = userHistory.length + 1;
   if (newCount > HISTORY_LIMIT) {
@@ -185,6 +210,56 @@ router.post('/:trackId', async (req: AuthRequest, res) => {
     id: entry.id,
     trackId: entry.trackId,
     listenedAt: entry.listenedAt,
+    listenedSeconds: entry.listenedSeconds,
+    completed: entry.completed,
+  });
+});
+
+router.patch('/:id', async (req: AuthRequest, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id)) {
+    return res.status(400).json({ error: 'Неверный id' });
+  }
+
+  const entry = await db.orm.public.ListeningHistory.where({ id }).first();
+  if (!entry) {
+    return res.status(404).json({ error: 'Запись не найдена' });
+  }
+  if (entry.userId !== req.user!.id) {
+    return res.status(403).json({ error: 'Не ваша запись' });
+  }
+
+  const { listenedSeconds, completed } = req.body as {
+    listenedSeconds?: number;
+    completed?: boolean;
+  };
+
+  const updateData: Record<string, unknown> = {};
+  if (listenedSeconds !== undefined) {
+    const listened = Number(listenedSeconds);
+    if (!Number.isFinite(listened)) {
+      return res.status(400).json({ error: 'Неверное значение listenedSeconds' });
+    }
+    updateData.listenedSeconds = Math.max(0, Math.round(listened));
+  }
+  if (completed !== undefined) {
+    updateData.completed = Boolean(completed);
+  }
+
+  if (Object.keys(updateData).length === 0) {
+    return res.status(400).json({ error: 'Нет полей для обновления' });
+  }
+
+  const updated = await db.orm.public.ListeningHistory.where({ id }).update(updateData);
+  if (!updated) {
+    return res.status(500).json({ error: 'Не удалось обновить запись' });
+  }
+
+  res.json({
+    id: updated.id,
+    trackId: updated.trackId,
+    listenedSeconds: updated.listenedSeconds,
+    completed: updated.completed,
   });
 });
 
