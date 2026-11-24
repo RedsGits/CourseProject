@@ -12,6 +12,7 @@ interface AuthState {
   login: (email: string, password: string) => Promise<boolean>;
   register: (email: string, password: string, name?: string) => Promise<boolean>;
   logout: () => void;
+  updateUser: (user: User) => void;
   loadFromStorage: () => void;
   clearError: () => void;
 }
@@ -59,6 +60,11 @@ export const useAuth = create<AuthState>((set) => ({
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     set({ user: null, token: null, error: null, errorField: null });
+  },
+
+  updateUser: (user: User) => {
+    localStorage.setItem('user', JSON.stringify(user));
+    set({ user });
   },
 
   loadFromStorage: () => {

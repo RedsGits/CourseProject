@@ -67,9 +67,6 @@ export default function RecommendationSettings() {
     <div className="rec-settings-page">
       <header className="home-header">
         <h1>Рекомендации</h1>
-        <p className="muted">
-          Настройте вкусы под себя — главная страница соберёт подборки на их основе.
-        </p>
       </header>
 
       <section className="rec-panel">
@@ -77,8 +74,7 @@ export default function RecommendationSettings() {
           <div>
             <h2>Любимые жанры</h2>
             <p className="muted">
-              Выберите до {MAX_GENRES} жанров. Они дадут стартовые рекомендации,
-              а дальше система учится на прослушиваниях и лайках.
+              Выберите до {MAX_GENRES} жанров. Они дадут стартовые рекомендации.
             </p>
           </div>
           <span className="rec-counter">{selected.length} / {MAX_GENRES}</span>
@@ -109,7 +105,7 @@ export default function RecommendationSettings() {
       </section>
 
       <section className="rec-panel">
-        <h2>Ваш профиль вкусов</h2>
+        <h2>Ваш топ жанров</h2>
 
         {profile && profile.topGenres.length > 0 ? (
           <div className="rec-taste-list">
@@ -171,8 +167,8 @@ export default function RecommendationSettings() {
         <h2>Как работает система</h2>
         <ul className="rec-note-list">
           <li>Дослушанный до конца трек даёт жанру и артисту больше баллов, чем частичное прослушивание.</li>
-          <li>Лайк заметно усиливает жанр, дизлайк — снижает.</li>
-          <li>Быстрый скип (меньше 20% трека) уменьшает вес жанра.</li>
+          <li>Лайк значительно усиливает жанр, дизлайк - снижает.</li>
+          <li>Пропуск трека (прослушано меньше 20%) уменьшает вес жанра.</li>
           <li>Треки, добавленные в ваши плейлисты, тоже влияют на подборки.</li>
           <li>Плейлист дня пересобирается каждый день, остальные подборки обновляются автоматически.</li>
         </ul>

@@ -3,8 +3,24 @@ import { Outlet, Link, NavLink, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuth } from '../store/auth';
 import { usePlayer } from '../store/player';
+import { useTheme } from '../store/theme';
 import { useEffect } from 'react';
 import Player from './Player';
+import BrandLogo from './BrandLogo';
+import { resolveAvatarUrl } from '../utils/media';
+
+const IconSun = () => (
+  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2">
+    <circle cx="12" cy="12" r="4" />
+    <path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.66 6.34l1.41-1.41" />
+  </svg>
+);
+
+const IconMoon = () => (
+  <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+    <path d="M20.3 14.6A8.5 8.5 0 0 1 9.4 3.7 8.5 8.5 0 1 0 20.3 14.6Z" />
+  </svg>
+);
 
 const IconHome = () => (
   <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
@@ -32,6 +48,7 @@ const IconRecommendations = () => (
 export default function Layout() {
   const { user } = useAuth();
   const { current } = usePlayer();
+  const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -48,7 +65,7 @@ export default function Layout() {
     <motion.div className={`app ${current ? 'has-player' : ''}`} layoutScroll>
       <aside className="sidebar">
         <Link to="/" className="sidebar-logo" title="На главную">
-          <img src="/Logonotext.png" className="logo-icon" />
+          <BrandLogo variant="icon" className="logo-icon" />
           <span className="logo-text">DoeReMi</span>
         </Link>
 
@@ -78,6 +95,15 @@ export default function Layout() {
       <div className="main-area">
         <header className="header">
           <div className="header-right">
+            <button
+              type="button"
+              className="header-theme-btn"
+              onClick={toggleTheme}
+              title={theme === 'light' ? 'Тёмная тема' : 'Светлая тема'}
+              aria-label={theme === 'light' ? 'Включить тёмную тему' : 'Включить светлую тему'}
+            >
+              {theme === 'light' ? <IconMoon /> : <IconSun />}
+            </button>
             {user?.role === 'ADMIN' && (
               <Link to="/label" className="btn-pill" style={{ marginRight: '12px' }}>
                 Админ-панель
@@ -87,9 +113,14 @@ export default function Layout() {
               <Link to="/profile" className="header-user-block">
                 <img
                   className={`header-avatar ${avatarLoaded ? 'loaded' : ''}`}
-                  src={user.avatarUrl || '/Defpfp.png'}
+                  src={resolveAvatarUrl(user.avatarUrl)}
                   alt={user.name ?? user.email}
                   onLoad={() => setAvatarLoaded(true)}
+                  onError={(event) => {
+                    if (!event.currentTarget.src.includes('Defpfp')) {
+                      event.currentTarget.src = '/Defpfp.png';
+                    }
+                  }}
                 />
                 <span className="header-user-name">
                   {user.name ?? user.email}

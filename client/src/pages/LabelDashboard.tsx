@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../store/auth';
+import BrandLogo from '../components/BrandLogo';
 import { api } from '../api/client';
 import LabelTrackRow from '../components/label/LabelTrackRow';
 import AlbumsTab from '../components/label/AlbumsTab';
@@ -137,7 +138,7 @@ export default function LabelDashboard() {
     <div className="label-dashboard">
       <header className="label-dashboard-header">
         <Link to="/label" className="label-dashboard-logo">
-          <img src="/Logonotext.png" className="logo-icon" alt="DoeReMi" />
+          <BrandLogo variant="icon" className="logo-icon" />
           <span className="logo-text" style={{ opacity: 1, transform: 'none' }}>DoeReMi</span>
           <span className="label-dashboard-badge">{user.role}</span>
         </Link>

@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../store/auth';
+import BrandLogo from '../components/BrandLogo';
 
 const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -85,7 +86,7 @@ export default function Register() {
   return (
     <div className="auth-page">
       <div className="auth-card">
-        <img src="/Logo2.png" className="auth-logo"/>
+        <BrandLogo className="auth-logo"/>
         <h1>Регистрация</h1>
         <form onSubmit={handleSubmit} className="auth-form" noValidate>
           <label>

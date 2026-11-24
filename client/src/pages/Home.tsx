@@ -36,20 +36,6 @@ function sectionTitle(section: AlbumSection): string {
   }
 }
 
-function sectionSubtitle(section: AlbumSection): string | undefined {
-  if (section.id === 'for-you') {
-    return 'На основе жанров и артистов, которые вам нравятся';
-  }
-  if (section.id === 'favorite-artists') {
-    return 'Альбомы артистов из вашего личного топа';
-  }
-  if (section.id === 'discover') {
-    return section.genres?.length
-      ? `Смежные жанры: ${section.genres.map(genreLabel).join(', ')}`
-      : 'Новые жанры рядом с вашими';
-  }
-  return undefined;
-}
 
 export default function Home() {
   const navigate = useNavigate();
@@ -160,7 +146,6 @@ export default function Home() {
           <div className="scroll-row-header">
             <div className="scroll-row-heading">
               <h2>Ваши любимые артисты</h2>
-              <p className="scroll-row-subtitle">Три артиста, которых вы слушаете чаще всего</p>
             </div>
           </div>
           <div className="rec-fav-artists">
@@ -203,7 +188,6 @@ export default function Home() {
         <ScrollRow
           key={section.id}
           title={sectionTitle(section)}
-          subtitle={sectionSubtitle(section)}
           onTitleClick={() => navigate(`/mix/${section.id}`)}
         >
           {section.albums.map((album) => (
@@ -217,9 +201,6 @@ export default function Home() {
           <div className="scroll-row-header">
             <div className="scroll-row-heading">
               <h2>Ваши жанры</h2>
-              <p className="scroll-row-subtitle">
-                Отдельные подборки по жанрам, которые вы слушаете чаще всего
-              </p>
             </div>
           </div>
           <div className="rec-genre-grid">
@@ -256,10 +237,9 @@ export default function Home() {
               <h2 className="clickable-title" onClick={() => navigate('/popular')}>
                 Популярно сейчас
               </h2>
-              <p className="scroll-row-subtitle">Самые прослушиваемые треки на DoeReMi</p>
             </div>
           </div>
-          <TrackList tracks={popular} contextId="popular-home" columns={2} />
+          <TrackList tracks={popular} contextId="popular-home" columns={1} />
         </section>
       )}
     </div>

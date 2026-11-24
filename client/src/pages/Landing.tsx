@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { useAuth } from '../store/auth';
+import BrandLogo from '../components/BrandLogo';
 
 const IconHeadphones = () => (
   <svg viewBox="0 0 64 64" width="64" height="64" fill="none" aria-hidden="true">
@@ -62,7 +63,7 @@ export default function Landing() {
 
       <div className="landing-inner">
         <header className="landing-header">
-          <img src="/Logo2.png" alt="DoeReMi" className="landing-logo" />
+          <BrandLogo className="landing-logo" />
         </header>
 
         <main className="landing-main">

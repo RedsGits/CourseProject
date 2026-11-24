@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../store/auth';
+import BrandLogo from '../components/BrandLogo';
 
 const WarnIcon = () => (
   <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" style={{ flexShrink: 0 }}>
@@ -65,7 +66,7 @@ export default function Login() {
   return (
     <div className="auth-page">
       <div className="auth-card">
-        <img src="/Logo2.png" className="auth-logo"/>
+        <BrandLogo className="auth-logo"/>
         <h1>Вход</h1>
         <form onSubmit={handleSubmit} className="auth-form" noValidate>
           <label>

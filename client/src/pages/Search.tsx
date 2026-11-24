@@ -9,6 +9,7 @@ import TrackCover from '../components/TrackCover';
 import ExplicitBadge from '../components/ExplicitBadge';
 import PlayingBars from '../components/PlayingBars';
 import { formatAlbumType } from '../api/format';
+import BrandLogo from '../components/BrandLogo';
 
 interface Playlist { id: number; name: string; isPublic: boolean; coverUrl?: string | null; }
 
@@ -155,9 +156,7 @@ export default function Search() {
     <div className={`search-page ${isActive ? 'is-active' : ''}`}>
       
       <div className="search-hero">
-        <img 
-          src="/Logo2.png" 
-          alt="DoeReMi" 
+        <BrandLogo
           className={`search-hero-logo ${logoLoaded ? 'loaded' : ''}`}
           onLoad={() => setLogoLoaded(true)}
         />

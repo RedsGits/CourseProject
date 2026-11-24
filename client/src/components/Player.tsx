@@ -522,7 +522,7 @@ export default function Player() {
         style={{
           background: `linear-gradient(to right, var(--accent) 0%, var(--accent) ${
             duration ? (currentTime / duration) * 100 : 0
-          }%, #404040 ${duration ? (currentTime / duration) * 100 : 0}%, #404040 100%)`,
+          }%, var(--player-track) ${duration ? (currentTime / duration) * 100 : 0}%, var(--player-track) 100%)`,
         }}
       />
       <span className="player-time">{formatTime(duration)}</span>
@@ -542,7 +542,7 @@ export default function Player() {
         style={{
           background: `linear-gradient(to right, var(--accent) 0%, var(--accent) ${
             duration ? (currentTime / duration) * 100 : 0
-          }%, #404040 ${duration ? (currentTime / duration) * 100 : 0}%, #404040 100%)`,
+          }%, var(--player-track) ${duration ? (currentTime / duration) * 100 : 0}%, var(--player-track) 100%)`,
         }}
       />
       <span className="time-right">{formatTime(duration)}</span>
@@ -714,7 +714,7 @@ export default function Player() {
               style={{
                 background: `linear-gradient(to right, var(--accent) 0%, var(--accent) ${
                   duration ? (currentTime / duration) * 100 : 0
-                }%, #404040 ${duration ? (currentTime / duration) * 100 : 0}%, #404040 100%)`,
+                }%, var(--player-track) ${duration ? (currentTime / duration) * 100 : 0}%, var(--player-track) 100%)`,
               }}
             />
             <span className="time-right">{formatTime(duration)}</span>
@@ -754,7 +754,7 @@ export default function Player() {
                       style={{
                         background: `linear-gradient(to right, var(--accent) 0%, var(--accent) ${
                           (isMuted ? 0 : volume) * 100
-                        }%, #404040 ${(isMuted ? 0 : volume) * 100}%, #404040 100%)`,
+                        }%, var(--player-track) ${(isMuted ? 0 : volume) * 100}%, var(--player-track) 100%)`,
                       }}
                     />
                   </motion.div>
@@ -1000,7 +1000,7 @@ export default function Player() {
                 style={{
                   background: `linear-gradient(to right, var(--accent) 0%, var(--accent) ${
                     duration ? (currentTime / duration) * 100 : 0
-                  }%, #404040 ${duration ? (currentTime / duration) * 100 : 0}%, #404040 100%)`,
+                  }%, var(--player-track) ${duration ? (currentTime / duration) * 100 : 0}%, var(--player-track) 100%)`,
                 }}
               />
               <span className="player-time">{formatTime(duration)}</span>
@@ -1053,7 +1053,7 @@ export default function Player() {
               style={{
                   background: `linear-gradient(to right, var(--accent) 0%, var(--accent) ${
                   (isMuted ? 0 : volume) * 100
-                  }%, #404040 ${(isMuted ? 0 : volume) * 100}%, #404040 100%)`,
+                  }%, var(--player-track) ${(isMuted ? 0 : volume) * 100}%, var(--player-track) 100%)`,
               }}
             />
           </div>
