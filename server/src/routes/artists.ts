@@ -64,6 +64,65 @@ router.get('/:id/tracks', async (req, res) => {
   res.json(await withArtistsBatch(artistTracks));
 });
 
+router.get('/:id/playlists', async (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id)) return res.status(400).json({ error: 'Неверный id' });
+
+  const links = await db.orm.public.TrackArtist.where({ artistId: id }).all();
+  if (links.length === 0) return res.json([]);
+
+  const artistTrackIds = new Set(links.map((link) => link.trackId));
+  const allTracks = await db.orm.public.Track.all();
+  const publishedTrackIds = new Set(
+    allTracks
+      .filter((track) => track.isPublished && artistTrackIds.has(track.id))
+      .map((track) => track.id),
+  );
+
+  if (publishedTrackIds.size === 0) return res.json([]);
+
+  const playlistLinks = await db.orm.public.PlaylistTrack.all();
+  const playlistIds = new Set<number>();
+  const trackCounts = new Map<number, number>();
+
+  for (const link of playlistLinks) {
+    if (!publishedTrackIds.has(link.trackId)) continue;
+    playlistIds.add(link.playlistId);
+  }
+
+  if (playlistIds.size === 0) return res.json([]);
+
+  for (const link of playlistLinks) {
+    if (!playlistIds.has(link.playlistId)) continue;
+    trackCounts.set(link.playlistId, (trackCounts.get(link.playlistId) ?? 0) + 1);
+  }
+
+  const [playlists, users] = await Promise.all([
+    db.orm.public.Playlist.all(),
+    db.orm.public.User.all(),
+  ]);
+  const userMap = new Map(users.map((user) => [user.id, user]));
+
+  const result = playlists
+    .filter((playlist) => playlist.isPublic && playlistIds.has(playlist.id))
+    .sort((a, b) => b.id - a.id)
+    .slice(0, 24)
+    .map((playlist) => {
+      const owner = userMap.get(playlist.userId);
+      return {
+        id: playlist.id,
+        name: playlist.name,
+        coverUrl: playlist.coverUrl,
+        isPublic: playlist.isPublic,
+        userId: playlist.userId,
+        ownerName: owner?.name ?? owner?.email ?? null,
+        trackCount: trackCounts.get(playlist.id) ?? 0,
+      };
+    });
+
+  res.json(result);
+});
+
 router.post(
   '/',
   authenticate,

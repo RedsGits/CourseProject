@@ -4,11 +4,12 @@ import { api } from '../api/client';
 import { usePlayer } from '../store/player';
 import LikeButton from '../components/LikeButton';
 import AddToPlaylistMenu from '../components/AddToPlaylistMenu';
-import type { Artist, Track, Album } from '../types';
+import type { Artist, Track, Album, PublicPlaylist } from '../types';
 import TrackCover from '../components/TrackCover';
 import ExplicitBadge from '../components/ExplicitBadge';
 import PlayingBars from '../components/PlayingBars';
 import { formatAlbumType } from '../api/format';
+import PlaylistCard from '../components/PlaylistCard';
 
 
 function formatPlayCount(count: number): string {
@@ -46,6 +47,7 @@ export default function ArtistDetail() {
   const [isImageOpen, setIsImageOpen] = useState(false);
   const [isBioOpen, setIsBioOpen] = useState(false);
   const [albums, setAlbums] = useState<Album[]>([]);
+  const [publicPlaylists, setPublicPlaylists] = useState<PublicPlaylist[]>([]);
 
   const { setTrack, current, isPlaying, togglePlay, playbackContext } = usePlayer();
   const contextId = `artist-${id}`;
@@ -54,11 +56,17 @@ export default function ArtistDetail() {
   useEffect(() => {
     if (!id) { setNotFound(true); setLoading(false); return; }
     setLoading(true);
-    Promise.all([ api.get<Artist>(`/artists/${id}`), api.get<Track[]>(`/artists/${id}/tracks`), api.get<Album[]>(`/albums?artistId=${id}`)])
-      .then(([artistRes, tracksRes, albumsRes]) => {
+    Promise.all([
+      api.get<Artist>(`/artists/${id}`),
+      api.get<Track[]>(`/artists/${id}/tracks`),
+      api.get<Album[]>(`/albums?artistId=${id}`),
+      api.get<PublicPlaylist[]>(`/artists/${id}/playlists`).catch(() => ({ data: [] as PublicPlaylist[] })),
+    ])
+      .then(([artistRes, tracksRes, albumsRes, playlistsRes]) => {
         setArtist(artistRes.data);
         setTracks(tracksRes.data);
         setAlbums(albumsRes.data);
+        setPublicPlaylists(playlistsRes.data);
       })
       .catch(() => setNotFound(true))
       .finally(() => setLoading(false));
@@ -253,6 +261,17 @@ export default function ArtistDetail() {
             </div>
           )}
         </section>
+
+        {publicPlaylists.length > 0 && (
+          <section className="section" style={{ marginTop: '40px' }}>
+            <h2>Плейлисты с этим исполнителем</h2>
+            <div className="library-grid">
+              {publicPlaylists.map((playlist) => (
+                <PlaylistCard key={playlist.id} playlist={playlist} />
+              ))}
+            </div>
+          </section>
+        )}
       </div>
 
       {isImageOpen && (

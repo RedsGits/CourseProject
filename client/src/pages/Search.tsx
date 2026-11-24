@@ -8,10 +8,18 @@ import AddToPlaylistMenu from '../components/AddToPlaylistMenu';
 import TrackCover from '../components/TrackCover';
 import ExplicitBadge from '../components/ExplicitBadge';
 import PlayingBars from '../components/PlayingBars';
-import { formatAlbumType } from '../api/format';
 import BrandLogo from '../components/BrandLogo';
+import AlbumCard from '../components/AlbumCard';
+import PlaylistCard from '../components/PlaylistCard';
 
-interface Playlist { id: number; name: string; isPublic: boolean; coverUrl?: string | null; }
+interface Playlist {
+  id: number;
+  name: string;
+  isPublic: boolean;
+  coverUrl?: string | null;
+  trackCount?: number;
+  ownerName?: string | null;
+}
 
 const IconSearchBig = () => (
   <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
@@ -320,20 +328,7 @@ export default function Search() {
                     {results.albums && results.albums.length > 0 && (
                       <ScrollRow title="Альбомы" onTitleClick={() => setActiveTab('albums')}>
                         {results.albums.slice(0, 10).map((album) => (
-                          <Link key={album.id} to={`/album/${album.id}`} className="library-card">
-                            <div className="library-card-cover">
-                              {album.coverUrl ? (
-                                <img src={`http://localhost:5000/uploads/${album.coverUrl}`} alt={album.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                              ) : (
-                                <svg viewBox="0 0 24 24" width="48" height="48" fill="#fff">
-                                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 14.5c-2.49 0-4.5-2.01-4.5-4.5S9.51 7.5 12 7.5s4.5 2.01 4.5 4.5-2.01 4.5-4.5 4.5zm0-5.5c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1z" />
-                                </svg>
-                              )}
-                            </div>
-                            <div className="library-card-info">
-                              <div className="library-card-title">{album.title}</div>
-                            </div>
-                          </Link>
+                          <AlbumCard key={album.id} album={album} />
                         ))}
                       </ScrollRow>
                     )}
@@ -341,24 +336,7 @@ export default function Search() {
                     {results.playlists && results.playlists.length > 0 && (
                       <ScrollRow title="Плейлисты" onTitleClick={() => setActiveTab('playlists')}>
                         {results.playlists.slice(0, 10).map((playlist) => (
-                          <Link key={playlist.id} to={`/playlist/${playlist.id}`} className="library-card">
-                            <div className="library-card-cover">
-                              {playlist.coverUrl ? (
-                                <img 
-                                  src={`http://localhost:5000/uploads/${playlist.coverUrl}`} 
-                                  alt={playlist.name} 
-                                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                />
-                              ) : (
-                                <svg viewBox="0 0 24 24" width="48" height="48" fill="#fff">
-                                  <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
-                                </svg>
-                              )}
-                            </div>
-                            <div className="library-card-info">
-                              <div className="library-card-title">{playlist.name}</div>
-                            </div>
-                          </Link>
+                          <PlaylistCard key={playlist.id} playlist={playlist} />
                         ))}
                       </ScrollRow>
                     )}
@@ -463,23 +441,7 @@ export default function Search() {
                 {activeTab === 'albums' && results.albums && results.albums.length > 0 && (
                   <div className="library-grid">
                     {results.albums.map((album) => (
-                      <Link key={album.id} to={`/album/${album.id}`} className="library-card">
-                        <div className="library-card-cover">
-                          {album.coverUrl ? (
-                            <img src={`http://localhost:5000/uploads/${album.coverUrl}`} alt={album.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                          ) : (
-                            <svg viewBox="0 0 24 24" width="48" height="48" fill="#fff">
-                              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 14.5c-2.49 0-4.5-2.01-4.5-4.5S9.51 7.5 12 7.5s4.5 2.01 4.5 4.5-2.01 4.5-4.5 4.5zm0-5.5c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1z" />
-                            </svg>
-                          )}
-                        </div>
-                        <div className="library-card-info">
-                          <div className="library-card-title">{album.title}</div>
-                        </div>
-                        <div className="library-card-sub">
-                          {formatAlbumType(album.type)}{album.year ? ` • ${album.year}` : ''}
-                        </div>
-                      </Link>
+                      <AlbumCard key={album.id} album={album} />
                     ))}
                   </div>
                 )}
@@ -487,24 +449,7 @@ export default function Search() {
                 {activeTab === 'playlists' && results.playlists && results.playlists.length > 0 && (
                   <div className="library-grid">
                     {results.playlists.map((playlist) => (
-                      <Link key={playlist.id} to={`/playlist/${playlist.id}`} className="library-card">
-                        <div className="library-card-cover">
-                          {playlist.coverUrl ? (
-                            <img 
-                              src={`http://localhost:5000/uploads/${playlist.coverUrl}`} 
-                              alt={playlist.name} 
-                              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                            />
-                          ) : (
-                            <svg viewBox="0 0 24 24" width="48" height="48" fill="#fff">
-                              <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
-                            </svg>
-                          )}
-                        </div>
-                        <div className="library-card-info">
-                          <div className="library-card-title">{playlist.name}</div>
-                        </div>
-                      </Link>
+                      <PlaylistCard key={playlist.id} playlist={playlist} />
                     ))}
                   </div>
                 )}

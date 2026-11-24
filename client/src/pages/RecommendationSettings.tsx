@@ -1,10 +1,93 @@
+// История: группировка по дням и вывод через TrackList.
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../api/client';
+import TrackList from '../components/TrackList';
 import { GENRE_ORDER, genreLabel } from '../utils/genres';
-import type { Genre, RecommendationProfile } from '../types';
+import type {
+  Genre,
+  HistoryFeedItem,
+  HistoryFeedResponse,
+  RecommendationProfile,
+} from '../types';
 
 const MAX_GENRES = 5;
+
+interface HistoryDayGroup {
+  key: string;
+  label: string;
+  items: HistoryFeedItem[];
+}
+
+function localDateKey(value: string | Date): string {
+  const date = value instanceof Date ? value : new Date(value);
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(
+    date.getDate(),
+  ).padStart(2, '0')}`;
+}
+
+function formatHistoryDayLabel(value: string): string {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+
+  const now = new Date();
+  const key = localDateKey(date);
+  if (key === localDateKey(now)) return 'Сегодня';
+
+  const yesterday = new Date(now);
+  yesterday.setDate(now.getDate() - 1);
+  if (key === localDateKey(yesterday)) return 'Вчера';
+
+  const options: Intl.DateTimeFormatOptions = {
+    day: 'numeric',
+    month: 'long',
+    ...(date.getFullYear() !== now.getFullYear() ? { year: 'numeric' as const } : {}),
+  };
+  return date.toLocaleDateString('ru-RU', options);
+}
+
+function buildHistoryFeed(items: HistoryFeedItem[]): HistoryFeedItem[] {
+  const byTrackAndDay = new Map<string, HistoryFeedItem>();
+
+  for (const item of items) {
+    const threshold = Math.min(30, item.track.duration / 2);
+    const qualifies = item.completed || item.listenedSeconds >= threshold;
+    if (!qualifies) continue;
+
+    const key = `${item.track.id}:${localDateKey(item.listenedAt)}`;
+    const current = byTrackAndDay.get(key);
+    if (!current || new Date(item.listenedAt).getTime() > new Date(current.listenedAt).getTime()) {
+      byTrackAndDay.set(key, item);
+    }
+  }
+
+  return [...byTrackAndDay.values()].sort(
+    (a, b) =>
+      new Date(b.listenedAt).getTime() - new Date(a.listenedAt).getTime() ||
+      b.historyId - a.historyId,
+  );
+}
+
+function groupHistoryFeed(items: HistoryFeedItem[]): HistoryDayGroup[] {
+  const groups: HistoryDayGroup[] = [];
+
+  for (const item of items) {
+    const key = localDateKey(item.listenedAt);
+    const current = groups[groups.length - 1];
+
+    if (current && current.key === key) {
+      current.items.push(item);
+    } else {
+      groups.push({
+        key,
+        label: formatHistoryDayLabel(item.listenedAt),
+        items: [item],
+      });
+    }
+  }
+
+  return groups;
+}
 
 export default function RecommendationSettings() {
   const [profile, setProfile] = useState<RecommendationProfile | null>(null);
@@ -13,6 +96,19 @@ export default function RecommendationSettings() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  const [historyFeed, setHistoryFeed] = useState<HistoryFeedItem[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(true);
+  const [historyError, setHistoryError] = useState<string | null>(null);
+
+  useEffect(() => {
+    api.get<HistoryFeedResponse>('/history', { params: { raw: 1, limit: 1000 } })
+      .then(({ data }) => setHistoryFeed(buildHistoryFeed(data.items ?? [])))
+      .catch(() => setHistoryError('Не удалось загрузить историю прослушиваний'))
+      .finally(() => setHistoryLoading(false));
+  }, []);
+
+  const historyGroups = useMemo(() => groupHistoryFeed(historyFeed), [historyFeed]);
 
   useEffect(() => {
     api.get<RecommendationProfile>('/recommendations/profile')
@@ -162,6 +258,37 @@ export default function RecommendationSettings() {
           </div>
         </section>
       )}
+
+      <section className="rec-panel">
+        <div className="rec-panel-head">
+          <div>
+            <h2>История прослушиваний</h2>
+          </div>
+        </div>
+
+        {historyLoading ? (
+          <p className="muted">Загрузка истории...</p>
+        ) : historyError ? (
+          <p className="muted">{historyError}</p>
+        ) : historyGroups.length === 0 ? (
+          <p className="muted">
+            Пока нет прослушиваний. Включите трек минимум на 30 секунд или половину — он появится здесь.
+          </p>
+        ) : (
+          <div className="history-days">
+            {historyGroups.map((group) => (
+              <section key={group.key} className="history-day">
+                <h3 className="history-day-title">{group.label}</h3>
+                <TrackList
+                  tracks={group.items.map((item) => item.track)}
+                  contextId={`history-${group.key}`}
+                  columns={1}
+                />
+              </section>
+            ))}
+          </div>
+        )}
+      </section>
 
       <section className="rec-panel rec-panel-note">
         <h2>Как работает система</h2>

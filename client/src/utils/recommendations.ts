@@ -76,13 +76,13 @@ export function mixMeta(mix: MixPayload): MixMeta {
     case 'favorite-artists':
       return {
         title: 'От ваших любимых исполнителей',
-        subtitle: 'Треки артистов из вашего личного топа',
+        subtitle: 'Треки от ваших любимых артистов',
         gradient: 'linear-gradient(135deg, #2f2145 0%, #120d1c 100%)',
       };
     case 'discover':
       return {
         title: 'Откройте для себя новое',
-        subtitle: 'Смежные жанры и новые имена',
+        subtitle: 'Смежные жанры',
         gradient: 'linear-gradient(135deg, #43202b 0%, #1b0d12 100%)',
       };
     default:

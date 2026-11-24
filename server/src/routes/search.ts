@@ -54,7 +54,25 @@ router.get('/', async (req, res) => {
     const publicPlaylists = await db.orm.public.Playlist.where({ isPublic: true }).all();
     const fuse = new Fuse(publicPlaylists, { ...FUSE_OPTIONS, keys: ['name'] });
     const matched = fuse.search(q).slice(0, limit).map((r) => r.item);
-    result.playlists = matched;
+
+    const [playlistLinks, users] = await Promise.all([
+      db.orm.public.PlaylistTrack.all(),
+      db.orm.public.User.all(),
+    ]);
+    const counts = new Map<number, number>();
+    for (const link of playlistLinks) {
+      counts.set(link.playlistId, (counts.get(link.playlistId) ?? 0) + 1);
+    }
+    const userMap = new Map(users.map((user) => [user.id, user]));
+
+    result.playlists = matched.map((playlist) => {
+      const owner = userMap.get(playlist.userId);
+      return {
+        ...playlist,
+        trackCount: counts.get(playlist.id) ?? 0,
+        ownerName: owner?.name ?? owner?.email ?? null,
+      };
+    });
   }
 
   if (type === 'all' || type === 'albums') {
@@ -62,7 +80,39 @@ router.get('/', async (req, res) => {
     const publishedAlbums = allAlbums.filter(a => a.isPublished);
     const fuse = new Fuse(publishedAlbums, { ...FUSE_OPTIONS, keys: ['title'] });
     const matched = fuse.search(q).slice(0, limit).map((r) => r.item);
-    result.albums = matched;
+
+    const [albumLinks, artists] = await Promise.all([
+      db.orm.public.AlbumArtist.all(),
+      db.orm.public.Artist.all(),
+    ]);
+    const artistMap = new Map(artists.map((artist) => [artist.id, artist]));
+    const linksByAlbum = new Map<number, typeof albumLinks>();
+    for (const link of albumLinks) {
+      const list = linksByAlbum.get(link.albumId) ?? [];
+      list.push(link);
+      linksByAlbum.set(link.albumId, list);
+    }
+
+    result.albums = matched.map((album) => {
+      const albumArtists = (linksByAlbum.get(album.id) ?? [])
+        .map((link) => {
+          const artist = artistMap.get(link.artistId);
+          if (!artist) return null;
+          return {
+            id: artist.id,
+            name: artist.name,
+            role: link.role,
+            order: link.order,
+          };
+        })
+        .filter((artist): artist is NonNullable<typeof artist> => artist !== null)
+        .sort((a, b) => {
+          if (a.role !== b.role) return a.role === 'PRIMARY' ? -1 : 1;
+          return a.order - b.order;
+        });
+
+      return { ...album, artists: albumArtists };
+    });
   }
 
   res.json(result);

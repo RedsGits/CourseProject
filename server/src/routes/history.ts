@@ -20,7 +20,9 @@ function toMillis(value: unknown): number {
 }
 
 router.get('/', async (req: AuthRequest, res) => {
-  const limit = Math.min(Number(req.query.limit) || DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE);
+  const raw = req.query.raw === '1' || req.query.raw === 'true';
+  const maxLimit = raw ? HISTORY_LIMIT : MAX_PAGE_SIZE;
+  const limit = Math.min(Number(req.query.limit) || DEFAULT_PAGE_SIZE, maxLimit);
   const offset = Math.max(Number(req.query.offset) || 0, 0);
 
   const entries = await db.orm.public.ListeningHistory
@@ -29,17 +31,25 @@ router.get('/', async (req: AuthRequest, res) => {
 
   entries.sort((a, b) => toMillis(b.listenedAt) - toMillis(a.listenedAt));
 
-  const seen = new Set<number>();
-  const uniqueEntries: typeof entries = [];
-  for (const e of entries) {
-    if (!seen.has(e.trackId)) {
-      seen.add(e.trackId);
-      uniqueEntries.push(e);
-    }
-  }
+  let total: number;
+  let page: typeof entries;
 
-  const total = uniqueEntries.length;
-  const page = uniqueEntries.slice(offset, offset + limit);
+  if (raw) {
+    total = entries.length;
+    page = entries.slice(offset, offset + limit);
+  } else {
+    const seen = new Set<number>();
+    const uniqueEntries: typeof entries = [];
+    for (const e of entries) {
+      if (!seen.has(e.trackId)) {
+        seen.add(e.trackId);
+        uniqueEntries.push(e);
+      }
+    }
+
+    total = uniqueEntries.length;
+    page = uniqueEntries.slice(offset, offset + limit);
+  }
 
   const trackIds = page.map((e) => e.trackId);
   const allTracks = trackIds.length ? await db.orm.public.Track.all() : [];
@@ -70,7 +80,7 @@ router.get('/', async (req: AuthRequest, res) => {
     track: enrichedTracks[i],
   }));
 
-  res.json({ total, limit, offset, items });
+  res.json({ total, limit, offset, items, ...(raw ? { raw: true } : {}) });
 });
 
 // Задел под систему рекомендаций

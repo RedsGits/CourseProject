@@ -167,3 +167,29 @@ export interface MixPayload {
   tracks?: Track[];
   albums?: Album[];
 }
+
+export interface HistoryFeedItem {
+  historyId: number;
+  listenedAt: string;
+  listenedSeconds: number;
+  completed: boolean;
+  track: Track;
+}
+
+export interface HistoryFeedResponse {
+  total: number;
+  limit: number;
+  offset: number;
+  raw?: boolean;
+  items: HistoryFeedItem[];
+}
+
+export interface PublicPlaylist {
+  id: number;
+  name: string;
+  coverUrl: string | null;
+  isPublic: boolean;
+  userId: number;
+  ownerName: string | null;
+  trackCount: number;
+}

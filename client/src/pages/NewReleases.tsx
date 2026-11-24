@@ -24,7 +24,6 @@ export default function NewReleases() {
     <div className="home-page">
       <header className="home-header">
         <h1>Новые релизы</h1>
-        <p className="muted">Свежие альбомы и синглы на DoeReMi</p>
       </header>
 
       {loading ? (

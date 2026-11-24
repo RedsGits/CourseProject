@@ -270,6 +270,42 @@
   color: var(--text-muted);
 }
 
+.history-days {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.history-day + .history-day {
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.history-day-title {
+  margin: 0 0 8px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.playlist-cover-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background-color: var(--bg-hover);
+  color: var(--text-muted);
+  font-size: 44px;
+  font-weight: 700;
+}
+
+.scroll-row-content .artist-card,
+.scroll-row-content .playlist-card {
+  min-width: 200px;
+  max-width: 200px;
+}
+
 .header-theme-btn {
   display: inline-flex;
   align-items: center;

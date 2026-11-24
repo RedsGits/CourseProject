@@ -20,7 +20,6 @@ export default function Popular() {
     <div className="home-page">
       <header className="home-header">
         <h1>Популярно сейчас</h1>
-        <p className="muted">Самые прослушиваемые треки на DoeReMi</p>
       </header>
 
       {loading ? (
