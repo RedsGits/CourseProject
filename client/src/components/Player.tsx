@@ -129,6 +129,11 @@ export default function Player() {
   const [coverLayoutActive, setCoverLayoutActive] = useState(false);
   const [isVolumeOpen, setIsVolumeOpen] = useState(false);
   const volumePopoverRef = useRef<HTMLDivElement>(null);
+  const [isPlayerVolumeOpen, setIsPlayerVolumeOpen] = useState(false);
+  const playerVolumePopoverRef = useRef<HTMLDivElement>(null);
+  const [isCompactPlayer, setIsCompactPlayer] = useState(
+    () => typeof window !== 'undefined' && window.matchMedia('(max-width: 900px)').matches,
+  );
   const historyEntryIdRef = useRef<number | null>(null);
   const playSessionRef = useRef<{
     trackId: number;
@@ -369,6 +374,31 @@ export default function Player() {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isVolumeOpen]);
+
+  useEffect(() => {
+    const media = window.matchMedia('(max-width: 900px)');
+    const handleChange = () => setIsCompactPlayer(media.matches);
+    media.addEventListener?.('change', handleChange);
+    return () => media.removeEventListener?.('change', handleChange);
+  }, []);
+
+  useEffect(() => {
+    if (isFullScreen || !isCompactPlayer) setIsPlayerVolumeOpen(false);
+  }, [isFullScreen, isCompactPlayer]);
+
+  useEffect(() => {
+    if (!isPlayerVolumeOpen) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        playerVolumePopoverRef.current &&
+        !playerVolumePopoverRef.current.contains(e.target as Node)
+      ) {
+        setIsPlayerVolumeOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isPlayerVolumeOpen]);
 
   useEffect(() => {
     isSwitchingTrackRef.current = true;
@@ -1032,30 +1062,75 @@ export default function Player() {
               <IconQueue />
             </button>
             <AddToPlaylistMenu trackId={current.id} />
-            <button
-              className="player-btn"
-              onClick={() => setIsMuted(!isMuted)}
-              title={isMuted ? 'Включить звук' : 'Выключить звук'}
-            >
-              <IconVolume muted={isMuted} />
-            </button>
-            <input
-              type="range"
-              min="0"
-              max="1"
-              step="0.01"
-              value={isMuted ? 0 : volume}
-              onChange={(e) => {
+            <div className="player-volume-control" ref={playerVolumePopoverRef}>
+              <button
+                className="player-btn"
+                onClick={() => {
+                  if (isCompactPlayer) {
+                    setIsPlayerVolumeOpen((value) => !value);
+                  } else {
+                    setIsMuted(!isMuted);
+                  }
+                }}
+                title={
+                  isCompactPlayer
+                    ? 'Громкость'
+                    : isMuted
+                    ? 'Включить звук'
+                    : 'Выключить звук'
+                }
+                aria-label={isCompactPlayer ? 'Громкость' : 'Выключить или включить звук'}
+              >
+                <IconVolume muted={isMuted} />
+              </button>
+              <input
+                type="range"
+                min="0"
+                max="1"
+                step="0.01"
+                value={isMuted ? 0 : volume}
+                onChange={(e) => {
                   setVolume(Number(e.target.value));
                   setIsMuted(false);
-              }}
-              className="player-volume"
-              style={{
+                }}
+                className="player-volume player-volume-inline"
+                style={{
                   background: `linear-gradient(to right, var(--accent) 0%, var(--accent) ${
-                  (isMuted ? 0 : volume) * 100
+                    (isMuted ? 0 : volume) * 100
                   }%, var(--player-track) ${(isMuted ? 0 : volume) * 100}%, var(--player-track) 100%)`,
-              }}
-            />
+                }}
+              />
+
+              {isCompactPlayer && isPlayerVolumeOpen && (
+                <div className="player-volume-popover">
+                  <button
+                    type="button"
+                    className="player-volume-mute"
+                    onClick={() => setIsMuted((value) => !value)}
+                    title={isMuted ? 'Включить звук' : 'Выключить звук'}
+                  >
+                    <IconVolume muted={isMuted} />
+                  </button>
+                  <input
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.01"
+                    value={isMuted ? 0 : volume}
+                    onChange={(e) => {
+                      setVolume(Number(e.target.value));
+                      setIsMuted(false);
+                    }}
+                    className="player-volume player-volume-popover-slider"
+                    style={{
+                      background: `linear-gradient(to right, var(--accent) 0%, var(--accent) ${
+                        (isMuted ? 0 : volume) * 100
+                      }%, var(--player-track) ${(isMuted ? 0 : volume) * 100}%, var(--player-track) 100%)`,
+                    }}
+                  />
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

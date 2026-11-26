@@ -5,6 +5,7 @@ import 'flag-icons/css/flag-icons.min.css';
 import './styles/globals.css'
 import './styles/account.css'
 import './styles/theme.css'
+import './styles/responsive.css'
 import App from './App.tsx'
 
 useAuth.getState().loadFromStorage();

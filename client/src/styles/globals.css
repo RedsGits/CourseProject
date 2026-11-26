@@ -4027,6 +4027,13 @@ body.fullscreen-open .app {
   background-color: rgba(255, 255, 255, 0.03);
 }
 
+.queue-track-row-current::after {
+  content: '';
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
 .queue-track-cover {
   position: relative;
   width: 44px;
@@ -4107,7 +4114,7 @@ body.fullscreen-open .app {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  padding-right: 4px;
+  padding-right: 0;
   scrollbar-width: thin;
   scrollbar-color: var(--bg-hover) transparent;
 }

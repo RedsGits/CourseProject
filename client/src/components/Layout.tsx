@@ -1,10 +1,9 @@
-import { useState } from 'react';
-import { Outlet, Link, NavLink, useNavigate } from 'react-router-dom';
+import { useState, useEffect, useRef } from 'react';
+import { Outlet, Link, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuth } from '../store/auth';
 import { usePlayer } from '../store/player';
 import { useTheme } from '../store/theme';
-import { useEffect } from 'react';
 import Player from './Player';
 import BrandLogo from './BrandLogo';
 import { resolveAvatarUrl } from '../utils/media';
@@ -50,6 +49,7 @@ export default function Layout() {
   const { current } = usePlayer();
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     if (user?.role === 'LABEL') {
@@ -58,12 +58,181 @@ export default function Layout() {
   }, [user, navigate]);
   
   const [avatarLoaded, setAvatarLoaded] = useState(false);
+  const [isTouchSidebar, setIsTouchSidebar] = useState(false);
+  const [isTouchExpanded, setIsTouchExpanded] = useState(false);
+  const sidebarRef = useRef<HTMLElement>(null);
+  const longPressTimerRef = useRef<number | null>(null);
+  const suppressClickRef = useRef(false);
+  const gestureRef = useRef({
+    active: false,
+    startX: 0,
+    startY: 0,
+    armed: false,
+    dragging: false,
+  });
 
-  // layoutScroll обязателен: без него layout-анимация обложки плеера
-  // стартует со смещением на величину прокрутки .app
+  const closeTouchExpanded = () => {
+    setIsTouchExpanded(false);
+    if (sidebarRef.current) {
+      sidebarRef.current.style.width = '';
+      sidebarRef.current.style.transition = '';
+    }
+  };
+
+  useEffect(() => {
+    closeTouchExpanded();
+  }, [location.pathname]);
+
+  useEffect(() => {
+    if (!isTouchExpanded) return;
+
+    const handleOutsidePointer = (event: PointerEvent) => {
+      if (sidebarRef.current && !sidebarRef.current.contains(event.target as Node)) {
+        closeTouchExpanded();
+      }
+    };
+
+    document.addEventListener('pointerdown', handleOutsidePointer, true);
+    return () => document.removeEventListener('pointerdown', handleOutsidePointer, true);
+  }, [isTouchExpanded]);
+
+  useEffect(() => () => {
+    if (longPressTimerRef.current) {
+      window.clearTimeout(longPressTimerRef.current);
+    }
+  }, []);
+
+  const handleSidebarPointerDown = (event: React.PointerEvent<HTMLElement>) => {
+    if (event.pointerType === 'mouse') {
+      setIsTouchSidebar(false);
+      closeTouchExpanded();
+      return;
+    }
+
+    if (event.pointerType !== 'touch') return;
+    if (!window.matchMedia('(min-width: 901px)').matches) return;
+
+    setIsTouchSidebar(true);
+    if (isTouchExpanded) {
+      suppressClickRef.current = false;
+      return;
+    }
+
+    suppressClickRef.current = false;
+    const gesture = gestureRef.current;
+    gesture.active = true;
+    gesture.startX = event.clientX;
+    gesture.startY = event.clientY;
+    gesture.armed = false;
+    gesture.dragging = false;
+
+    if (longPressTimerRef.current) {
+      window.clearTimeout(longPressTimerRef.current);
+    }
+    longPressTimerRef.current = window.setTimeout(() => {
+      gesture.armed = true;
+    }, 180);
+  };
+
+  const handleSidebarPointerMove = (event: React.PointerEvent<HTMLElement>) => {
+    if (event.pointerType === 'mouse') {
+      setIsTouchSidebar(false);
+      closeTouchExpanded();
+      return;
+    }
+
+    if (event.pointerType !== 'touch') return;
+    if (!window.matchMedia('(min-width: 901px)').matches) return;
+
+    const gesture = gestureRef.current;
+    if (!gesture.active || isTouchExpanded || !gesture.armed) return;
+
+    const deltaX = event.clientX - gesture.startX;
+    const deltaY = event.clientY - gesture.startY;
+
+    if (Math.abs(deltaX) <= Math.abs(deltaY) * 1.1 || deltaX <= 4) return;
+
+    if (!gesture.dragging) {
+      gesture.dragging = true;
+      suppressClickRef.current = true;
+      if (sidebarRef.current) {
+        sidebarRef.current.style.transition = 'none';
+      }
+    }
+
+    const width = Math.min(240, 80 + deltaX * 1.5);
+    if (sidebarRef.current) {
+      sidebarRef.current.style.width = `${width}px`;
+    }
+
+    if (event.cancelable) {
+      event.preventDefault();
+    }
+  };
+
+  const handleSidebarPointerUp = (event: React.PointerEvent<HTMLElement>) => {
+    if (event.pointerType !== 'touch') return;
+    if (!window.matchMedia('(min-width: 901px)').matches) return;
+
+    if (longPressTimerRef.current) {
+      window.clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+
+    const gesture = gestureRef.current;
+    if (!gesture.active) return;
+
+    if (gesture.dragging) {
+      const currentWidth = parseFloat(sidebarRef.current?.style.width || '80') || 80;
+      setIsTouchExpanded(currentWidth >= 150);
+      if (sidebarRef.current) {
+        sidebarRef.current.style.width = '';
+        sidebarRef.current.style.transition = '';
+      }
+      window.setTimeout(() => {
+        suppressClickRef.current = false;
+      }, 250);
+    }
+
+    gesture.active = false;
+    gesture.armed = false;
+    gesture.dragging = false;
+  };
+
+  const handleSidebarPointerCancel = () => {
+    if (longPressTimerRef.current) {
+      window.clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+    gestureRef.current.active = false;
+    gestureRef.current.armed = false;
+    gestureRef.current.dragging = false;
+    suppressClickRef.current = false;
+    if (sidebarRef.current) {
+      sidebarRef.current.style.width = '';
+      sidebarRef.current.style.transition = '';
+    }
+  };
+
+  const handleSidebarClickCapture = (event: React.MouseEvent) => {
+    if (suppressClickRef.current) {
+      event.preventDefault();
+      event.stopPropagation();
+      suppressClickRef.current = false;
+    }
+  };
+
   return (
     <motion.div className={`app ${current ? 'has-player' : ''}`} layoutScroll>
-      <aside className="sidebar">
+      <aside
+        className={`sidebar ${isTouchSidebar ? 'is-touch' : ''} ${isTouchExpanded ? 'is-touch-expanded' : ''}`}
+        ref={sidebarRef}
+        onPointerDown={handleSidebarPointerDown}
+        onPointerMove={handleSidebarPointerMove}
+        onPointerUp={handleSidebarPointerUp}
+        onPointerCancel={handleSidebarPointerCancel}
+        onClickCapture={handleSidebarClickCapture}
+      >
         <Link to="/" className="sidebar-logo" title="На главную">
           <BrandLogo variant="icon" className="logo-icon" />
           <span className="logo-text">DoeReMi</span>
